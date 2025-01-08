@@ -8,4 +8,5 @@ spring:
     username: sa
     password:   # 없어도 됨
 
+
   # localhost:8080/h2-console

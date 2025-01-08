@@ -9,7 +9,6 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
     show-sql: true
     generate-ddl: false
-
     properties:
       hibernate:
         format_sql: true
