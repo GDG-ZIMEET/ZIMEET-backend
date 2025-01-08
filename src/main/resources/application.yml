@@ -1,6 +1,19 @@
 spring:
-  application:
-    name: gdg-z-meet
+  config:
+    import:
+      - classpath:/yml/application-dev.yml
+      - classpath:/yml/application-local.yml
+  profiles:
+    default: dev     # active 된 프로필이 없을때, dev 로
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+    generate-ddl: false
+
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
   springdoc:
     api-docs:
       enabled: true
