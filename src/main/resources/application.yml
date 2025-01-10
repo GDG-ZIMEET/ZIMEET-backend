@@ -1,10 +1,10 @@
 spring:
   config:
-    import:
-      - classpath:/yml/application-dev.yml
-      - classpath:/yml/application-local.yml
-  profiles:
-    default: dev     # active 된 프로필이 없을때, dev 로
+    activate:
+      on-profile: default
+    profiles:
+      default: dev # 기본 프로필로 dev 설정
+
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     show-sql: true
@@ -13,8 +13,43 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+
   springdoc:
     api-docs:
       enabled: true
     swagger-ui:
       enabled: true
+
+# dev 환경 설정
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/${DEFAULT_SCHEMA}?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+# local 환경 설정
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test
+    username: sa
+    password: # 생략 가능
+  jpa:
+    hibernate:
+      ddl-auto: create # 테스트 환경에서는 create 권장
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
