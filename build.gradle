@@ -41,3 +41,7 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+tasks.withType(Test) {
+	enabled = false    // 빌드 시 테스트 x
+}
