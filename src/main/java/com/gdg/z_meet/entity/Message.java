@@ -16,6 +16,7 @@ public class Message extends BaseEntity {
     @Column(name = "message_id", unique = true)
     private Long id;
 
+    @Column(nullable = false)
     private String content;
 
     private Boolean isRead;

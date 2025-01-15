@@ -16,9 +16,12 @@ public class Terms extends BaseEntity {
     @Column(name = "terms_id", unique = true)
     private Long id;
 
+    @Column(nullable = false)
     private String title;
 
+    @Column(nullable = false)
     private String content;
 
+    @Column(nullable = false)
     private Boolean optional;
 }

@@ -16,5 +16,6 @@ public class ChatRoom extends BaseEntity {
     @Column(name = "room_id", unique = true)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 }

@@ -18,11 +18,18 @@ public class Team extends BaseEntity {
     @Column(name = "team_id", unique = true)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TeamType teamType;
 
+    @Column(nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Gender gender;
 
-    private Integer hi;
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer hi = 2;
 }

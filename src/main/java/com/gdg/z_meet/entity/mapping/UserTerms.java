@@ -16,5 +16,6 @@ public class UserTerms extends BaseEntity {
     @Column(name = "user_terms_id", unique = true)
     private Long id;
 
+    @Column(nullable = false)
     private Boolean agree;
 }

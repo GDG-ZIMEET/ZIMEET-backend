@@ -16,7 +16,9 @@ public class Item extends BaseEntity {
     @Column(name = "item_id", unique = true)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private String content;
 }

@@ -17,15 +17,21 @@ public class Club extends BaseEntity {
     @Column(name = "club_id", unique = true)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private String rep;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Category category;
 
     private String account;
 
+    @Column(nullable = false)
     private String time;
 
+    @Column(nullable = false)
     private String info;
 }
