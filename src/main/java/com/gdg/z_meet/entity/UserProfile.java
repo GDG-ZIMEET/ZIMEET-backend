@@ -66,7 +66,7 @@ public class UserProfile extends BaseEntity {
     @Builder.Default
     private int delete = 0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 }

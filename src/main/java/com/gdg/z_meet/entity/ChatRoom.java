@@ -4,6 +4,9 @@ import com.gdg.z_meet.entity.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -18,4 +21,7 @@ public class ChatRoom extends BaseEntity {
 
     @Column(nullable = false)
     private String name;
+
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
+    private List<Message> messageList = new ArrayList<>();
 }

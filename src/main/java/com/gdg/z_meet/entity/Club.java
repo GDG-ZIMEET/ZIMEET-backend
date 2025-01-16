@@ -5,6 +5,9 @@ import com.gdg.z_meet.entity.enums.Category;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -34,4 +37,7 @@ public class Club extends BaseEntity {
 
     @Column(nullable = false)
     private String info;
+
+    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL)
+    private List<Item> itemList = new ArrayList<>();
 }

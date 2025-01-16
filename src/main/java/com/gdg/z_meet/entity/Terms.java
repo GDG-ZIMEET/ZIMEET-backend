@@ -1,8 +1,12 @@
 package com.gdg.z_meet.entity;
 
 import com.gdg.z_meet.entity.common.BaseEntity;
+import com.gdg.z_meet.entity.mapping.UserTerms;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -24,4 +28,7 @@ public class Terms extends BaseEntity {
 
     @Column(nullable = false)
     private Boolean optional;
+
+    @OneToMany(mappedBy = "terms", cascade = CascadeType.ALL)
+    private List<UserTerms> userTermsList = new ArrayList<>();
 }
