@@ -21,4 +21,8 @@ public class Item extends BaseEntity {
 
     @Column(nullable = false)
     private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "club_id")
+    private Club club;
 }

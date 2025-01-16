@@ -1,5 +1,7 @@
 package com.gdg.z_meet.entity.mapping;
 
+import com.gdg.z_meet.entity.Terms;
+import com.gdg.z_meet.entity.User;
 import com.gdg.z_meet.entity.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,4 +20,12 @@ public class UserTerms extends BaseEntity {
 
     @Column(nullable = false)
     private Boolean agree;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "terms_id")
+    private Terms terms;
 }
