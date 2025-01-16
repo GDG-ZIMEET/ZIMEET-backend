@@ -29,16 +29,4 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private String password;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Token> tokenList = new ArrayList<>();
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private UserProfile userProfile;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<UserTeam> userTeamList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<UserTerms> userTermsList = new ArrayList<>();
 }

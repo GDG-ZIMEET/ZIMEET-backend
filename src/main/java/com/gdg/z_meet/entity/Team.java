@@ -35,10 +35,4 @@ public class Team extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private Integer hi = 2;
-
-    @OneToMany(mappedBy = "from", cascade = CascadeType.ALL)
-    private List<Hi> fromList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "to", cascade = CascadeType.ALL)
-    private List<Hi> toList = new ArrayList<>();
 }

@@ -37,7 +37,4 @@ public class Club extends BaseEntity {
 
     @Column(nullable = false)
     private String info;
-
-    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL)
-    private List<Item> itemList = new ArrayList<>();
 }

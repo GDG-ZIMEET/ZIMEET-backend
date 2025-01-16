@@ -28,7 +28,4 @@ public class Terms extends BaseEntity {
 
     @Column(nullable = false)
     private Boolean optional;
-
-    @OneToMany(mappedBy = "terms", cascade = CascadeType.ALL)
-    private List<UserTerms> userTermsList = new ArrayList<>();
 }
