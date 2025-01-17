@@ -3,6 +3,7 @@ package com.gdg.z_meet.domain.meeting.entity;
 import com.gdg.z_meet.global.common.BaseEntity;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
@@ -22,6 +23,7 @@ public class Team extends BaseEntity {
     private TeamType teamType;
 
     @Column(nullable = false)
+    @Size(min = 1, max = 7)
     private String name;
 
     @Enumerated(EnumType.STRING)

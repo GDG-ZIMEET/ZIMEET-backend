@@ -34,12 +34,11 @@ public class Response<T> {
         return response;
     }
 
-    public static Response<Void> fail(Code code) {
-        Response<Void> response = new Response<>();
-
+    public static <T> Response<T>  fail(Code code) {
+        Response<T> response = new Response<>();
         response.code = code.getCode();
         response.message = code.getMessage();
-
+        response.data = null;
         return response;
     }
 

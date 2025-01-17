@@ -15,6 +15,11 @@ public enum Code {
     MEMBER_PASSWORD_UNAVAILABLE("MEM-004", "Password cannot used."),
     MEMBER_ALREADY_ON_PROCESS("MEM-999", "Member is already on process."),
 
+    SESSION_EXPIRED("PAY-000", "Session expired."),
+    SESSION_STORAGE_FAILED("PAY-001", "Session storage failed."),
+    INVALID_PAYMENT_AMOUNT("PAY-002", "Invalid payment amount."),
+
+
 //    NOT_ACADEMY_EMAIL("EEM-001", "Email is not a university email."),
 //    AUTH_CODE_NOT_MATCH("ATH-001", "Auth code not match."),
 //    ACCESS_TOKEN_NOT_FOUND("ATH-002", "Auth token not found."),
