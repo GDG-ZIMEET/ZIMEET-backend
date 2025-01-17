@@ -10,12 +10,12 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Table(name="orders")
 public class Order extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id", unique = true)
-    private String id;
+    private String id;            // UUID
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

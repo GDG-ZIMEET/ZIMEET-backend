@@ -15,7 +15,7 @@ public class UserProfile extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="user_profile_id", unique = true)
+    @Column(name = "user_profile_id", unique = true)
     private Long id;
 
     @Column(unique = true, nullable = false)
@@ -40,11 +40,11 @@ public class UserProfile extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private IdealType ideal_type;
+    private IdealType idealType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private IdealAge ideal_age;
+    private IdealAge idealAge;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -59,14 +59,14 @@ public class UserProfile extends BaseEntity {
     private Major major;
 
     @Column(nullable = false)
-    @Size(min = 20, max = 28)
     private int age;
 
     @Column(nullable = false)
     @Builder.Default
-    private int delete = 0;
+    private int deleteTeam = 0;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
 }
