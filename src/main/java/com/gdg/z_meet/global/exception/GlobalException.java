@@ -5,11 +5,11 @@ import com.gdg.z_meet.global.response.ReasonDTO;
 import lombok.Getter;
 
 @Getter
-public class BusinessException extends RuntimeException{
+public class GlobalException extends RuntimeException {
 
     private final Code code;
 
-    public BusinessException(Code code) {
+    public GlobalException(Code code) {
         super(code.getMessage());
         this.code = code;
     }
