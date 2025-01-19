@@ -1,6 +1,7 @@
 package com.gdg.z_meet.domain.order.controller;
 
 import com.gdg.z_meet.domain.order.dto.SaveAmountRequest;
+import com.gdg.z_meet.global.exception.GlobalException;
 import com.gdg.z_meet.global.response.Code;
 import com.gdg.z_meet.global.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,14 +24,16 @@ public class OrderVerifyController {
     public Response<String> tempSave(HttpSession session, @Valid @RequestBody SaveAmountRequest saveAmountRequest) {
 
         // 세션 유효성 검증
-        if (session == null) {return Response.fail(Code.SESSION_EXPIRED);}
+        if (session == null) {
+            throw new GlobalException(Code.SESSION_EXPIRED);
+        }
 
         session.setAttribute(saveAmountRequest.getOrderId(), saveAmountRequest.getAmount());
 
         // 저장 검증
         Integer storedAmount = (Integer) session.getAttribute(saveAmountRequest.getOrderId());
         if (storedAmount == null || !storedAmount.equals(saveAmountRequest.getAmount())) {
-            return Response.fail(Code.SESSION_STORAGE_FAILED);
+            throw new GlobalException(Code.SESSION_STORAGE_FAILED);
         }
 
         return Response.ok("Payment temp save successful");
@@ -45,8 +48,9 @@ public class OrderVerifyController {
         Integer storedAmount = (Integer) session.getAttribute(saveAmountRequest.getOrderId());
 
         // 결제 전의 금액과 결제 후의 금액이 같은지 검증
-        if(storedAmount == null || !storedAmount.equals(saveAmountRequest.getAmount()))
-            return Response.fail(Code.INVALID_PAYMENT_AMOUNT);
+        if(storedAmount == null || !storedAmount.equals(saveAmountRequest.getAmount())) {
+            throw new GlobalException(Code.INVALID_PAYMENT_AMOUNT);
+        }
 
         session.removeAttribute(saveAmountRequest.getOrderId());    // 검증에 사용했던 세션은 삭제
 
