@@ -30,3 +30,7 @@ spring:
       enabled: true
     swagger-ui:
       enabled: true
+
+jwt:
+    secret: ---------------------zimeet---------------------
+    expiration: 86400000

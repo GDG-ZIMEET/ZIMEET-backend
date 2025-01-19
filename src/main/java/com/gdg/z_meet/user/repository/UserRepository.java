@@ -1,4 +1,12 @@
 package com.gdg.z_meet.user.repository;
 
-public class UserRepository {
+import com.gdg.z_meet.user.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByStudentNumber(String studentNumber);
 }
