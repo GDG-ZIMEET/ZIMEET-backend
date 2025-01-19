@@ -4,15 +4,14 @@ import com.gdg.z_meet.domain.booth.dto.ClubRequestDTO;
 import com.gdg.z_meet.domain.booth.dto.ClubResponseDTO;
 import com.gdg.z_meet.domain.booth.entity.Category;
 import com.gdg.z_meet.domain.booth.entity.Club;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import com.gdg.z_meet.domain.booth.entity.Place;
 
 public class ClubConverter {
 
     public static Club toClub(ClubRequestDTO.ClubCreateDTO request){
 
         return Club.builder()
+                .place(Place.valueOf(request.getPlace()))
                 .name(request.getName())
                 .rep(request.getRep())
                 .category(Category.valueOf(request.getCategory()))

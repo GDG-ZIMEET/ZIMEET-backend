@@ -17,6 +17,9 @@ public class Club extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
+    private Place place;
+
+    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
