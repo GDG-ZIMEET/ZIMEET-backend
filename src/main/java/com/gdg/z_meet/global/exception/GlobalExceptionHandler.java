@@ -27,19 +27,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("BusinessException: {}", ex.getCode());
         log.error("error: ", ex);
         ReasonDTO reason = ex.getReason();
+
         return ResponseEntity
                 .status(reason.getStatus())
                 .body(Response.fail(ex.getCode()));
     }
 
-    @ExceptionHandler(GeneralException.class)
-    public ResponseEntity<Response<Void>> generalExceptionHandler(GeneralException ex) {
+    @ExceptionHandler(GlobalException.class)
+    public ResponseEntity<Response<Void>> globalExceptionHandler(GlobalException ex) {
 
-        log.error("GeneralException: {}", ex.getMessage());
+        log.error("GlobalException: {}", ex.getMessage());
         ReasonDTO reason = ex.getReason();
         return ResponseEntity
                 .status(reason.getStatus())
-                .body(Response.fail(Code.valueOf(reason.getCode())));
+                .body(Response.fail(ex.getCode()));
     }
 
     @Override
