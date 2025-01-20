@@ -33,10 +33,10 @@ public class UserReq {
 
         //유저 상세정보
         @NotNull(message = "닉네임 입력은 필수입니다.")
-        @Size(min = 2, max = 6, message = "닉네임은 2자 이상 6자 이하로 입력해주세요.")
+        @Size(min = 1, max = 7, message = "닉네임은 2자 이상 7자 이하로 입력해주세요.")
         private String nickname;
         private Grade grade;
-        @Size(min = 19, max = 29, message = "19세에서 29세까지 이용 가능합니다.")
+        @Size(min = 20, max = 28, message = "20세에서 28세까지 이용 가능합니다.")
         private int age;
         private Gender gender;
         private Major major;
