@@ -39,6 +39,11 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+// plain jar 생성 X 설정
+jar {
+	enabled = false
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
