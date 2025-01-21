@@ -1,6 +1,6 @@
 package com.gdg.z_meet.global.jwt;
 
-import com.gdg.z_meet.user.dto.Token;
+import com.gdg.z_meet.domain.user.dto.Token;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
