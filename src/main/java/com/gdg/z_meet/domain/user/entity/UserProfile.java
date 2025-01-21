@@ -2,20 +2,21 @@ package com.gdg.z_meet.domain.user.entity;
 
 import com.gdg.z_meet.domain.user.entity.enums.*;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
+
+import java.time.LocalDate;
 
 @Entity
 @Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table(name="user_profile")
 public class UserProfile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="user_profile_id", unique = true, nullable = false)
+    @Column(name = "user_profile_id", unique = true, nullable = false)
     private Long id;
-
-//    @OneToOne
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private User user;
 
     @Column(unique = true, nullable = false)
     private String nickname;
@@ -33,10 +34,10 @@ public class UserProfile {
     private Style style;
 
     @Column(nullable = false)
-    private IdealType ideal_type;
+    private IdealType idealType;
 
     @Column(nullable = false)
-    private IdealAge ideal_age;
+    private IdealAge idealAge;
 
     @Column(nullable = false)
     private Gender gender;
@@ -50,5 +51,19 @@ public class UserProfile {
     @Column(nullable = false)
     private int age;
 
-    private int delete;
+    @Column(nullable = false)
+    @Builder.Default
+    private int deleteTeam = 0;
+
+    @Column(nullable = false)
+    private Level level;
+
+    @Column(nullable = false)
+    private LocalDate inactiveDate;
+
+    /*
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+    */
 }
