@@ -6,6 +6,8 @@ import lombok.*;
 
 import java.time.LocalDate;
 
+import static com.gdg.z_meet.domain.user.entity.enums.Level.LIGHT;
+
 @Entity
 @Getter
 @Builder
@@ -56,14 +58,10 @@ public class UserProfile {
     private int deleteTeam = 0;
 
     @Column(nullable = false)
-    private Level level;
+    @Builder.Default
+    private Level level = LIGHT;
 
-    @Column(nullable = false)
-    private LocalDate inactiveDate;
-
-    /*
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-    */
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "user_id", nullable = false)
+//    private User user;
 }

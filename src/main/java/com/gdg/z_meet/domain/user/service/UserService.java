@@ -1,5 +1,8 @@
 package com.gdg.z_meet.domain.user.service;
 
+import com.gdg.z_meet.domain.user.entity.UserProfile;
+import com.gdg.z_meet.domain.user.entity.enums.Level;
+import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.domain.user.dto.Token;
 import com.gdg.z_meet.domain.user.dto.UserReq;
@@ -19,6 +22,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
@@ -38,6 +42,22 @@ public class UserService {
                 .name(signUpReq.getName())
                 .build();
         User newUser = userRepository.save(user);
+
+        UserProfile userProfile = UserProfile.builder()
+                .nickname(signUpReq.getNickname())
+                .emoji(signUpReq.getEmoji())
+                .music(signUpReq.getMusic())
+                .mbti(signUpReq.getMbti())
+                .style(signUpReq.getStyle())
+                .idealType(signUpReq.getIdealType())
+                .idealAge(signUpReq.getIdealAge())
+                .gender(signUpReq.getGender())
+                .grade(signUpReq.getGrade())
+                .major(signUpReq.getMajor())
+                .age(signUpReq.getAge())
+                .level(Level.LIGHT)
+                .build();
+        userProfileRepository.save(userProfile);
 
         return UserRes.SignUpRes.builder().message("회원가입 성공!").build();
     }
