@@ -30,3 +30,7 @@ spring:
       enabled: true
     swagger-ui:
       enabled: true
+
+jwt:
+    secret: zimeetzimeetzimeetzimeetzimeetzimeetzimeetzimeetzimeetzimeetzimeet
+    expiration: 86400000
