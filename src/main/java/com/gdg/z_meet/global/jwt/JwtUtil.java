@@ -28,7 +28,7 @@ public class JwtUtil {
     // 유효기간 31일
     private long refreshTokenValidTime = 31 * 24 * 60 * 60 * 1000L;
 
-    @Value("${jwt.secret-key}")
+    @Value("${jwt.secret}")
     private String secretKey ;
     private Key key;
 

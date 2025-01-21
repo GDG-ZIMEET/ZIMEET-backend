@@ -31,9 +31,11 @@ public class UserService {
                     throw new IllegalArgumentException("이미 가입된 학번입니다.");
                 });
 
+        String encodedPassword = encoder.encode(signUpReq.getPassword());
+
         User user = User.builder()
                 .studentNumber(signUpReq.getStudentNumber())
-                .password(signUpReq.getPassword())
+                .password(encodedPassword)
                 .name(signUpReq.getName())
                 .build();
         User newUser = userRepository.save(user);
