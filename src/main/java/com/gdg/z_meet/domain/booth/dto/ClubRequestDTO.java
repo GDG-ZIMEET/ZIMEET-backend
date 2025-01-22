@@ -10,7 +10,7 @@ import lombok.Getter;
 public class ClubRequestDTO {
 
     @Getter
-    public static class ClubCreateDTO {
+    public static class CreateClubDTO {
 
         @NotNull
         @ValidEnum(enumClass = Place.class)

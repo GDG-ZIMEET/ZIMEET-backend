@@ -7,25 +7,19 @@ import com.gdg.z_meet.domain.booth.repository.ClubRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class ClubCommandServiceImpl implements ClubCommandService {
+public class ClubQueryServiceImpl implements ClubQueryService {
 
     private final ClubRepository clubRepository;
 
     @Override
-    @Transactional
-    public Club createClub(ClubRequestDTO.CreateClubDTO request) {
-
-        if (clubRepository.findByName(request.getName()).isPresent()) {
-            throw new BusinessException(Code.CLUB_ALREADY_EXIST);
-        }
-
-        Club club = ClubConverter.toClub(request);
-
-        return clubRepository.save(club);
+    public Club getClub(Long clubId) {
+        
+        return clubRepository.findById(clubId).orElseThrow(() -> new BusinessException(Code.CLUB_NOT_FOUND));
     }
 }

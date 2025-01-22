@@ -28,6 +28,7 @@ public enum Code implements BaseCode {
     INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, "PAY-002", "Invalid payment amount."),
 
     CLUB_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "BOOTH4001", "동아리가 이미 존재합니다."),
+    CLUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "BOOTH4002", "동아리를 찾을 수 없습니다."),
     ;
 
 //    NOT_ACADEMY_EMAIL("EEM-001", "Email is not a university email."),
