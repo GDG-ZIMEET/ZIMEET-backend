@@ -5,6 +5,9 @@ import com.gdg.z_meet.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Getter
 @Builder
@@ -29,4 +32,8 @@ public class Message extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
+
+    // 메시지 읽음 상태를 추적할 사용자 리스트
+    @ManyToMany
+    private Set<User> readByUsers = new HashSet<>();
 }
