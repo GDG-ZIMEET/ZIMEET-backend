@@ -29,5 +29,5 @@ spring:
       enabled: true
 
 jwt:
-    secret: zimeetzimeetzimeetzimeetzimeetzimeetzimeetzimeetzimeetzimeetzimeet
+    secret: ${JWT_SECRET_KEY}
     expiration: 86400000
