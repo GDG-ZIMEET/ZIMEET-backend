@@ -39,11 +39,11 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public Token createToken(String studentNumber) {
+    public Token createToken(String studentNumber, Long id) {
         Date now = new Date();
 
-        String accessToken = getToken(studentNumber, now, accessTokenValidTime);
-        String refreshToken = getToken(studentNumber, now, refreshTokenValidTime);
+        String accessToken = getToken(studentNumber, id, now, accessTokenValidTime);
+        String refreshToken = getToken(studentNumber, id, now, refreshTokenValidTime);
 
         return Token.builder()
                 .accessToken(accessToken)
@@ -52,9 +52,10 @@ public class JwtUtil {
                 .build();
     }
 
-    public String getToken(String studentNumber, Date currentTime, long validTime) {
+    public String getToken(String studentNumber, Long id, Date currentTime, long validTime) {
         return Jwts.builder()
                 .setSubject(studentNumber)
+                .claim("user_id", id)
                 .setIssuedAt(currentTime)
                 .setExpiration(new Date(currentTime.getTime() + validTime))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -72,6 +73,11 @@ public class JwtUtil {
     // 토큰에서 회원 정보 추출
     public String getStudentNumberFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+    }
+
+    // 토큰에서 유저 아이디 값 추출
+    public Long getUserIdFromToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().get("user_id", Long.class);
     }
 
 
