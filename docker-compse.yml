@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  mysql:      # dev 환경
+    container_name: mysql1
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: gdg
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}     # 컨테이너 초기화 시 필요
+      TZ: 'Asia/Seoul'
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/conf.d:/etc/mysql/conf.d
+    command:
+      - "mysqld"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    networks:
+      - gdg_network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    container_name: redis1
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - gdg_network
+
+  backend:
+    container_name: backend
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - MYSQL_USER=${PROD_DB_USERNAME}
+      - MYSQL_PASSWORD=${PROD_DB_PASSWORD}
+      - MYSQL_URL=jdbc:mysql://${PROD_DB_ENDPOINT}:3306/${PROD_DB_NAME}?serverTimezone=UTC
+    networks:
+      - gdg_network
+
+# 동일 네트워크에서 컨테이너 간 통신을 위한 네트워크 설정
+# 각 컨테이너들은 backend 와 네트워크 내부에서 통신 or 외부와 통신 가능
+networks:
+  gdg_network:
+    driver: bridge

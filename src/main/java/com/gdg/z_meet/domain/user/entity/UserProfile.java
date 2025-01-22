@@ -6,6 +6,8 @@ import lombok.*;
 
 import java.time.LocalDate;
 
+import static com.gdg.z_meet.domain.user.entity.enums.Level.LIGHT;
+
 @Entity
 @Getter
 @Builder
@@ -21,30 +23,39 @@ public class UserProfile {
     @Column(unique = true, nullable = false)
     private String nickname;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Emoji emoji;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Music music;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MBTI mbti;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Style style;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private IdealType idealType;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private IdealAge idealAge;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Gender gender;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Grade grade;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Major major;
 
@@ -56,14 +67,10 @@ public class UserProfile {
     private int deleteTeam = 0;
 
     @Column(nullable = false)
-    private Level level;
+    @Builder.Default
+    private Level level = LIGHT;
 
-    @Column(nullable = false)
-    private LocalDate inactiveDate;
-
-    /*
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    */
 }
