@@ -27,6 +27,7 @@ public class ClubResponseDTO {
     @AllArgsConstructor
     public static class GetClubDTO {
         Long clubId;
+        String place;
         String name;
         String rep;
         String category;
@@ -35,11 +36,11 @@ public class ClubResponseDTO {
         String info;
     }
 
-//    @Builder
-//    @Getter
-//    @NoArgsConstructor
-//    @AllArgsConstructor
-//    public static class GetAllClubDTO {
-//        List<GetClubDTO> clubList;
-//    }
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetAllClubDTO {
+        List<GetClubDTO> clubList;
+    }
 }

@@ -20,9 +20,12 @@ public class ClubCommandServiceImpl implements ClubCommandService {
     @Transactional
     public Club createClub(ClubRequestDTO.CreateClubDTO request) {
 
+        /*
+        Club에 행사 관련 컬럼 추가 후 구현
         if (clubRepository.findByName(request.getName()).isPresent()) {
             throw new BusinessException(Code.CLUB_ALREADY_EXIST);
         }
+         */
 
         Club club = ClubConverter.toClub(request);
 

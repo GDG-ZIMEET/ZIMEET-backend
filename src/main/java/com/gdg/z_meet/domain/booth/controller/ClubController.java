@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -30,17 +33,17 @@ public class ClubController {
     }
 
     @Operation(summary = "부스 상세 조회")
-    @GetMapping("/{clubId}")
+    @GetMapping("/detail/{clubId}")
     public Response<ClubResponseDTO.GetClubDTO> getClub(@PathVariable Long clubId) {
 
         Club club = clubQueryService.getClub(clubId);
         return Response.ok(ClubConverter.toGetClubDTO(club));
     }
-//
-//    @Operation(summary = "부스배치도 조회", description = "장소별로 부스를 조회합니다.")
-//    @GetMapping("/{place}")
-//    public Response<ClubResponseDTO.GetAllClubDTO> getAllClub(@PathVariable String place) {
-//        Club club = clubQueryService.getAllClub(place);
-//        return Response.ok(ClubConverter.toGetAllClubDTO(club));
-//    }
+
+    @Operation(summary = "부스배치도 조회", description = "장소별로 부스를 조회합니다.")
+    @GetMapping("/{place}")
+    public Response<ClubResponseDTO.GetAllClubDTO> getAllClub(@PathVariable String place) {
+        List<Club> club = clubQueryService.getAllClub(place);
+        return Response.ok(ClubConverter.toGetAllClubDTO(club));
+    }
 }

@@ -35,6 +35,7 @@ public class ClubConverter {
 
         return ClubResponseDTO.GetClubDTO.builder()
                 .clubId(club.getId())
+                .place(String.valueOf(club.getPlace()))
                 .name(club.getName())
                 .rep(club.getRep())
                 .category(club.getCategory().toString())
@@ -44,22 +45,23 @@ public class ClubConverter {
                 .build();
     }
 
-//    public static ClubResponseDTO.GetAllClubDTO toGetAllClubDTO(List<Club> clubList){
-//
-//        List<ClubResponseDTO.GetClubDTO> clubDTOS = clubList.stream()
-//                .map(club -> ClubResponseDTO.GetClubDTO.builder()
-//                        .clubId(club.getId())
-//                        .name(club.getName())
-//                        .rep(club.getRep())
-//                        .category(club.getCategory().toString())
-//                        .account(club.getAccount())
-//                        .time(club.getTime())
-//                        .info(club.getInfo())
-//                        .build())
-//                .collect(Collectors.toList());
-//
-//        return ClubResponseDTO.GetAllClubDTO.builder()
-//                .clubList(clubDTOS)
-//                .build();
-//    }
+    public static ClubResponseDTO.GetAllClubDTO toGetAllClubDTO(List<Club> clubList){
+
+        List<ClubResponseDTO.GetClubDTO> clubDTOS = clubList.stream()
+                .map(club -> ClubResponseDTO.GetClubDTO.builder()
+                        .clubId(club.getId())
+                        .place(String.valueOf(club.getPlace()))
+                        .name(club.getName())
+                        .rep(club.getRep())
+                        .category(club.getCategory().toString())
+                        .account(club.getAccount())
+                        .time(club.getTime())
+                        .info(club.getInfo())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ClubResponseDTO.GetAllClubDTO.builder()
+                .clubList(clubDTOS)
+                .build();
+    }
 }
