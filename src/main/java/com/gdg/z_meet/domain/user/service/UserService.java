@@ -56,6 +56,7 @@ public class UserService {
                 .major(signUpReq.getMajor())
                 .age(signUpReq.getAge())
                 .level(Level.LIGHT)
+                .user(user)
                 .build();
         userProfileRepository.save(userProfile);
 
