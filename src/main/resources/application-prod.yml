@@ -1,0 +1,20 @@
+spring:
+  server:
+    port: 8081
+  datasource:
+    url: jdbc:mysql://${RDS_URL}:3306/${RDS_SCHEMA}?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate      # prod 환경에서는 스키마 자동 변경을 막아야
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    show_sql: false        # prod 환경에서는 SQL 출력 비활성화
+  data:
+    redis:
+      host: redis
+      port: 6379
+
