@@ -16,6 +16,10 @@ public class Club extends BaseEntity {
     @Column(name = "club_id", unique = true)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Place place;
+
     @Column(nullable = false)
     private String name;
 
