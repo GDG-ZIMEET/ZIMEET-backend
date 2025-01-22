@@ -72,7 +72,7 @@ public class UserService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        Token token = jwtUtil.createToken(loginReq.getStudentNumber());
+        Token token = jwtUtil.createToken(loginReq.getStudentNumber(), user.getId());
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .keyId(token.getKey())
