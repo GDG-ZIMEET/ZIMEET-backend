@@ -2,9 +2,9 @@ spring:
   server:
     port: 8081
   datasource:
-    url: jdbc:mysql://${RDS_URL}:3306/${RDS_SCHEMA}?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
-    username: ${RDS_USERNAME}
-    password: ${RDS_PASSWORD}
+    url: jdbc:mysql://${PROD_DB_ENDPOINT}:3306/${PROD_DB_NAME}?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
