@@ -9,6 +9,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate      # prod 환경에서는 스키마 자동 변경을 막아야
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
