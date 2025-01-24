@@ -31,3 +31,8 @@ spring:
 jwt:
     secret: ${JWT_SECRET_KEY}
     expiration: 86400000
+
+payment:
+  secret-key: ${TOSS_SECRET_KEY}
+  base-url: https://api.tosspayments.com/v1/payments
+  confirm-endpoint: /confirm        # 최종적으로 https://api.tosspayments.com/v1/payments/confirm 으로 사용됨
