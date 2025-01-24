@@ -3,7 +3,6 @@ package com.gdg.z_meet.domain.order;
 import com.gdg.z_meet.domain.order.exception.PaymentErrorDecoder;
 import com.gdg.z_meet.domain.order.infrastructure.PaymentAuthInterceptor;
 import com.gdg.z_meet.domain.order.infrastructure.PaymentLoggingInterceptor;
-import com.gdg.z_meet.domain.order.infrastructure.PaymentProperties;
 import feign.Request;
 import org.springframework.context.annotation.Bean;
 
