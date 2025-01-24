@@ -20,3 +20,8 @@ spring:
       host: redis
       port: 6379
 
+payment:
+  secret-key: ${TOSS_SECRET_KEY}
+  base-url: https://api.tosspayments.com/v1/payments
+  confirm-endpoint: /confirm
+

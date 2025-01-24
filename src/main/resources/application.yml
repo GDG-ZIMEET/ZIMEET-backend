@@ -33,6 +33,6 @@ jwt:
     expiration: 86400000
 
 payment:
-  secret-key: ${TOSS_SECRET_KEY}
+  secret-key: test_ck_Poxy1XQL8Rwk9vDNjaNY37nO5Wml           # 노출되어도 무방
   base-url: https://api.tosspayments.com/v1/payments
   confirm-endpoint: /confirm        # 최종적으로 https://api.tosspayments.com/v1/payments/confirm 으로 사용됨
