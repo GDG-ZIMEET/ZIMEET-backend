@@ -10,8 +10,6 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}     # 컨테이너 초기화 시 필요
       TZ: 'Asia/Seoul'
-    ports:
-      - "3306:3306"
     volumes:
       - ./mysql/conf.d:/etc/mysql/conf.d
     command:
