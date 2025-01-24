@@ -23,6 +23,13 @@ repositories {
 	mavenCentral()
 }
 
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:2022.0.4"
+	}
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
@@ -46,7 +53,6 @@ dependencies {
 
 	// toss payments
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-
 }
 
 // plain jar 생성 X 설정
