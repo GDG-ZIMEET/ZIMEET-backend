@@ -20,7 +20,7 @@ public class PaymentFeignConfig {
     @Bean
     public Request.Options requestOptions() {
         // 요청 시간 지연 타임아웃 설정 => 자동 취소
-        return new Request.Options(2, TimeUnit.SECONDS, 60, TimeUnit.SECONDS, true);
+        return new Request.Options(2, TimeUnit.SECONDS, 30, TimeUnit.SECONDS, true);
     }
 
     @Bean
