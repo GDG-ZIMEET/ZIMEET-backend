@@ -1,0 +1,24 @@
+spring:
+  server:
+    port: 8081
+  datasource:
+    url: jdbc:mysql://${PROD_DB_ENDPOINT}:3306/${PROD_DB_NAME}?serverTimezone=UTC
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate      # prod 환경에서는 스키마 자동 변경을 막아야
+#      naming:
+#        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        globally_quoted_identifiers: true
+        globally_quoted_identifiers_skip_column_definitions: true
+    show_sql: false        # prod 환경에서는 SQL 출력 비활성화
+  data:
+    redis:
+      host: redis
+      port: 6379
+

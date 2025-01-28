@@ -9,12 +9,17 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Table(name = "Club")
 public class Club extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "club_id", unique = true)
     private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Place place;
 
     @Column(nullable = false)
     private String name;

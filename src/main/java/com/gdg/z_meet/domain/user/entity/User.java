@@ -15,7 +15,7 @@ import java.util.Collection;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="user")
+@Table(name = "User")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,8 +31,8 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String name;
 
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-//    private UserProfile userProfile;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserProfile userProfile;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

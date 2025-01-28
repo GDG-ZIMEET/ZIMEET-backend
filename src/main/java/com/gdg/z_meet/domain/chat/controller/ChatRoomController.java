@@ -8,6 +8,7 @@ import com.gdg.z_meet.domain.chat.service.MessageService;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/chat") // API 기본 URL 설정
 @RequiredArgsConstructor
+@Tag(name = "ChatAPI",description = "채팅방 관련 기능 API 입니다.")
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;

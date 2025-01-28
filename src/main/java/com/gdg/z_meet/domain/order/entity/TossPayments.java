@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "TossPayments")
 public class TossPayments extends BaseEntity {
 
     @Id
@@ -25,8 +26,8 @@ public class TossPayments extends BaseEntity {
     private String tossOrderId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    @JoinColumn(name = "orders_id", nullable = false)
+    private Orders orders;
 
     private long totalAmount;
 
