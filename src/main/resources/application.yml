@@ -14,6 +14,8 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
     show_sql: true
+  flyway:
+    enabled: false     # dev 환경에서는 flyway 사용 x
   data:
     redis:
       host: localhost
