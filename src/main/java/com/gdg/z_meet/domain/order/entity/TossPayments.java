@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "\"TossPayments\"")
+@Table(name = "TossPayments")
 public class TossPayments extends BaseEntity {
 
     @Id

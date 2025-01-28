@@ -13,7 +13,7 @@ import static com.gdg.z_meet.domain.user.entity.enums.Level.LIGHT;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "\"UserProfile\"")
+@Table(name = "UserProfile")
 public class UserProfile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
