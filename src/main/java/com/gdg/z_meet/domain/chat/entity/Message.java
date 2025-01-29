@@ -10,7 +10,6 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "Message")
 public class Message extends BaseEntity {
 
     @Id
