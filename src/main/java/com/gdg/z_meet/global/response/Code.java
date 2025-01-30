@@ -32,6 +32,7 @@ public enum Code implements BaseCode {
 
     TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "MEETING4001", "팀을 찾을 수 없습니다."),
     TEAM_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEETING4002", "팀원을 찾을 수 없습니다."),
+    TEAM_TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "MEETING4003", "팀원 수가 일치하지 않습니다."),
     ;
 
 //    NOT_ACADEMY_EMAIL("EEM-001", "Email is not a university email."),

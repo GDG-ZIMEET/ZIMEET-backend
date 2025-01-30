@@ -1,31 +1,34 @@
 package com.gdg.z_meet.domain.meeting.service;
 
 import com.gdg.z_meet.domain.meeting.entity.Team;
+import com.gdg.z_meet.domain.meeting.entity.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
-import com.gdg.z_meet.domain.meeting.repository.MeetingRepository;
+import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MeetingQueryServiceImpl implements MeetingQueryService {
 
-    private final MeetingRepository meetingRepository;
+    private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public Team getTeam(Long teamId) {
 
-        return meetingRepository.findById(teamId).orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+        Team team = teamRepository.findById(teamId).orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+        validateTeamType(teamId, team.getTeamType());
+        return team;
     }
 
     @Override
@@ -34,5 +37,16 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         return userTeams.stream()
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
+    }
+
+    private void validateTeamType(Long teamId, TeamType teamType) {
+
+        Integer userCount = userTeamRepository.countByTeamId(teamId);
+        if (teamType != TeamType.TWO_TO_TWO && userCount == 2) {
+            throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
+        }
+        if (teamType != TeamType.THREE_TO_THREE && userCount == 3) {
+            throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
+        }
     }
 }
