@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.chat.service;
 
+import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.entity.JoinChat;
 import com.gdg.z_meet.domain.chat.entity.Message;
@@ -7,6 +8,8 @@ import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
 import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
 import com.gdg.z_meet.domain.chat.repository.MessageRepository;
 import com.gdg.z_meet.domain.user.entity.User;
+import com.gdg.z_meet.domain.user.entity.UserProfile;
+import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
@@ -14,11 +17,16 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import org.h2.api.ErrorCode;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +41,7 @@ public class ChatRoomService {
     private static final String CHAT_ROOM_ACTIVITY_KEY = "chatroom:activity";
     private static final String CHAT_ROOM_LATEST_MESSAGE_KEY = "chatroom:%s:latestMessage";
     private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
 
     // 채팅방 생성
     @Transactional
@@ -145,10 +154,88 @@ public class ChatRoomService {
         if (chatRoomObj instanceof ChatRoom) {
             return (ChatRoom) chatRoomObj;
         }
+        System.out.println("CHATROOMID !!!!!!!!! + "+chatRoomId);
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("ChatRoom not found"));
+                .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
         redisTemplate.opsForHash().put("chatrooms", chatRoomId.toString(), chatRoom);
         return chatRoom;
+    }
+
+    // 사용자 채팅방 목록 (최신 활동 기준 정렬)
+    public List<ChatRoomDto.chatRoomListDto> getChatRoomsByUser(Long userId) {
+        String joinChatsKey = "user:" + userId + ":chatrooms";
+
+        // Redis에서 참여 채팅방 ID 가져오기 및 변환
+        Set<Long> joinChatIdsSet = redisTemplate.opsForSet()
+                .members(joinChatsKey)
+                .stream()
+                .map(Object::toString)
+                .map(Long::valueOf)
+                .collect(Collectors.toSet());
+
+        if (joinChatIdsSet == null || joinChatIdsSet.isEmpty()) {
+            List<JoinChat> joinChats = joinChatRepository.findByUserId(userId);
+            joinChatIdsSet = joinChats.stream()
+                    .map(joinChat -> joinChat.getChatRoom().getId())
+                    .collect(Collectors.toSet());
+            joinChatIdsSet.forEach(chatRoomId -> redisTemplate.opsForSet().add(joinChatsKey, chatRoomId));
+        }
+
+
+        // Redis ZSet에서 최신 활동 기준으로 정렬된 채팅방 ID 가져오기
+        List<Long> sortedChatRoomIds = redisTemplate.opsForZSet()
+                .reverseRange(CHAT_ROOM_ACTIVITY_KEY, 0, -1)
+                .stream()
+                .map(Object::toString)
+                .map(Long::valueOf)
+                .filter(joinChatIdsSet::contains)
+                .collect(Collectors.toList());
+
+        // 정렬된 목록에 없는 채팅방 추가
+        joinChatIdsSet.stream()
+                .filter(id -> !sortedChatRoomIds.contains(id)) // 정렬되지 않은 채팅방 추가
+                .forEach(sortedChatRoomIds::add);
+
+
+        return sortedChatRoomIds.stream()
+                .map(chatRoomId -> {
+
+                    ChatRoom chatRoom = getChatRoomById(chatRoomId);
+
+                    // 최신 메시지 및 메시지 시간 조회
+                    String latestMessageKey = String.format(CHAT_ROOM_LATEST_MESSAGE_KEY, chatRoomId);
+                    String latestMessageTimeKey = String.format("chatroom:%s:latestMessageTime", chatRoomId);
+
+                    String latestMessage = (String) redisTemplate.opsForValue().get(latestMessageKey);
+                    String latestMessageTimeStr = (String) redisTemplate.opsForValue().get(latestMessageTimeKey);
+
+                    LocalDateTime latestMessageTime = null;
+                    if (latestMessageTimeStr != null) {
+                        latestMessageTime = LocalDateTime.parse(latestMessageTimeStr);
+                    }
+                    else{
+                        latestMessageTime = chatRoom.getUpdatedAt();
+                    }
+
+                    List<ChatRoomDto.UserProfileDto> userProfiles = getUserProfilesByChatRoomId(chatRoomId);
+                    return new ChatRoomDto.chatRoomListDto(chatRoom.getId(), chatRoom.getName(), latestMessage, latestMessageTime, userProfiles);
+                })
+                .collect(Collectors.toList());
+    }
+
+
+
+    public List<ChatRoomDto.UserProfileDto> getUserProfilesByChatRoomId(Long chatRoomId) {
+        List<User> users = joinChatRepository.findUsersByChatRoomId(chatRoomId);
+        List<UserProfile> userProfiles = userProfileRepository.findByUserIn(users);
+
+        return userProfiles.stream()
+                .map(userProfile -> new ChatRoomDto.UserProfileDto(
+                        userProfile.getUser().getId(),
+                        userProfile.getUser().getName(),
+                        userProfile.getEmoji() //이모지
+                ))
+                .collect(Collectors.toList());
     }
 
 }

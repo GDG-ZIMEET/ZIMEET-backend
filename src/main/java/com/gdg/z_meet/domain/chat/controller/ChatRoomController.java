@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/chat") // API 기본 URL 설정
 @RequiredArgsConstructor
@@ -65,6 +67,15 @@ public class ChatRoomController {
         chatRoomService.removeUserFromChatRoom(roomId, userId);
 
         return Response.ok(roomId+" 삭제 완료되었습니다.");
+    }
+
+    @Operation(summary = "사용자 참여 채팅방 조회", description = "사용자가 현재 참여 중인 채팅방 목록을 조회합니다.")
+    @GetMapping("/users/rooms")
+    public ResponseEntity<List<ChatRoomDto.chatRoomListDto>> getUserChatRooms(
+            @RequestHeader("Authorization") String token) {
+        Long userId = extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
+        List<ChatRoomDto.chatRoomListDto> chatRooms = chatRoomService.getChatRoomsByUser(userId); // 참여 중인 채팅방 조회
+        return ResponseEntity.ok(chatRooms); // 채팅방 목록 반환
     }
 
 
