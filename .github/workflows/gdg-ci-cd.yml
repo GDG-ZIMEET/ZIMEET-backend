@@ -65,6 +65,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            cd /home/ubuntu/ZIMEET-backend
             sudo docker-compose down
             if [ "$(sudo docker ps -qa)" ]; then
               sudo docker ps -qa | xargs -r sudo docker rm -f
