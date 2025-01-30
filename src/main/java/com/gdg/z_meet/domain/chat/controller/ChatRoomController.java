@@ -5,6 +5,7 @@ import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.service.ChatRoomService;
 import com.gdg.z_meet.domain.chat.service.MessageService;
+import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,11 +72,21 @@ public class ChatRoomController {
 
     @Operation(summary = "사용자 참여 채팅방 조회", description = "사용자가 현재 참여 중인 채팅방 목록을 조회합니다.")
     @GetMapping("/users/rooms")
-    public ResponseEntity<List<ChatRoomDto.chatRoomListDto>> getUserChatRooms(
+    public Response<List<ChatRoomDto.chatRoomListDto>> getUserChatRooms(
             @RequestHeader("Authorization") String token) {
         Long userId = extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
         List<ChatRoomDto.chatRoomListDto> chatRooms = chatRoomService.getChatRoomsByUser(userId); // 참여 중인 채팅방 조회
-        return ResponseEntity.ok(chatRooms); // 채팅방 목록 반환
+        return Response.ok(chatRooms); // 채팅방 목록 반환
+    }
+
+    @Operation(summary = "채팅방 사용자 조회 ", description = "특정 채팅방에 있는 사용자들을 조회합니다. ")
+    @GetMapping("/rooms/{roomId}")
+    public Response<List<ChatRoomDto.UserProfileDto>> sendMessage(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long roomId) {
+        Long userId = extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
+
+        return Response.ok(chatRoomService.getUserByRoomId(userId, roomId)); // 성공 응답 반환
     }
 
 

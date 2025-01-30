@@ -224,8 +224,7 @@ public class ChatRoomService {
     }
 
 
-
-    public List<ChatRoomDto.UserProfileDto> getUserProfilesByChatRoomId(Long chatRoomId) {
+    private List<ChatRoomDto.UserProfileDto> getUserProfilesByChatRoomId(Long chatRoomId) {
         List<User> users = joinChatRepository.findUsersByChatRoomId(chatRoomId);
         List<UserProfile> userProfiles = userProfileRepository.findByUserIn(users);
 
@@ -237,5 +236,14 @@ public class ChatRoomService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    //채팅방에 있는 사용자 조회
+    public List<ChatRoomDto.UserProfileDto> getUserByRoomId(Long userId, Long roomId){
+        if (!joinChatRepository.existsByUserIdAndChatRoomId(userId, roomId))
+            throw new BusinessException(Code.JOINCHAT_NOT_FOUND);
+
+        return getUserProfilesByChatRoomId(roomId);
+    }
+
 
 }
