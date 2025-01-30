@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - main
-      - develop
+      - dev
   push:
     branches:
       - main   # main 머지 이후 운영 서버 배포
