@@ -120,4 +120,12 @@ public class JwtUtil {
         }
         return false;
     }
+
+    //토큰 추출
+    public Long extractUserIdFromToken(String token) {
+        validationAuthorizationHeader(token);
+        String availableToken = extractToken(token); // "Bearer " 제거 후 순수 토큰 추출
+        return getUserIdFromToken(availableToken); // 올바른 토큰으로 유저 ID 추출
+    }
+
 }
