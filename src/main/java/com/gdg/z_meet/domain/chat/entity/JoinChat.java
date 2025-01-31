@@ -4,6 +4,9 @@ import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -24,4 +27,7 @@ public class JoinChat extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
+
+    @CreationTimestamp
+    private LocalDateTime joinedAt;
 }

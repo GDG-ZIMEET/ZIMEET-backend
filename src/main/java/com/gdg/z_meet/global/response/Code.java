@@ -27,8 +27,15 @@ public enum Code implements BaseCode {
     SESSION_STORAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PAY-001", "Session storage failed."),
     INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, "PAY-002", "Invalid payment amount."),
 
+
     CLUB_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "BOOTH4001", "동아리가 이미 존재합니다."),
     CLUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "BOOTH4002", "동아리를 찾을 수 없습니다."),
+
+
+    // Chat Error
+    CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4001","채팅방을 찾을 수 없습니다."),
+    JOINCHAT_ALREADY_EXIST(HttpStatus.BAD_REQUEST,"CHAT4002","이미 채팅방에 추가된 사용자입니다."),
+    JOINCHAT_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4003","해당 채팅방의 사용자를 찾을 수 없습니다.")
     ;
 
 //    NOT_ACADEMY_EMAIL("EEM-001", "Email is not a university email."),
