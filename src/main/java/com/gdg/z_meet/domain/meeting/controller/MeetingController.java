@@ -5,6 +5,7 @@ import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.service.MeetingQueryService;
 import com.gdg.z_meet.domain.user.entity.User;
+import com.gdg.z_meet.global.common.AuthenticatedUserUtils;
 import com.gdg.z_meet.global.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,9 @@ public class MeetingController {
 
     @Operation(summary = "팀 상세 조회")
     @GetMapping("/detail/{teamId}")
-    public Response<MeetingResponseDTO.GetTeamDTO> getTeam(@PathVariable Long teamId, @RequestParam Long userId) {
+    public Response<MeetingResponseDTO.GetTeamDTO> getTeam(@PathVariable Long teamId) {
 
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         Team team = meetingQueryService.getTeam(userId, teamId);
         List<User> users = meetingQueryService.getUserTeam(teamId);
         return Response.ok(MeetingConverter.toGetTeamDTO(team, users));
