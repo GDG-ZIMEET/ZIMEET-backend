@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface MeetingQueryService {
 
-    public Team getTeam(Long teamId);
+    public Team getTeam(Long userId, Long teamId);
     public List<User> getUserTeam(Long teamId);
 }

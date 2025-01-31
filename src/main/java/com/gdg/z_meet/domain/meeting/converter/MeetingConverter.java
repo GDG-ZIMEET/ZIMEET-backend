@@ -18,7 +18,7 @@ public class MeetingConverter {
                         .emoji(String.valueOf(user.getUserProfile().getEmoji()))
                         .nickname(user.getUserProfile().getNickname())
                         .age(user.getUserProfile().getAge())
-                        .studentNumber(user.getStudentNumber())
+                        .studentNumber(user.getStudentNumber().substring(2, 4))
                         .major(String.valueOf(user.getUserProfile().getMajor()))
                         .music(String.valueOf(user.getUserProfile().getMusic()))
                         .mbti(String.valueOf(user.getUserProfile().getMbti()))
