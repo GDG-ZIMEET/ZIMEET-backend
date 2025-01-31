@@ -11,9 +11,7 @@ import java.util.List;
 public class ChatRoomDto {
 
     @Getter
-    @Setter
     @AllArgsConstructor
-    @NoArgsConstructor
     @Builder
     public static class resultChatRoomDto{
         private Long id;
@@ -21,9 +19,7 @@ public class ChatRoomDto {
     }
 
     @Getter
-    @Setter
     @AllArgsConstructor
-    @NoArgsConstructor
     @Builder
     public static class chatRoomListDto{
         private Long chatRoomId;
@@ -33,8 +29,9 @@ public class ChatRoomDto {
         private List<UserProfileDto> userProfiles; // 사용자 프로필 목록
     }
 
-    @Data
+    @Getter
     @AllArgsConstructor
+    @Builder
     public static class UserProfileDto {
         private Long id;
         private String name;

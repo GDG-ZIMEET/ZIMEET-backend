@@ -7,11 +7,9 @@ import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Data
-@Setter
-@Builder
-@NoArgsConstructor
+@Getter
 @AllArgsConstructor
+@Builder
 public class ChatMessage implements Serializable {
     private Long id;
     private MessageType type;

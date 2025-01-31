@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     @Query("SELECT ucr.chatRoom FROM JoinChat ucr WHERE ucr.user.id = :userId")
     List<ChatRoom> findChatRoomsByUserId(Long userId);

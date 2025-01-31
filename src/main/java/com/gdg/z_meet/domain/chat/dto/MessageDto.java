@@ -4,8 +4,6 @@ import com.gdg.z_meet.domain.chat.entity.status.MessageType;
 import lombok.*;
 
 @Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class MessageDto {

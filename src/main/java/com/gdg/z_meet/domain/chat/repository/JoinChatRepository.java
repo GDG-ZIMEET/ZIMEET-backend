@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface JoinChatRepository extends JpaRepository<JoinChat, Long> {
     List<JoinChat> findByChatRoomId(Long chatRoomId);
     List<JoinChat> findByUserId(Long userId);

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/chat") // API 기본 URL 설정
+@RequestMapping("/chat/rooms") // API 기본 URL 설정
 @RequiredArgsConstructor
 @Tag(name = "ChatAPI",description = "채팅방 관련 기능 API 입니다.")
 public class ChatRoomController {
@@ -29,7 +29,7 @@ public class ChatRoomController {
     private final JwtUtil jwtUtil;
 
     @Operation(summary = "채팅방 생성", description = "새로운 채팅방을 생성합니다.")
-    @PostMapping("/rooms")
+    @PostMapping("")
     public Response<ChatRoomDto.resultChatRoomDto> createChatRoom(
             @RequestParam String name) {
         ChatRoom chatRoom = chatRoomService.createChatRoom(name);
@@ -37,7 +37,7 @@ public class ChatRoomController {
     }
 
     @Operation(summary = "채팅방 삭제", description = "기존 채팅방을 삭제합니다.")
-    @DeleteMapping("/rooms/{roomId}")
+    @DeleteMapping("/{roomId}")
     public Response<String> deleteChatRoom(
             @PathVariable Long roomId) {
         chatRoomService.deleteChatRoom(roomId); // 채팅방 삭제
@@ -45,7 +45,7 @@ public class ChatRoomController {
     }
 
     @Operation(summary = "사용자 채팅방 추가", description = "관리자가 사용자를 지정된 채팅방에 추가합니다.")
-    @PostMapping("/rooms/{roomId}/users")
+    @PostMapping("/{roomId}/users")
     public Response<String> addUserToChatRoom(
             @PathVariable Long roomId,
             @RequestParam Long userId) {
@@ -55,13 +55,13 @@ public class ChatRoomController {
 
 
     @Operation(summary = "사용자 채팅방 제거", description = "사용자를 지정된 채팅방에서 제거합니다. 채팅방 나가기와 동일한 기능 입니다. ")
-    @DeleteMapping("/rooms/{roomId}/users")
+    @DeleteMapping("/{roomId}/users")
     public Response<String> removeUserFromChatRoom(
             @RequestHeader("Authorization") String token,
             @PathVariable Long roomId) {
 
         // 토큰에서 사용자 ID 추출
-        Long userId = extractUserIdFromToken(token);
+        Long userId = jwtUtil.extractUserIdFromToken(token);
         System.out.println("UserID: "+userId);
 
         // 채팅방에서 사용자 제거
@@ -71,31 +71,22 @@ public class ChatRoomController {
     }
 
     @Operation(summary = "사용자 참여 채팅방 조회", description = "사용자가 현재 참여 중인 채팅방 목록을 조회합니다.")
-    @GetMapping("/users/rooms")
+    @GetMapping("/users")
     public Response<List<ChatRoomDto.chatRoomListDto>> getUserChatRooms(
             @RequestHeader("Authorization") String token) {
-        Long userId = extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
+        Long userId = jwtUtil.extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
         List<ChatRoomDto.chatRoomListDto> chatRooms = chatRoomService.getChatRoomsByUser(userId); // 참여 중인 채팅방 조회
         return Response.ok(chatRooms); // 채팅방 목록 반환
     }
 
     @Operation(summary = "채팅방 사용자 조회 ", description = "특정 채팅방에 있는 사용자들을 조회합니다. ")
-    @GetMapping("/rooms/{roomId}")
+    @GetMapping("/{roomId}")
     public Response<List<ChatRoomDto.UserProfileDto>> sendMessage(
             @RequestHeader("Authorization") String token,
             @PathVariable Long roomId) {
-        Long userId = extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
+        Long userId = jwtUtil.extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
 
         return Response.ok(chatRoomService.getUserByRoomId(userId, roomId)); // 성공 응답 반환
-    }
-
-
-    private Long extractUserIdFromToken(String token) {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7); // "Bearer " 제거
-        }
-
-        return  jwtUtil.getUserIdFromToken(token); // 토큰에서 사용자 ID 추출
     }
 
 }

@@ -95,6 +95,7 @@ public class ChatRoomService {
     }
 
     // 사용자 추가
+    @Transactional
     public void addUserToChatRoom(Long chatRoomId, Long userId) {
 
         // DB 저장
@@ -126,6 +127,7 @@ public class ChatRoomService {
     }
 
     // 사용자 제거
+    @Transactional
     public void removeUserFromChatRoom(Long chatRoomId, Long userId) {
 
         // DB에서 제거
@@ -154,7 +156,6 @@ public class ChatRoomService {
         if (chatRoomObj instanceof ChatRoom) {
             return (ChatRoom) chatRoomObj;
         }
-        System.out.println("CHATROOMID !!!!!!!!! + "+chatRoomId);
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
         redisTemplate.opsForHash().put("chatrooms", chatRoomId.toString(), chatRoom);
@@ -162,6 +163,7 @@ public class ChatRoomService {
     }
 
     // 사용자 채팅방 목록 (최신 활동 기준 정렬)
+    @Transactional
     public List<ChatRoomDto.chatRoomListDto> getChatRoomsByUser(Long userId) {
         String joinChatsKey = "user:" + userId + ":chatrooms";
 
@@ -223,8 +225,8 @@ public class ChatRoomService {
                 .collect(Collectors.toList());
     }
 
-
-    private List<ChatRoomDto.UserProfileDto> getUserProfilesByChatRoomId(Long chatRoomId) {
+    @Transactional
+    public List<ChatRoomDto.UserProfileDto> getUserProfilesByChatRoomId(Long chatRoomId) {
         List<User> users = joinChatRepository.findUsersByChatRoomId(chatRoomId);
         List<UserProfile> userProfiles = userProfileRepository.findByUserIn(users);
 
@@ -238,6 +240,7 @@ public class ChatRoomService {
     }
 
     //채팅방에 있는 사용자 조회
+    @Transactional
     public List<ChatRoomDto.UserProfileDto> getUserByRoomId(Long userId, Long roomId){
         if (!joinChatRepository.existsByUserIdAndChatRoomId(userId, roomId))
             throw new BusinessException(Code.JOINCHAT_NOT_FOUND);
