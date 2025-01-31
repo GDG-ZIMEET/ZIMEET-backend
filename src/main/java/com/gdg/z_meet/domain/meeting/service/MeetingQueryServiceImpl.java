@@ -35,6 +35,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<User> getUserTeam(Long teamId) {
 
         List<UserTeam> userTeams = userTeamRepository.findByTeamId(teamId);
