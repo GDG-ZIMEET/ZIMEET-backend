@@ -2,11 +2,13 @@ package com.gdg.z_meet.domain.booth.controller;
 
 import com.gdg.z_meet.domain.booth.converter.BoothConverter;
 import com.gdg.z_meet.domain.booth.dto.BoothResponseDTO;
+import com.gdg.z_meet.domain.booth.entity.Place;
 import com.gdg.z_meet.domain.booth.service.BoothQueryService;
 import com.gdg.z_meet.global.response.Response;
 import com.gdg.z_meet.domain.booth.dto.BoothRequestDTO;
 import com.gdg.z_meet.domain.booth.entity.Club;
 import com.gdg.z_meet.domain.booth.service.BoothCommandService;
+import com.gdg.z_meet.global.validation.annotation.ValidEnum;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -33,7 +35,7 @@ public class BoothController {
 
     @Operation(summary = "부스배치도 조회", description = "장소별로 부스를 조회합니다.")
     @GetMapping("/{place}")
-    public Response<BoothResponseDTO.GetAllClubDTO> getAllClub(@PathVariable String place) {
+    public Response<BoothResponseDTO.GetAllClubDTO> getAllClub(@PathVariable @ValidEnum(enumClass = Place.class) String place) {
 
         BoothResponseDTO.GetAllClubDTO response = boothQueryService.getAllClub(place);
         return Response.ok(response);
