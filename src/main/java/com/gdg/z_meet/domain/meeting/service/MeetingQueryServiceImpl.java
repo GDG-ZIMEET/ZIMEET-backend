@@ -1,5 +1,7 @@
 package com.gdg.z_meet.domain.meeting.service;
 
+import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
+import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
@@ -24,24 +26,20 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public Team getTeam(Long userId, Long teamId) {
+    public MeetingResponseDTO.GetTeamDTO getTeam(Long userId, Long teamId) {
 
         if (userTeamRepository.existsByUserIdAndTeamId(userId, teamId)) {
             throw new BusinessException(Code.INVALID_MY_TEAM_ACCESS);
         }
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
         validateTeamType(teamId, team.getTeamType());
-        return team;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<User> getUserTeam(Long teamId) {
 
         List<UserTeam> userTeams = userTeamRepository.findByTeamId(teamId);
-        return userTeams.stream()
+        List<User> users = userTeams.stream()
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
+
+        return MeetingConverter.toGetTeamDTO(team, users);
     }
 
     private void validateTeamType(Long teamId, TeamType teamType) {

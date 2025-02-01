@@ -30,8 +30,8 @@ public class MeetingController {
     public Response<MeetingResponseDTO.GetTeamDTO> getTeam(@PathVariable @Positive(message = "팀 ID는 양수여야 합니다.") Long teamId) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
-        Team team = meetingQueryService.getTeam(userId, teamId);
-        List<User> users = meetingQueryService.getUserTeam(teamId);
-        return Response.ok(MeetingConverter.toGetTeamDTO(team, users));
+        MeetingResponseDTO.GetTeamDTO response = meetingQueryService.getTeam(userId, teamId);
+
+        return Response.ok(response);
     }
 }

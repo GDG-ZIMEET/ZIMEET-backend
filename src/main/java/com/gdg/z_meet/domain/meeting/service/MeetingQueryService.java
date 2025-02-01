@@ -1,12 +1,8 @@
 package com.gdg.z_meet.domain.meeting.service;
 
-import com.gdg.z_meet.domain.meeting.entity.Team;
-import com.gdg.z_meet.domain.user.entity.User;
-
-import java.util.List;
+import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 
 public interface MeetingQueryService {
 
-    Team getTeam(Long userId, Long teamId);
-    List<User> getUserTeam(Long teamId);
+    MeetingResponseDTO.GetTeamDTO getTeam(Long userId, Long teamId);
 }
