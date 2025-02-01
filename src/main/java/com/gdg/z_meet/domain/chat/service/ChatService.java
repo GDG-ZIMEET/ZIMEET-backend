@@ -36,20 +36,17 @@ public class ChatService {
         }
 
         ChatMessage enterMessage = createChatMessage(roomId, inviteId, inviteName, MessageType.ENTER, inviteName + "님이 입장하셨습니다.");
-        messageService.saveMessage(enterMessage);
-        messagingTemplate.convertAndSend("/topic/" + roomId, enterMessage);
+        messageService.processMessage(enterMessage);
     }
 
     public void handleTalkMessage(Long roomId, Long senderId, MessageDto messageDto) {
         ChatMessage talkMessage = createChatMessage(roomId, senderId, messageDto.getSenderName(), MessageType.TALK, messageDto.getContent());
-        messageService.saveMessage(talkMessage);
-        messagingTemplate.convertAndSend("/topic/" + roomId, talkMessage);
+        messageService.processMessage(talkMessage);
     }
 
     public void handleExitMessage(Long roomId, Long senderId, String senderName) {
         ChatMessage exitMessage = createChatMessage(roomId, senderId, senderName, MessageType.EXIT, senderName + "님이 퇴장하셨습니다.");
-        messageService.saveMessage(exitMessage);
-        messagingTemplate.convertAndSend("/topic/" + roomId, exitMessage);
+        messageService.processMessage(exitMessage);
     }
 
     private ChatMessage createChatMessage(Long roomId, Long senderId, String senderName, MessageType type, String content) {

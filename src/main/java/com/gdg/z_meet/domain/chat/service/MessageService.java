@@ -28,17 +28,21 @@ public class MessageService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatRoomRepository chatRoomRepository;
-    private final UserRepository userRepository;
     private final ChatRoomService chatRoomService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    private static final String CHAT_ROOM_MESSAGES_KEY = "chatroom:%s:messages"; // 메시지 리스트
-    private static final String CHAT_ROOM_ACTIVITY_KEY = "chatroom:activity"; // 채팅방 활동 시간
-    private static final String CHAT_ROOM_LATEST_MESSAGE_KEY = "chatroom:%s:latestMessage"; // 최신 메시지
-    private static final String CHAT_ROOM_MESSAGE_READERS_KEY = "chatroom:%s:message:%s:readUsers"; // 메시지 읽은 사용자 리스트
+    private static final String CHAT_ROOM_MESSAGES_KEY = "chatroom:%s:messages";
+    private static final String CHAT_ROOM_LATEST_MESSAGE_KEY = "chatroom:%s:latestMessage";
+    private static final String CHAT_ROOM_LATEST_MESSAGE_TIME_KEY = "chatroom:%s:latestMessageTime";
 
     @Transactional
-    public ChatMessage saveMessage(ChatMessage chatMessage) {
+    public void processMessage(ChatMessage chatMessage) {
+        saveMessage(chatMessage);
+        broadcastMessage(chatMessage);
+    }
+
+    @Transactional
+    public void saveMessage(ChatMessage chatMessage) {
         Long chatRoomId = Long.parseLong(chatMessage.getRoomId());
 
         // Redis에 메시지 저장
@@ -49,29 +53,32 @@ public class MessageService {
         String latestMessageKey = String.format(CHAT_ROOM_LATEST_MESSAGE_KEY, chatRoomId);
         redisTemplate.opsForValue().set(latestMessageKey, chatMessage.getContent());
 
-        String latestMessageTimeKey = String.format("chatroom:%s:latestMessageTime", chatRoomId);
+        String latestMessageTimeKey = String.format(CHAT_ROOM_LATEST_MESSAGE_TIME_KEY, chatRoomId);
         LocalDateTime latestMessageTime = LocalDateTime.now();
         redisTemplate.opsForValue().set(latestMessageTimeKey, latestMessageTime.toString()); // 시간도 저장
+    }
 
-        // ✅ 새로운 채팅방 정보를 생성하여 클라이언트에 브로드캐스트
+    public void broadcastMessage(ChatMessage chatMessage) {
+        Long chatRoomId = Long.parseLong(chatMessage.getRoomId());
+
+        // 최신 채팅방 정보 생성
         ChatRoom updatedChatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
-
 
         List<ChatRoomDto.UserProfileDto> userProfiles = chatRoomService.getUserProfilesByChatRoomId(chatRoomId);
 
         ChatRoomDto.chatRoomListDto chatRoomDto = new ChatRoomDto.chatRoomListDto(
                 updatedChatRoom.getId(),
                 updatedChatRoom.getName(),
-                chatMessage.getContent(),      // 최신 메시지
-                latestMessageTime,             // 최신 메시지 시간
-                userProfiles                   // 사용자 프로필 목록
+                chatMessage.getContent(),
+                LocalDateTime.now(),
+                userProfiles
         );
 
+        // 채팅방 참여자들에게 메시지 전송
+        messagingTemplate.convertAndSend("/topic/" + chatRoomId, chatMessage);
+
+        // 채팅방 목록 업데이트를 위한 메시지 전송
         messagingTemplate.convertAndSend("/topic/chatrooms", chatRoomDto);
-
-        return chatMessage;
     }
-
-
 }
