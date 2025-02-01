@@ -93,10 +93,6 @@ public class MessageService {
             return List.of();
         }
 
-        messages.forEach(messageObj -> {
-            ChatMessage message = (ChatMessage) messageObj;
-        });
-
         return messages.stream()
                 .map(obj -> (ChatMessage) obj)
                 .collect(Collectors.toList());
