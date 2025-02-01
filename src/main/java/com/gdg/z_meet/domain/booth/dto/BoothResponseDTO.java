@@ -26,6 +26,7 @@ public class BoothResponseDTO {
         String name;
         String rep;
         String category;
+        String account;
     }
 
     @Builder
