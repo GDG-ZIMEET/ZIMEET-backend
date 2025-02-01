@@ -102,7 +102,11 @@ public class UserService {
         UserProfile userProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
 
+        User user = userProfile.getUser();
+
         return UserRes.ProfileRes.builder()
+                .name(user.getName())
+                .studentNumber(user.getStudentNumber())
                 .nickname(userProfile.getNickname())
                 .emoji(userProfile.getEmoji())
 //                .music(userProfile.getMusic())
