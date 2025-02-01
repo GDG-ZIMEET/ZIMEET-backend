@@ -34,6 +34,11 @@ public class UserService {
                     throw new IllegalArgumentException("이미 가입된 학번입니다.");
                 });
 
+        userRepository.findByNickname(signUpReq.getNickname())
+                .ifPresent(user -> {
+                    throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+                });
+
         String encodedPassword = encoder.encode(signUpReq.getPassword());
 
         User user = User.builder()
