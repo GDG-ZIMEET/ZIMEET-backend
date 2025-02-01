@@ -7,6 +7,7 @@ import com.gdg.z_meet.domain.chat.service.ChatRoomService;
 import com.gdg.z_meet.domain.chat.service.ChatService;
 import com.gdg.z_meet.domain.chat.service.MessageService;
 import com.gdg.z_meet.domain.user.entity.User;
+import com.gdg.z_meet.domain.user.entity.enums.Emoji;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
@@ -38,7 +39,9 @@ public class ChatWebSocketController {
         messageDto.setSenderId(senderId);
         User user = userRepository.findById(senderId).orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
         String senderName = user.getUserProfile().getNickname();
+        Emoji emoji = user.getUserProfile().getEmoji();
         messageDto.setSenderName(senderName);
+        messageDto.setEmoji(emoji);
 
         switch (messageDto.getMessageType()) {
             case ENTER:

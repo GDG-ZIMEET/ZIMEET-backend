@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -81,4 +82,25 @@ public class MessageService {
         // 채팅방 목록 업데이트를 위한 메시지 전송
         messagingTemplate.convertAndSend("/topic/chatrooms", chatRoomDto);
     }
+
+
+    public List<ChatMessage> getMessagesByChatRoom(Long chatRoomId, Long userId, int page, int size) {
+        String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
+
+        // 최신 메시지를 기준으로 가져오기 (최근 size개의 메시지만 조회)
+        List<Object> messages = redisTemplate.opsForList().range(chatRoomMessagesKey, -size, -1);
+        if (messages == null || messages.isEmpty()) {
+            return List.of();
+        }
+
+        messages.forEach(messageObj -> {
+            ChatMessage message = (ChatMessage) messageObj;
+        });
+
+        return messages.stream()
+                .map(obj -> (ChatMessage) obj)
+                .collect(Collectors.toList());
+    }
+
+
 }

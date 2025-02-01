@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class ChatMessage implements Serializable {
     private String id;
