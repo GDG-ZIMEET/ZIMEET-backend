@@ -1,9 +1,5 @@
 package com.gdg.z_meet.domain.booth.dto;
 
-import com.gdg.z_meet.domain.booth.entity.Category;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-public class ClubResponseDTO {
+public class BoothResponseDTO {
 
     @Builder
     @Getter
@@ -25,15 +21,11 @@ public class ClubResponseDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class GetClubDTO {
+    public static class preClubDTO {
         Long clubId;
-        String place;
         String name;
         String rep;
         String category;
-        String account;
-        String time;
-        String info;
     }
 
     @Builder
@@ -41,6 +33,30 @@ public class ClubResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class GetAllClubDTO {
-        List<GetClubDTO> clubList;
+        List<preClubDTO> clubList;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class itemDTO {
+        Long itemId;
+        String name;
+        String content;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetClubDTO {
+        Long clubId;
+        String name;
+        String category;
+        List<itemDTO> itemList;
+        String account;
+        String time;
+        String info;
     }
 }
