@@ -33,4 +33,9 @@ public class Team extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private Integer hi = 2;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Verification verification = Verification.NONE;
 }

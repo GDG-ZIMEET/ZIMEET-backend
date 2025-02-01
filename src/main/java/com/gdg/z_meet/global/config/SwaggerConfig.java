@@ -8,25 +8,35 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration    // 스프링 실행시 설정파일 읽어드리기 위한 어노테이션
+@Configuration    // 스프링 실행시 설정파일 읽어들이기 위한 어노테이션
 public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
-        String jwtSchemeName = "JWT";
-        SecurityRequirement securityRequirement = new SecurityRequirement().addList(jwtSchemeName);
+
+        String accessTokenSchemeName = "accessToken";
+        String refreshTokenSchemeName = "refreshToken";
+
+        // API 요청헤더에 인증정보 포함
+        SecurityRequirement securityRequirement = new SecurityRequirement().addList(accessTokenSchemeName);
+
+        // SecuritySchemes 등록
         Components components = new Components()
-                .addSecuritySchemes(jwtSchemeName, new SecurityScheme()
-                        .name(jwtSchemeName)
+                .addSecuritySchemes(accessTokenSchemeName, new SecurityScheme()
+                        .name("accessToken")
+                        .type(SecurityScheme.Type.HTTP) // HTTP 방식
+                        .scheme("bearer")
+                        .bearerFormat("JWT"))
+                .addSecuritySchemes(refreshTokenSchemeName, new SecurityScheme()
+                        .name("refreshToken")
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("bearer")
-                        .bearerFormat("JWT")
-                );
+                        .bearerFormat("JWT"));
+
         return new OpenAPI()
-                .components(new Components())
+                .components(components)
                 .info(apiInfo())
-                .addSecurityItem(securityRequirement)
-                .components(components);
+                .addSecurityItem(securityRequirement);
     }
 
     private Info apiInfo() {
