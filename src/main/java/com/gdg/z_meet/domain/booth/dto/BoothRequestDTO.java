@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
-public class ClubRequestDTO {
+public class BoothRequestDTO {
 
     @Getter
     public static class CreateClubDTO {
