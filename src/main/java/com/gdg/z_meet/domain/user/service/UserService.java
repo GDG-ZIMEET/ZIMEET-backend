@@ -34,7 +34,7 @@ public class UserService {
                     throw new IllegalArgumentException("이미 가입된 학번입니다.");
                 });
 
-        userRepository.findByNickname(signUpReq.getNickname())
+        userProfileRepository.findByNickname(signUpReq.getNickname())
                 .ifPresent(user -> {
                     throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
                 });
@@ -95,5 +95,26 @@ public class UserService {
             refreshToken.update(tokenOptional.get().getRefreshToken());
         }
         return token;
+    }
+
+    @Transactional
+    public UserRes.ProfileRes getProfile(Long userId) {
+        UserProfile userProfile = userProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+
+        return UserRes.ProfileRes.builder()
+                .nickname(userProfile.getNickname())
+                .emoji(userProfile.getEmoji())
+//                .music(userProfile.getMusic())
+                .mbti(userProfile.getMbti())
+                .style(userProfile.getStyle())
+                .idealType(userProfile.getIdealType())
+                .idealAge(userProfile.getIdealAge())
+//                .gender(userProfile.getGender())
+                .grade(userProfile.getGrade())
+                .major(userProfile.getMajor())
+                .age(userProfile.getAge())
+//                .level(userProfile.getLevel())
+                .build();
     }
 }

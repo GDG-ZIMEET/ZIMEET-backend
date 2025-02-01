@@ -128,4 +128,11 @@ public class JwtUtil {
         return getUserIdFromToken(availableToken); // 올바른 토큰으로 유저 ID 추출
     }
 
+    public Long extractUserIdFromRequest(HttpServletRequest request) {
+        String token = getAccessToken(request);
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+        return extractUserIdFromToken(token);
+    }
 }
