@@ -70,27 +70,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 //        return bean;
 //    }
 //
-//    @RequiredArgsConstructor
-//    @Configuration
-//    public class WebConfig implements WebMvcConfigurer {
-//
-//        @Bean
-//        public WebMvcConfigurer webMvcConfigurer() {
-//            return new WebMvcConfigurer() {
-//
-//                public void addCorsMappings(CorsRegistry registry) {
-//                    registry.addMapping("/**")
-//                            .allowedOrigins("*")
-//                            .allowedMethods(
-//                                    HttpMethod.GET.name(),
-//                                    HttpMethod.HEAD.name(),
-//                                    HttpMethod.POST.name(),
-//                                    HttpMethod.PUT.name(),
-//                                    HttpMethod.DELETE.name());
-//                }
-//            };
-//        }
-//    }
 //}
 @Configuration
 @RequiredArgsConstructor
@@ -132,7 +111,9 @@ public class SecurityConfig {
                                     HttpMethod.HEAD.name(),
                                     HttpMethod.POST.name(),
                                     HttpMethod.PUT.name(),
-                                    HttpMethod.DELETE.name());
+                                    HttpMethod.DELETE.name(),
+                                    HttpMethod.OPTIONS.name(),
+                                    HttpMethod.PATCH.name());
                 }
             };
         }
