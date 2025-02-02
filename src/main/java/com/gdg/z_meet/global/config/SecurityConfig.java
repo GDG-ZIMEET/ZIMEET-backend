@@ -91,7 +91,14 @@ public class SecurityConfig {
                                     HttpMethod.DELETE.name(),
                                     HttpMethod.OPTIONS.name(),
                                     HttpMethod.PATCH.name())
-                            .allowedHeaders("*");
+                            .allowedHeaders(
+                                    "Authorization",
+                                    "Content-Type",
+                                    "Accept",
+                                    "X-Requested-With",
+                                    "Origin",
+                                    "Access-Control-Request-Method",
+                                    "Access-Control-Request-Headers");
 //                            .allowCredentials(true);
                 }
             };
