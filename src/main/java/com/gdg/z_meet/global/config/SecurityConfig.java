@@ -24,29 +24,6 @@ import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-//@Configuration
-//@RequiredArgsConstructor
-//@EnableWebSecurity
-//public class SecurityConfig {
-//    private final JwtUtil jwtUtil;
-//
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(csrf -> csrf.disable()) // CSRF 비활성화
-////                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-//                .sessionManagement(session -> session
-//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용 안 함
-//                )
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/jwt/**", "/swagger-ui/**", "/v3/api-docs/**", "/booths/**").permitAll() // 인증 없이 접근 허용
-//                        .anyRequest().authenticated() // 나머지 요청은 인증 필요
-//                )
-//                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
-//
-//        return http.build();
-//    }
-//
 //    @Bean
 //    public CorsConfigurationSource corsConfigurationSource() {
 //        CorsConfiguration configuration = new CorsConfiguration();
@@ -113,7 +90,9 @@ public class SecurityConfig {
                                     HttpMethod.PUT.name(),
                                     HttpMethod.DELETE.name(),
                                     HttpMethod.OPTIONS.name(),
-                                    HttpMethod.PATCH.name());
+                                    HttpMethod.PATCH.name())
+                            .allowedHeaders("*");
+//                            .allowCredentials(true);
                 }
             };
         }
