@@ -11,6 +11,8 @@ import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,15 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetTeamGalleryDTO getTeamGallery(Long userId, TeamType teamType, Integer page) {
+
+        Page<Team> teamList = teamRepository.findAllByTeamType(teamType, PageRequest.of(page, 12));
+
+        return MeetingConverter.toGetTeamGalleryDTO(teamList);
+    }
 
     @Override
     @Transactional(readOnly = true)

@@ -3,11 +3,29 @@ package com.gdg.z_meet.domain.meeting.converter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.user.entity.User;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.gdg.z_meet.domain.meeting.entity.Verification.COMPLETE;
+
 public class MeetingConverter {
+
+    public static MeetingResponseDTO.GetTeamGalleryDTO toGetTeamGalleryDTO(Page<Team> teamList){
+
+        List<MeetingResponseDTO.GetPreTeamDTO> teamDTOS = teamList.stream()
+                .map(team -> MeetingResponseDTO.GetPreTeamDTO.builder()
+                        .teamId(team.getId())
+                        .name(team.getName())
+                        .verification(team.getVerification() == COMPLETE ? 1 : 0)
+                        .build())
+                .collect(Collectors.toList());
+
+        return MeetingResponseDTO.GetTeamGalleryDTO.builder()
+                .teamList(teamDTOS)
+                .build();
+    }
 
     public static MeetingResponseDTO.GetTeamDTO toGetTeamDTO(Team team, List<User> users){
 
