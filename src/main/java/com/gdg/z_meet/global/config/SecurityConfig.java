@@ -98,8 +98,8 @@ public class SecurityConfig {
                                     "X-Requested-With",
                                     "Origin",
                                     "Access-Control-Request-Method",
-                                    "Access-Control-Request-Headers");
-//                            .allowCredentials(true);
+                                    "Access-Control-Request-Headers")
+                            .allowCredentials(true);
                 }
             };
         }
