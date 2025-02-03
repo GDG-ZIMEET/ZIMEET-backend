@@ -91,7 +91,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용 안 함
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/jwt/**", "/swagger-ui/**", "/v3/api-docs/**", "/booths/**").permitAll() // 인증 없이 접근 허용
+                        .requestMatchers("/jwt/**", "/swagger-ui/**", "/v3/api-docs/**", "/booths/**","/ws/**").permitAll() // 인증 없이 접근 허용
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
                 .sessionManagement(session -> session
