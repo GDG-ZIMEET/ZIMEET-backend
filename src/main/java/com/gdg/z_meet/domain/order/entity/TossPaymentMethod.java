@@ -2,17 +2,16 @@ package com.gdg.z_meet.domain.order.entity;
 
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum TossPaymentMethod {
-    EASY_PAYMENT("간편결제"),
-    CARD("카드");
+    CARD("카드"),
+    VIRTUAL_ACCOUNT("가상계좌"),
+    SIMPLE_PAYMENT("간편결제"),
+    MOBILE("휴대폰"),
+    BANK_TRANSFER("계좌이체");
 
-
-    private final String displayName;
-
-    TossPaymentMethod(String displayName) {
-        this.displayName = displayName;
-    }
-
+    private final String description;
 }
