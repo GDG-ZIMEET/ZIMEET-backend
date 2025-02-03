@@ -1,6 +1,6 @@
 package com.gdg.z_meet.domain.order.service;
 
-import com.gdg.z_meet.domain.order.dto.ConfirmPaymentRes;
+import com.gdg.z_meet.domain.order.dto.response.ConfirmPaymentRes;
 import com.gdg.z_meet.domain.order.dto.ConfirmSuccessPaymentInfo;
 import com.gdg.z_meet.domain.order.entity.Order;
 import com.gdg.z_meet.domain.order.entity.TossPayment;
@@ -25,13 +25,15 @@ public class TossPaymentService {
     private final TossPaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
 
-    // 결제 정보 조회(UUID)  - 추후 사용 예정
+    // 결제 정보 조회(UUID -> Byte 배열로 변환하여 DB 조회 할 수 있도록 전달)
     public ConfirmPaymentRes getPayment(String backendOrderId) {
         TossPayment tossPayment = paymentRepository.findByOrder_OrderId(UUIDUtil.hexStringToByteArray(backendOrderId)).orElseThrow(() -> new BusinessException(Code.INVALID_PAYMENT_REQUEST));
         return tossPayment.toResponse();
     }
 
-    // 주문 검증 -> 결제 정보 저장
+    /**
+     * Toss 서버로부터 주문 검증 성공 시, 결제 정보 저장
+     */
     @Transactional
     public ConfirmPaymentRes addPayment(ConfirmSuccessPaymentInfo confirmSuccessPaymentInfo) {
         Order order = orderRepository.findById(UUIDUtil.hexStringToByteArray(confirmSuccessPaymentInfo.getBackendOrderId())).orElseThrow(() -> new BusinessException(Code.INVALID_ORDER));

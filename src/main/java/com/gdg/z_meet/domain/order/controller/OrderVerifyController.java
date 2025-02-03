@@ -1,6 +1,6 @@
 package com.gdg.z_meet.domain.order.controller;
 
-import com.gdg.z_meet.domain.order.dto.SaveAmountRequest;
+import com.gdg.z_meet.domain.order.dto.request.SaveAmountRequest;
 import com.gdg.z_meet.global.exception.GlobalException;
 import com.gdg.z_meet.global.response.Code;
 import com.gdg.z_meet.global.response.Response;

@@ -1,4 +1,4 @@
-package com.gdg.z_meet.domain.order.dto;
+package com.gdg.z_meet.domain.order.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
