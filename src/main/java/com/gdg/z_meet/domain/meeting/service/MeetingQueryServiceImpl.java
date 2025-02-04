@@ -51,7 +51,14 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 }
         ));
 
-        //Double age = teamList.stream().mapToInt(Integer::intValue).average();
+        Map<Long, Double> age = teamList.stream().collect(Collectors.toMap(
+                Team::getId, team -> {
+                    return userTeamRepository.findByTeamId(team.getId()).stream()
+                            .mapToInt(userTeam -> userTeam.getUser().getUserProfile().getAge())
+                            .average()
+                            .orElse(0.0);
+                }
+        ));
 
         Map<Long, List<String>> musicList = teamList.stream().collect(Collectors.toMap(
                 Team::getId, team -> {
@@ -62,7 +69,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 }
         ));
 
-        return MeetingConverter.toGetTeamGalleryDTO(teamList, emojiList, majorList, musicList);
+        return MeetingConverter.toGetTeamGalleryDTO(teamList, emojiList, majorList, age, musicList);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.gdg.z_meet.global.exception;
 
 import com.gdg.z_meet.global.response.Code;
-import com.gdg.z_meet.global.response.ReasonDTO;
 import com.gdg.z_meet.global.response.Response;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;

@@ -16,6 +16,7 @@ public class MeetingConverter {
     public static MeetingResponseDTO.GetTeamGalleryDTO toGetTeamGalleryDTO(Page<Team> teamList,
                                                                            Map<Long, List<String>> emojiList,
                                                                            Map<Long, List<String>> majorList,
+                                                                           Map<Long, Double> age,
                                                                            Map<Long, List<String>> musicList){
 
         List<MeetingResponseDTO.GetPreTeamDTO> teamDTOS = teamList.stream()
@@ -25,6 +26,7 @@ public class MeetingConverter {
                         .name(team.getName())
                         .verification(team.getVerification() == COMPLETE ? 1 : 0)
                         .major(majorList.get(team.getId()))
+                        .age(Math.round(age.get(team.getId()) * 10.0) / 10.0)
                         .music(musicList.get(team.getId()))
                         .build())
                 .collect(Collectors.toList());
