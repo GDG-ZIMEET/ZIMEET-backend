@@ -8,6 +8,8 @@ import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
+import com.gdg.z_meet.domain.user.entity.enums.Gender;
+import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MeetingQueryServiceImpl implements MeetingQueryService {
 
+    private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
 
@@ -31,7 +34,8 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetTeamGalleryDTO getTeamGallery(Long userId, TeamType teamType, Integer page) {
 
-        List<Team> teamList = teamRepository.findAllByTeamType(teamType, PageRequest.of(page, 12));
+        Gender gender = userProfileRepository.findByUserId(userId).getGender();
+        List<Team> teamList = teamRepository.findAllByTeamType(userId, gender, teamType, PageRequest.of(page, 12));
         Collections.shuffle(teamList);
 
         Map<Long, List<String>> emojiList = teamList.stream().collect(Collectors.toMap(
@@ -53,12 +57,10 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         ));
 
         Map<Long, Double> age = teamList.stream().collect(Collectors.toMap(
-                Team::getId, team -> {
-                    return userTeamRepository.findByTeamId(team.getId()).stream()
-                            .mapToInt(userTeam -> userTeam.getUser().getUserProfile().getAge())
-                            .average()
-                            .orElse(0.0);
-                }
+                Team::getId, team -> userTeamRepository.findByTeamId(team.getId()).stream()
+                        .mapToInt(userTeam -> userTeam.getUser().getUserProfile().getAge())
+                        .average()
+                        .orElse(0.0)
         ));
 
         Map<Long, List<String>> musicList = teamList.stream().collect(Collectors.toMap(

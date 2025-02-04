@@ -9,5 +9,7 @@ import java.util.List;
 
 @Repository
 public interface UserProfileRepository extends JpaRepository<UserProfile, Long> {
+
+    UserProfile findByUserId(Long userId);
     List<UserProfile> findByUserIn(List<User> users);
 }
