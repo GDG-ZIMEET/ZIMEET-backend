@@ -38,5 +38,13 @@ public class ChatRoomDto {
         private Emoji emoji;
     }
 
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class TeamListDto{
+        private Long teamId1;
+        private Long teamId2;
+    }
+
 
 }
