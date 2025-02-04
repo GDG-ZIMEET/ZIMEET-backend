@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "User", description = "User API")
-@RequestMapping("/jwt")
+@RequestMapping("/user")
 public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
