@@ -40,8 +40,8 @@ public class UserController {
         }
     }
 
-    @GetMapping("/profile")
-    @Operation(summary = "프로필 조회", description = "프로필 조회")
+    @GetMapping("/myprofile")
+    @Operation(summary = "내 프로필 조회", description = "내 프로필 조회")
     public Response<UserRes.ProfileRes> getProfile(HttpServletRequest request) {
         try {
             Long userId = jwtUtil.extractUserIdFromRequest(request);
