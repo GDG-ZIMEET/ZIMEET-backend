@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.chat.entity;
 
+import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -21,8 +22,8 @@ public class JoinChat extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "team_id")
+    private Team team;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id")
