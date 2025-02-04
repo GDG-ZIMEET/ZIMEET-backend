@@ -1,6 +1,7 @@
 package com.gdg.z_meet.domain.chat.controller;
 
 import com.gdg.z_meet.domain.chat.converter.ChatRoomConverter;
+import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.service.ChatRoomService;
@@ -87,6 +88,19 @@ public class ChatRoomController {
         Long userId = jwtUtil.extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
 
         return Response.ok(chatRoomService.getUserByRoomId(userId, roomId)); // 성공 응답 반환
+    }
+
+    @Operation(summary = "메시지 조회", description = "지정된 채팅방의 메시지를 페이지네이션을 사용하여 조회합니다.")
+    @GetMapping("/{roomId}/messages")
+    public ResponseEntity<List<ChatMessage>> getMessages(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long roomId,
+            @RequestParam(defaultValue = "0") int page, // 페이지 번호 (기본값: 0)
+            @RequestParam(defaultValue = "20") int size // 페이지 크기 (기본값: 20)
+    ) {
+        Long userId = jwtUtil.extractUserIdFromToken(token);
+        List<ChatMessage> messages = messageService.getMessagesByChatRoom(roomId,userId, page, size);
+        return ResponseEntity.ok(messages);
     }
 
 }

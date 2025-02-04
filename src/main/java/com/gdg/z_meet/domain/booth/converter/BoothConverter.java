@@ -40,6 +40,7 @@ public class BoothConverter {
                         .name(club.getName())
                         .rep(club.getRep())
                         .category(club.getCategory().toString())
+                        .account(club.getAccount())
                         .build())
                 .collect(Collectors.toList());
 

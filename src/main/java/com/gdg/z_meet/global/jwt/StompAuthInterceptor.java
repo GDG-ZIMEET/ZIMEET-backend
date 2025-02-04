@@ -25,17 +25,29 @@ public class StompAuthInterceptor implements ChannelInterceptor {
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String token = accessor.getFirstNativeHeader("Authorization");
 
-            if (token == null || !jwtUtil.validateToken(null, token)) {
-                throw new IllegalArgumentException("Invalid or Missing Token");
+            if (token == null) {
+                throw new IllegalArgumentException("Missing Token");
             }
 
-            // 토큰에서 사용자 정보 추출
-            String studentNumber = jwtUtil.getStudentNumberFromToken(token);
+            // ✅ "Bearer " 제거 후 검증
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+//
+//            System.out.println("token:" + token);
 
-            // 인증된 사용자 설정 (Principal 구현)
+            if (!jwtUtil.validateToken(null, token)) {
+                throw new IllegalArgumentException("Invalid Token");
+            }
+
+            // 사용자 정보 추출 후 Principal 설정
+            String studentNumber = jwtUtil.getStudentNumberFromToken(token);
+//
+//            System.out.println("stuNumber:" + studentNumber);
             accessor.setUser(() -> studentNumber);
         }
 
         return message;
     }
 }
+
