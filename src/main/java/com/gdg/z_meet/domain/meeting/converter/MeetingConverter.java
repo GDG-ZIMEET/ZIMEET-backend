@@ -56,6 +56,7 @@ public class MeetingConverter {
         return MeetingResponseDTO.GetTeamDTO.builder()
                 .teamId(team.getId())
                 .name(team.getName())
+                .gender(String.valueOf(team.getGender()))
                 .userList(teamUserDTOS)
                 .build();
     }
