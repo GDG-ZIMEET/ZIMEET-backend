@@ -26,19 +26,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 명확히 설정
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용 안 함
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/jwt/**", "/swagger-ui/**", "/v3/api-docs/**", "/booths/**","/ws/**").permitAll() // 인증 없이 접근 허용
+                        .requestMatchers("/jwt/**", "/swagger-ui/**", "/v3/api-docs/**", "/booths/**", "/ws/**").permitAll() // 인증 없이 접근 허용
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용 안 함
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll() // 모든 요청 허용 (테스트용)
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
