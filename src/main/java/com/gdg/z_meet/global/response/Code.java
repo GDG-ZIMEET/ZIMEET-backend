@@ -23,9 +23,16 @@ public enum Code implements BaseCode {
     MEMBER_PASSWORD_UNAVAILABLE(HttpStatus.BAD_REQUEST, "MEM-004", "Password cannot used."),
     MEMBER_ALREADY_ON_PROCESS(HttpStatus.BAD_REQUEST, "MEM-999", "Member is already on process."),
 
+    // Toss Payments
     SESSION_EXPIRED(HttpStatus.INTERNAL_SERVER_ERROR, "PAY-000", "Session expired."),
     SESSION_STORAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PAY-001", "Session storage failed."),
     INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, "PAY-002", "Invalid payment amount."),
+    INVALID_PAYMENT_REQUEST(HttpStatus.BAD_REQUEST, "PAY-003", "Payment not found."),
+    INVALID_ORDER(HttpStatus.BAD_REQUEST, "PAY-004", "Invalid order."),
+    PAYMENT_SUCCESS(HttpStatus.OK, "PAY-005", "Payment success."),
+    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "PAY-006", "Payment failed."),
+    PAYMENT_CANCELED(HttpStatus.BAD_REQUEST, "PAY-007", "Payment canceled."),
+
 
     CLUB_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "BOOTH4001", "동아리가 이미 존재합니다."),
     CLUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "BOOTH4002", "동아리를 찾을 수 없습니다."),

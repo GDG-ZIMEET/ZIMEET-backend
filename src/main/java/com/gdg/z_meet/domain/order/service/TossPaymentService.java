@@ -14,6 +14,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 
 /**
  * Toss Payments 와 연관된 내부 로직 처리 Service
@@ -36,7 +38,7 @@ public class TossPaymentService {
      */
     @Transactional
     public ConfirmPaymentRes addPayment(ConfirmSuccessPaymentInfo confirmSuccessPaymentInfo) {
-        Order order = orderRepository.findById(UUIDUtil.hexStringToByteArray(confirmSuccessPaymentInfo.getBackendOrderId())).orElseThrow(() -> new BusinessException(Code.INVALID_ORDER));
+        Order order = orderRepository.findById(UUID.fromString(confirmSuccessPaymentInfo.getBackendOrderId())).orElseThrow(() -> new BusinessException(Code.INVALID_ORDER));
         return paymentRepository.save(confirmSuccessPaymentInfo.toTossPayment(order)).toResponse();
     }
 

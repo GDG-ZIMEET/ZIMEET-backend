@@ -24,7 +24,7 @@ public class UUIDUtil {
     }
 
     //사람이 식별 가능한 문자열로 변환
-    public static String bytesToHex(byte[] bytes) {
+    public static String bytesToHex(UUID bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for (int i = 0; i < bytes.length; i++) {
             int v = bytes[i] & 0xFF;
