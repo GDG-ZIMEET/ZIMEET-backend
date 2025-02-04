@@ -44,7 +44,7 @@ public class MessageService {
 
     @Transactional
     public void saveMessage(ChatMessage chatMessage) {
-        Long chatRoomId = Long.parseLong(chatMessage.getRoomId());
+        Long chatRoomId = chatMessage.getRoomId();
 
         // Redis에 메시지 저장
         String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
@@ -60,10 +60,9 @@ public class MessageService {
     }
 
     public void broadcastMessage(ChatMessage chatMessage) {
-        Long chatRoomId = Long.parseLong(chatMessage.getRoomId());
 
         // 최신 채팅방 정보 생성
-        ChatRoom updatedChatRoom = chatRoomRepository.findById(chatRoomId)
+        ChatRoom updatedChatRoom = chatRoomRepository.findById(chatMessage.getRoomId())
                 .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
 
 
@@ -74,7 +73,7 @@ public class MessageService {
         );
 
         // 채팅방 참여자들에게 메시지 전송
-        messagingTemplate.convertAndSend("/topic/" + chatRoomId, chatMessage);
+        messagingTemplate.convertAndSend("/topic/" + chatMessage.getRoomId(), chatMessage);
 
         // 채팅방 목록 업데이트를 위한 메시지 전송
         messagingTemplate.convertAndSend("/topic/chatrooms", chatRoomMessageDto);

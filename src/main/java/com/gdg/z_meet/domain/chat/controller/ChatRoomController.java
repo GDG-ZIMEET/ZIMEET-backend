@@ -31,9 +31,8 @@ public class ChatRoomController {
 
     @Operation(summary = "채팅방 생성", description = "새로운 채팅방을 생성합니다.")
     @PostMapping("")
-    public Response<ChatRoomDto.resultChatRoomDto> createChatRoom(
-            @RequestParam String name) {
-        ChatRoom chatRoom = chatRoomService.createChatRoom(name);
+    public Response<ChatRoomDto.resultChatRoomDto> createChatRoom() {
+        ChatRoom chatRoom = chatRoomService.createChatRoom();
         return Response.ok(ChatRoomConverter.chatRoomtoResultDto(chatRoom)); // 생성된 채팅방 반환
     }
 
@@ -49,9 +48,9 @@ public class ChatRoomController {
     @PostMapping("/{roomId}/users")
     public Response<String> addUserToChatRoom(
             @PathVariable Long roomId,
-            @RequestParam ChatRoomDto.TeamListDto teamListDto) {
+            @RequestBody ChatRoomDto.TeamListDto teamListDto) {
         chatRoomService.addTeamJoinChat(roomId, teamListDto); // 채팅방에 사용자 추가
-        return Response.ok(roomId+" 추가 완료되었습니다."); // 추가 성공 응답 반환
+        return Response.ok("팀"+teamListDto.getTeamId1()+", 팀"+ teamListDto.getTeamId2()+" 추가 완료되었습니다."); // 추가 성공 응답 반환
     }
 
     @Operation(summary = "사용자 채팅방 제거", description = "사용자를 지정된 채팅방에서 제거합니다. 채팅방 나가기와 동일한 기능 입니다. ")

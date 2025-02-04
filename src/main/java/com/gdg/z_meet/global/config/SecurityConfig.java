@@ -97,9 +97,6 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용 안 함
                 )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll() // 모든 요청 허용 (테스트용)
-                )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

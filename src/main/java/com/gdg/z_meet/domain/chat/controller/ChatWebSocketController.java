@@ -43,7 +43,7 @@ public class ChatWebSocketController {
         chatMessage = ChatMessage.builder()
                 .id(UUID.randomUUID().toString())
                 .type(chatMessage.getType())
-                .roomId(roomId.toString())
+                .roomId(roomId)
                 .senderId(senderId)
                 .senderName(user.getUserProfile().getNickname())
                 .content(chatMessage.getContent())

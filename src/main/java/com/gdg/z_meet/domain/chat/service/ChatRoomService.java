@@ -39,19 +39,19 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final MessageRepository messageRepository;
     private final JoinChatRepository joinChatRepository;
-
-    private static final String CHAT_ROOMS_KEY = "chatrooms";
-    private static final String CHAT_ROOM_ACTIVITY_KEY = "chatroom:activity";
-    private static final String CHAT_ROOM_LATEST_MESSAGE_KEY = "chatroom:%s:latestMessage";
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final UserTeamRepository userTeamRepository;
     private final TeamRepository teamRepository;
     private final TeamChatRoomRepository teamChatRoomRepository;
 
+    private static final String CHAT_ROOMS_KEY = "chatrooms";
+    private static final String CHAT_ROOM_ACTIVITY_KEY = "chatroom:activity";
+    private static final String CHAT_ROOM_LATEST_MESSAGE_KEY = "chatroom:%s:latestMessage";
+
     // 채팅방 생성
     @Transactional
-    public ChatRoom createChatRoom(String name) {
+    public ChatRoom createChatRoom() {
         // 1. 새로운 ChatRoom 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .build();
@@ -107,7 +107,7 @@ public class ChatRoomService {
         Team team2 = teamRepository.findById(teamListDto.getTeamId2()).orElseThrow(()-> new BusinessException(Code.TEAM_NOT_FOUND));
 
         addTeamToChatRoom(chatRoomId, team1, team2.getName());
-        addTeamToChatRoom(chatRoomId, team2, team2.getName());
+        addTeamToChatRoom(chatRoomId, team2, team1.getName());
 
     }
 
