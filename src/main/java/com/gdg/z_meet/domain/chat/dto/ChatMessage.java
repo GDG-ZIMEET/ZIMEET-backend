@@ -3,7 +3,6 @@ package com.gdg.z_meet.domain.chat.dto;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gdg.z_meet.domain.chat.entity.status.MessageType;
-import com.gdg.z_meet.domain.user.entity.enums.Emoji;
 import lombok.*;
 
 import java.io.Serializable;
@@ -21,6 +20,6 @@ public class ChatMessage implements Serializable {
     private String senderName;
     private String content;
     private LocalDateTime sendAt;
-    private Emoji emoji;
+    private String emoji;
 
 }

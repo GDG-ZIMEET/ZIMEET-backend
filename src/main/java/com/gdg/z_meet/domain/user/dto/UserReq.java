@@ -40,7 +40,7 @@ public class UserReq {
         private int age;
         private Gender gender;
         private Major major;
-        private Emoji emoji;
+        private String emoji;
         private MBTI mbti;
         private Music music;
         private Style style;
