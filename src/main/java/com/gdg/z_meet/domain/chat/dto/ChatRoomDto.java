@@ -15,7 +15,6 @@ public class ChatRoomDto {
     @Builder
     public static class resultChatRoomDto{
         private Long id;
-        private String name;
     }
 
     @Getter
@@ -44,6 +43,15 @@ public class ChatRoomDto {
     public static class TeamListDto{
         private Long teamId1;
         private Long teamId2;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class chatRoomMessageDTO{
+        private Long chatRoomId;
+        private String latestMessage;    //최신 메시지
+        private LocalDateTime lastestTime; //시간
     }
 
 

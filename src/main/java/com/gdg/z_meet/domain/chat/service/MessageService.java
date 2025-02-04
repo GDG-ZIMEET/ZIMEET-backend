@@ -66,21 +66,18 @@ public class MessageService {
         ChatRoom updatedChatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
 
-        List<ChatRoomDto.UserProfileDto> userProfiles = chatRoomService.getUserProfilesByChatRoomId(chatRoomId);
 
-        ChatRoomDto.chatRoomListDto chatRoomDto = new ChatRoomDto.chatRoomListDto(
+        ChatRoomDto.chatRoomMessageDTO chatRoomMessageDto = new ChatRoomDto.chatRoomMessageDTO(
                 updatedChatRoom.getId(),
-                updatedChatRoom.getName(),
                 chatMessage.getContent(),
-                LocalDateTime.now(),
-                userProfiles
+                LocalDateTime.now()
         );
 
         // 채팅방 참여자들에게 메시지 전송
         messagingTemplate.convertAndSend("/topic/" + chatRoomId, chatMessage);
 
         // 채팅방 목록 업데이트를 위한 메시지 전송
-        messagingTemplate.convertAndSend("/topic/chatrooms", chatRoomDto);
+        messagingTemplate.convertAndSend("/topic/chatrooms", chatRoomMessageDto);
     }
 
 

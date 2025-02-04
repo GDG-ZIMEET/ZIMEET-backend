@@ -8,7 +8,6 @@ public class ChatRoomConverter {
     public static ChatRoomDto.resultChatRoomDto chatRoomtoResultDto(ChatRoom chatRoom){
         return ChatRoomDto.resultChatRoomDto.builder()
                 .id(chatRoom.getId())
-                .name(chatRoom.getName())
                 .build();
     }
 }
