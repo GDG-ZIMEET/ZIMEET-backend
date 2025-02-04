@@ -29,6 +29,6 @@ public class JoinChat extends BaseEntity {
     @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
 
-    @CreationTimestamp
-    private LocalDateTime joinedAt;
+    @Column(nullable = false)
+    private String name;
 }

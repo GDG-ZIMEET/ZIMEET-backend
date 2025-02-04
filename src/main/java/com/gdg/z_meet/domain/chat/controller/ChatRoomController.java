@@ -45,15 +45,14 @@ public class ChatRoomController {
         return Response.ok(roomId+" 삭제 완료되었습니다.");
     }
 
-    @Operation(summary = "사용자 채팅방 추가", description = "관리자가 사용자를 지정된 채팅방에 추가합니다.")
+    @Operation(summary = "팀 채팅방 추가", description = "관리자가 팀을 지정된 채팅방에 추가합니다. 채팅방 아이디와 해당 팀 아이디를 주세요")
     @PostMapping("/{roomId}/users")
     public Response<String> addUserToChatRoom(
             @PathVariable Long roomId,
-            @RequestParam Long userId) {
-        chatRoomService.addUserToChatRoom(roomId, userId); // 채팅방에 사용자 추가
+            @RequestParam Long teamId) {
+        chatRoomService.addTeamToChatRoom(roomId, teamId); // 채팅방에 사용자 추가
         return Response.ok(roomId+" 추가 완료되었습니다."); // 추가 성공 응답 반환
     }
-
 
     @Operation(summary = "사용자 채팅방 제거", description = "사용자를 지정된 채팅방에서 제거합니다. 채팅방 나가기와 동일한 기능 입니다. ")
     @DeleteMapping("/{roomId}/users")

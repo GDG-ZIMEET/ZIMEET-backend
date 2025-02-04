@@ -15,8 +15,8 @@ public interface JoinChatRepository extends JpaRepository<JoinChat, Long> {
     List<JoinChat> findByChatRoomId(Long chatRoomId);
     List<JoinChat> findByUserId(Long userId);
     Optional<JoinChat> findByUserAndChatRoom(User user, ChatRoom chatRoom);
-    @Query("SELECT uc.user FROM JoinChat uc WHERE uc.chatRoom.id = :chatRoomId")
-    List<User> findUsersByChatRoomId(@Param("chatRoomId") Long chatRoomId);
+    @Query("SELECT team FROM JoinChat uc WHERE uc.chatRoom.id = :chatRoomId")
+    List<User> findTeamByChatRoomId(@Param("chatRoomId") Long chatRoomId);
     Boolean existsByUserIdAndChatRoomId(Long userId, Long chatRoomId);
 
 }
