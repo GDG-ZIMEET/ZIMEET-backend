@@ -101,20 +101,24 @@ public class ChatRoomService {
 
     // 사용자 추가
     @Transactional
-    public void addTeamToChatRoom(Long chatRoomId, Long teamId) {
+    public void addTeamJoinChat(Long chatRoomId, Long teamId, Long teamId2) {
 
-        List<UserTeam> userTeams = userTeamRepository.findByTeamId(teamId);
+        Team team1 = teamRepository.findById(teamId).orElseThrow(()-> new BusinessException(Code.TEAM_NOT_FOUND));
+        Team team2 = teamRepository.findById(teamId).orElseThrow(()-> new BusinessException(Code.TEAM_NOT_FOUND));
+
+        addTeamToChatRoom(chatRoomId, team1, team2.getName());
+        addTeamToChatRoom(chatRoomId, team2, team2.getName());
+
+    }
+
+    @Transactional
+    public void addTeamToChatRoom(Long chatRoomId, Team team, String teamName){
+        List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
         List<User> users = userTeams.stream()
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
-        Team team = teamRepository.findById(teamId).orElseThrow(()-> new BusinessException(Code.TEAM_NOT_FOUND));
-
         // DB 저장
         ChatRoom chatRoom = getChatRoomById(chatRoomId);
-        List<JoinChat> anotherChatRoom = joinChatRepository.findByChatRoomId(chatRoomId);
-
-        // 기존 채팅방에 팀이 있는 경우 첫 번째 팀의 이름을 사용, 없으면 null
-        String teamName = anotherChatRoom.isEmpty() ? null : anotherChatRoom.get(0).getName();
 
         JoinChat joinChat = JoinChat.builder()
                 .team(team)
@@ -142,7 +146,6 @@ public class ChatRoomService {
             redisTemplate.opsForSet().add(chatRoomUsersKey, userId);
 
         }
-
     }
 
     // 사용자 제거

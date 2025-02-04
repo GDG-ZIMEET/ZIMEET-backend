@@ -49,8 +49,8 @@ public class ChatRoomController {
     @PostMapping("/{roomId}/users")
     public Response<String> addUserToChatRoom(
             @PathVariable Long roomId,
-            @RequestParam Long teamId) {
-        chatRoomService.addTeamToChatRoom(roomId, teamId); // 채팅방에 사용자 추가
+            @RequestParam Long teamId, Long teamId2) {
+        chatRoomService.addTeamJoinChat(roomId, teamId, teamId2); // 채팅방에 사용자 추가
         return Response.ok(roomId+" 추가 완료되었습니다."); // 추가 성공 응답 반환
     }
 
