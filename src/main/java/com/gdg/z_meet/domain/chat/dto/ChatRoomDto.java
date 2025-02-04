@@ -50,8 +50,16 @@ public class ChatRoomDto {
     @Builder
     public static class chatRoomMessageDTO{
         private Long chatRoomId;
-        private String latestMessage;    //최신 메시지
-        private LocalDateTime lastestTime; //시간
+        private String latestMessage;
+        private LocalDateTime lastestTime;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class chatRoomUserList{
+        private String teamName;
+        private List<UserProfileDto> userProfiles;
     }
 
 

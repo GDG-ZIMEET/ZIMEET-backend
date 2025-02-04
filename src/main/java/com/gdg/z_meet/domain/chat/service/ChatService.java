@@ -51,7 +51,7 @@ public class ChatService {
                 .roomId(roomId)
                 .senderId(senderId)
                 .senderName(senderName)
-                .content(senderName + "님이 퇴장하셨습니다.")
+                .content(senderName + "님이 채팅방을 나갔습니다.")
                 .sendAt(LocalDateTime.now())
                 .emoji(null) // ✅ 입장/퇴장 메시지는 이모지 필요 없음
                 .build();

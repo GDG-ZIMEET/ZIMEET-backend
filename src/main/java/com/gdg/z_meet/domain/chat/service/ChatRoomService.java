@@ -298,12 +298,40 @@ public class ChatRoomService {
 
     //채팅방에 있는 사용자 조회
     @Transactional
-    public List<ChatRoomDto.UserProfileDto> getUserByRoomId(Long userId, Long roomId){
-        if (!joinChatRepository.existsByUserIdAndChatRoomId(userId, roomId))
+    public List<ChatRoomDto.chatRoomUserList> getUserByRoomId(Long userId, Long roomId) {
+        // 사용자가 해당 채팅방에 존재하는지 확인
+        if (!joinChatRepository.existsByUserIdAndChatRoomId(userId, roomId)) {
             throw new BusinessException(Code.JOINCHAT_NOT_FOUND);
+        }
 
-        return getUserProfilesByChatRoomId(roomId);
+        // 채팅방에 속한 사용자 프로필 가져오기
+        List<ChatRoomDto.UserProfileDto> userProfileDtos = getUserProfilesByChatRoomId(roomId);
+
+        // 해당 채팅방의 모든 팀 조회
+        List<TeamChatRoom> teamChatRooms = teamChatRoomRepository.findByChatRoomId(roomId);
+
+        // 팀별 사용자 매핑
+        List<ChatRoomDto.chatRoomUserList> teamUserLists = new ArrayList<>();
+
+        for (TeamChatRoom teamChatRoom : teamChatRooms) {
+            // 해당 팀의 이름 가져오기
+            String teamName = teamChatRoom.getName();
+
+            // 현재 팀에 속한 사용자들 필터링
+            List<ChatRoomDto.UserProfileDto> teamUsers = userProfileDtos.stream()
+                    .filter(userProfile -> userTeamRepository.existsByUserIdAndTeamId(userProfile.getId(), teamChatRoom.getTeam().getId()))
+                    .collect(Collectors.toList());
+
+            // 팀별 사용자 목록 추가
+            teamUserLists.add(ChatRoomDto.chatRoomUserList.builder()
+                    .teamName(teamName)
+                    .userProfiles(teamUsers)
+                    .build());
+        }
+
+        return teamUserLists;
     }
+
 
 
 }

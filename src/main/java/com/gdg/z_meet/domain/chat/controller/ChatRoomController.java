@@ -33,7 +33,7 @@ public class ChatRoomController {
         return Response.ok(roomId+" 삭제 완료되었습니다.");
     }
 
-    @Operation(summary = "팀 채팅방 추가", description = "관리자가 팀을 지정된 채팅방에 추가합니다. 채팅방 아이디와 해당 팀 아이디를 주세요")
+    @Operation(summary = "팀 채팅방 추가", description = "관리자가 팀을 지정된 채팅방에 추가합니다. 추가할 팀 아이디를 주세요")
     @PostMapping("/users")
     public Response<ChatRoomDto.resultChatRoomDto> addUserToChatRoom(
             @RequestBody ChatRoomDto.TeamListDto teamListDto) {
@@ -67,7 +67,7 @@ public class ChatRoomController {
 
     @Operation(summary = "채팅방 사용자 조회 ", description = "특정 채팅방에 있는 사용자들을 조회합니다. ")
     @GetMapping("/{roomId}")
-    public Response<List<ChatRoomDto.UserProfileDto>> sendMessage(
+    public Response<List<ChatRoomDto.chatRoomUserList>> sendMessage(
             @RequestHeader("Authorization") String token,
             @PathVariable Long roomId) {
         Long userId = jwtUtil.extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
