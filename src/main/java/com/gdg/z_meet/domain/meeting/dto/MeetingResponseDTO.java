@@ -19,7 +19,7 @@ public class MeetingResponseDTO {
         String name;
         Integer verification;
         List<String> major;
-        Integer age;
+        Double age;
         List<String> music;
     }
 

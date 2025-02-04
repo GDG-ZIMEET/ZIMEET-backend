@@ -6,19 +6,26 @@ import com.gdg.z_meet.domain.user.entity.User;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.gdg.z_meet.domain.meeting.entity.Verification.COMPLETE;
 
 public class MeetingConverter {
 
-    public static MeetingResponseDTO.GetTeamGalleryDTO toGetTeamGalleryDTO(Page<Team> teamList){
+    public static MeetingResponseDTO.GetTeamGalleryDTO toGetTeamGalleryDTO(Page<Team> teamList,
+                                                                           Map<Long, List<String>> emojiList,
+                                                                           Map<Long, List<String>> majorList,
+                                                                           Map<Long, List<String>> musicList){
 
         List<MeetingResponseDTO.GetPreTeamDTO> teamDTOS = teamList.stream()
                 .map(team -> MeetingResponseDTO.GetPreTeamDTO.builder()
                         .teamId(team.getId())
+                        .emoji(emojiList.get(team.getId()))
                         .name(team.getName())
                         .verification(team.getVerification() == COMPLETE ? 1 : 0)
+                        .major(majorList.get(team.getId()))
+                        .music(musicList.get(team.getId()))
                         .build())
                 .collect(Collectors.toList());
 

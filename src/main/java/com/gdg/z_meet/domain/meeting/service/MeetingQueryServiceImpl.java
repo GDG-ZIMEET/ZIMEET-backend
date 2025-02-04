@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +33,36 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         Page<Team> teamList = teamRepository.findAllByTeamType(teamType, PageRequest.of(page, 12));
 
-        return MeetingConverter.toGetTeamGalleryDTO(teamList);
+        Map<Long, List<String>> emojiList = teamList.stream().collect(Collectors.toMap(
+                Team::getId, team -> {
+                    List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+                    return userTeams.stream()
+                            .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getEmoji()))
+                            .collect(Collectors.toList());
+                }
+        ));
+
+        Map<Long, List<String>> majorList = teamList.stream().collect(Collectors.toMap(
+                Team::getId, team -> {
+                    List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+                    return userTeams.stream()
+                            .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor()))
+                            .collect(Collectors.toList());
+                }
+        ));
+
+        //Double age = teamList.stream().mapToInt(Integer::intValue).average();
+
+        Map<Long, List<String>> musicList = teamList.stream().collect(Collectors.toMap(
+                Team::getId, team -> {
+                    List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+                    return userTeams.stream()
+                            .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMusic()))
+                            .collect(Collectors.toList());
+                }
+        ));
+
+        return MeetingConverter.toGetTeamGalleryDTO(teamList, emojiList, majorList, musicList);
     }
 
     @Override
@@ -55,7 +85,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
     private void validateTeamType(Long teamId, TeamType teamType) {
 
-        Integer userCount = userTeamRepository.countByTeamId(teamId);
+        Long userCount = userTeamRepository.countByTeamId(teamId);
         if (teamType != TeamType.TWO_TO_TWO && userCount == 2) {
             throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         }
