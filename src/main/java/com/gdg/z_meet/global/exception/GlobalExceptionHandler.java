@@ -25,22 +25,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Response<Void>> businessExceptionHandler(BusinessException ex) {
 
-        log.error("BusinessException: {}", ex.getCode());
-        log.error("error: ", ex);
-        ReasonDTO reason = ex.getReason();
-
         return ResponseEntity
-                .status(reason.getStatus())
+                .status(ex.getReason().getStatus())
                 .body(Response.fail(ex.getCode()));
     }
 
     @ExceptionHandler(GlobalException.class)
     public ResponseEntity<Response<Void>> globalExceptionHandler(GlobalException ex) {
-
-        log.error("GlobalException: {}", ex.getMessage());
-        ReasonDTO reason = ex.getReason();
+        
         return ResponseEntity
-                .status(reason.getStatus())
+                .status(ex.getReason().getStatus())
                 .body(Response.fail(ex.getCode()));
     }
 
