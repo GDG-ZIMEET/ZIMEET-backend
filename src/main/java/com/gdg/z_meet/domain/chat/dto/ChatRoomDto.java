@@ -14,7 +14,7 @@ public class ChatRoomDto {
     @AllArgsConstructor
     @Builder
     public static class resultChatRoomDto{
-        private Long id;
+        private Long chatRoomid;
     }
 
     @Getter

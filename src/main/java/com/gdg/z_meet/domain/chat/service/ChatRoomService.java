@@ -101,25 +101,33 @@ public class ChatRoomService {
 
     // 사용자 추가
     @Transactional
-    public void addTeamJoinChat(Long chatRoomId, ChatRoomDto.TeamListDto teamListDto) {
+    public ChatRoomDto.resultChatRoomDto addTeamJoinChat(ChatRoomDto.TeamListDto teamListDto) {
+
+        //채팅방 생성
+        ChatRoom chatRoom = ChatRoom.builder().build();
+        chatRoom = chatRoomRepository.save(chatRoom);
 
         Team team1 = teamRepository.findById(teamListDto.getTeamId1()).orElseThrow(()-> new BusinessException(Code.TEAM_NOT_FOUND));
         Team team2 = teamRepository.findById(teamListDto.getTeamId2()).orElseThrow(()-> new BusinessException(Code.TEAM_NOT_FOUND));
 
-        addTeamToChatRoom(chatRoomId, team1, team2.getName());
-        addTeamToChatRoom(chatRoomId, team2, team1.getName());
+        addTeamToChatRoom(chatRoom, team1, team2.getName());
+        addTeamToChatRoom(chatRoom, team2, team1.getName());
 
+        return ChatRoomDto.resultChatRoomDto.builder()
+                .chatRoomid(chatRoom.getId())
+                .build();
     }
 
     @Transactional
-    public void addTeamToChatRoom(Long chatRoomId, Team team, String teamName){
+    public void addTeamToChatRoom(ChatRoom chatRoom, Team team, String teamName){
+        Long chatRoomId = chatRoom.getId();
+
         List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
         List<User> users = userTeams.stream()
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
-        
-        // 팀정보 DB 저장 
-        ChatRoom chatRoom = getChatRoomById(chatRoomId);
+
+        // 팀정보 DB 저장
         TeamChatRoom teamChatRoom = TeamChatRoom.builder()
                 .team(team)
                 .chatRoom(chatRoom)

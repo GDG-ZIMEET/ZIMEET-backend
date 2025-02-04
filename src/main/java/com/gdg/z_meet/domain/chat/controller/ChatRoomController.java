@@ -1,19 +1,15 @@
 package com.gdg.z_meet.domain.chat.controller;
 
-import com.gdg.z_meet.domain.chat.converter.ChatRoomConverter;
 import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.service.ChatRoomService;
 import com.gdg.z_meet.domain.chat.service.MessageService;
-import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,13 +25,6 @@ public class ChatRoomController {
     private final MessageService messageService;
     private final JwtUtil jwtUtil;
 
-    @Operation(summary = "채팅방 생성", description = "새로운 채팅방을 생성합니다.")
-    @PostMapping("")
-    public Response<ChatRoomDto.resultChatRoomDto> createChatRoom() {
-        ChatRoom chatRoom = chatRoomService.createChatRoom();
-        return Response.ok(ChatRoomConverter.chatRoomtoResultDto(chatRoom)); // 생성된 채팅방 반환
-    }
-
     @Operation(summary = "채팅방 삭제", description = "기존 채팅방을 삭제합니다.")
     @DeleteMapping("/{roomId}")
     public Response<String> deleteChatRoom(
@@ -45,12 +34,10 @@ public class ChatRoomController {
     }
 
     @Operation(summary = "팀 채팅방 추가", description = "관리자가 팀을 지정된 채팅방에 추가합니다. 채팅방 아이디와 해당 팀 아이디를 주세요")
-    @PostMapping("/{roomId}/users")
-    public Response<String> addUserToChatRoom(
-            @PathVariable Long roomId,
+    @PostMapping("/users")
+    public Response<ChatRoomDto.resultChatRoomDto> addUserToChatRoom(
             @RequestBody ChatRoomDto.TeamListDto teamListDto) {
-        chatRoomService.addTeamJoinChat(roomId, teamListDto); // 채팅방에 사용자 추가
-        return Response.ok("팀"+teamListDto.getTeamId1()+", 팀"+ teamListDto.getTeamId2()+" 추가 완료되었습니다."); // 추가 성공 응답 반환
+        return Response.ok(chatRoomService.addTeamJoinChat(teamListDto));
     }
 
     @Operation(summary = "사용자 채팅방 제거", description = "사용자를 지정된 채팅방에서 제거합니다. 채팅방 나가기와 동일한 기능 입니다. ")
