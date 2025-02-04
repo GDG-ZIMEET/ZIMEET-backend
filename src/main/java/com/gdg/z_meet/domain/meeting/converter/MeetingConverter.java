@@ -3,7 +3,6 @@ package com.gdg.z_meet.domain.meeting.converter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.user.entity.User;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +12,7 @@ import static com.gdg.z_meet.domain.meeting.entity.Verification.COMPLETE;
 
 public class MeetingConverter {
 
-    public static MeetingResponseDTO.GetTeamGalleryDTO toGetTeamGalleryDTO(Page<Team> teamList,
+    public static MeetingResponseDTO.GetTeamGalleryDTO toGetTeamGalleryDTO(List<Team> teamList,
                                                                            Map<Long, List<String>> emojiList,
                                                                            Map<Long, List<String>> majorList,
                                                                            Map<Long, Double> age,

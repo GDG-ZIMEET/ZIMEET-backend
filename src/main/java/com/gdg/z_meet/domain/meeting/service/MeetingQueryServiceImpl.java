@@ -11,11 +11,11 @@ import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,7 +31,8 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetTeamGalleryDTO getTeamGallery(Long userId, TeamType teamType, Integer page) {
 
-        Page<Team> teamList = teamRepository.findAllByTeamType(teamType, PageRequest.of(page, 12));
+        List<Team> teamList = teamRepository.findAllByTeamType(teamType, PageRequest.of(page, 12));
+        Collections.shuffle(teamList);
 
         Map<Long, List<String>> emojiList = teamList.stream().collect(Collectors.toMap(
                 Team::getId, team -> {
