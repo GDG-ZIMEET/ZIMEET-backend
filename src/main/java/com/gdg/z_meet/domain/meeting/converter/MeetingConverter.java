@@ -40,7 +40,7 @@ public class MeetingConverter {
         List<MeetingResponseDTO.GetTeamUserDTO> teamUserDTOS = users.stream()
                 .map(user -> MeetingResponseDTO.GetTeamUserDTO.builder()
                         .userId(user.getId())
-                        .emoji(String.valueOf(user.getUserProfile().getEmoji()))
+                        .emoji(user.getUserProfile().getEmoji())
                         .nickname(user.getUserProfile().getNickname())
                         .age(user.getUserProfile().getAge())
                         .studentNumber(user.getStudentNumber().substring(2, 4))

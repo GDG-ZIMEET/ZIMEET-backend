@@ -34,7 +34,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetTeamGalleryDTO getTeamGallery(Long userId, TeamType teamType, Integer page) {
 
-        Gender gender = userProfileRepository.findByUserId(userId).getGender();
+        Gender gender = userProfileRepository.findByUserId(userId).get().getGender();
         List<Team> teamList = teamRepository.findAllByTeamType(userId, gender, teamType, PageRequest.of(page, 12));
         Collections.shuffle(teamList);
 
@@ -42,7 +42,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 Team::getId, team -> {
                     List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
                     return userTeams.stream()
-                            .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getEmoji()))
+                            .map(userTeam -> userTeam.getUser().getUserProfile().getEmoji())
                             .collect(Collectors.toList());
                 }
         ));
