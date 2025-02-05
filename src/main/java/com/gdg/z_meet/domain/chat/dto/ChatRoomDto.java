@@ -1,9 +1,6 @@
 package com.gdg.z_meet.domain.chat.dto;
 
-import com.gdg.z_meet.domain.chat.entity.ChatRoom;
-import com.gdg.z_meet.domain.user.entity.enums.Emoji;
 import lombok.*;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,7 +31,7 @@ public class ChatRoomDto {
     public static class UserProfileDto {
         private Long id;
         private String name;
-        private Emoji emoji;
+        private String emoji;
     }
 
     @Getter

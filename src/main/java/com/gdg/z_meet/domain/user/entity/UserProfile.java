@@ -22,9 +22,8 @@ public class UserProfile {
     @Column(unique = true, nullable = false)
     private String nickname;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Emoji emoji;
+    private String emoji;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
