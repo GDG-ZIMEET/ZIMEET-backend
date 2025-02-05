@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -184,6 +185,12 @@ public class ChatRoomService {
         redisTemplate.opsForSet().remove(joinChatsKey, chatRoomId);
         redisTemplate.opsForSet().remove(chatRoomUsersKey, userId);
 
+        // 채팅방에 남은 사용자가 없다면 Redis에서 해당 채팅방 삭제
+        if (Boolean.FALSE.equals(redisTemplate.opsForSet().size(chatRoomUsersKey) > 0)) {
+            redisTemplate.opsForHash().delete(CHAT_ROOMS_KEY, chatRoomId.toString());
+            redisTemplate.opsForZSet().remove(CHAT_ROOM_ACTIVITY_KEY, chatRoomId.toString());
+        }
+
     }
 
 
@@ -222,8 +229,9 @@ public class ChatRoomService {
 
 
         // Redis ZSet에서 최신 활동 기준으로 정렬된 채팅방 ID 가져오기
-        List<Long> sortedChatRoomIds = redisTemplate.opsForZSet()
-                .reverseRange(CHAT_ROOM_ACTIVITY_KEY, 0, -1)
+        List<Long> sortedChatRoomIds = Optional.ofNullable(
+                        redisTemplate.opsForZSet().reverseRange(CHAT_ROOM_ACTIVITY_KEY, 0, -1))
+                .orElse(Set.of()) // null 방지
                 .stream()
                 .map(Object::toString)
                 .map(Long::valueOf)
@@ -276,7 +284,7 @@ public class ChatRoomService {
                 .filter(teamChatRoom ->
                         userTeamRepository.existsByUserIdAndTeamId(userId, teamChatRoom.getTeam().getId()))
                 .findFirst()
-                .orElseThrow(() -> new BusinessException(Code.TEAM_USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(Code.JOINCHAT_NOT_FOUND));
 
         // 상대팀 이름 리턴
         return userTeamChatRoom.getName();

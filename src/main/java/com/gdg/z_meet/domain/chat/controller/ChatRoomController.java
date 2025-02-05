@@ -48,7 +48,6 @@ public class ChatRoomController {
 
         // 토큰에서 사용자 ID 추출
         Long userId = jwtUtil.extractUserIdFromToken(token);
-        System.out.println("UserID: "+userId);
 
         // 채팅방에서 사용자 제거
         chatRoomService.removeUserFromChatRoom(roomId, userId);

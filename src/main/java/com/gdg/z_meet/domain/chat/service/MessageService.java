@@ -5,7 +5,9 @@ import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.entity.status.MessageType;
 import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
+import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
 import com.gdg.z_meet.domain.chat.repository.MessageRepository;
+import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.domain.user.service.UserService;
@@ -29,7 +31,7 @@ public class MessageService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatRoomService chatRoomService;
+    private final JoinChatRepository joinChatRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     private static final String CHAT_ROOM_MESSAGES_KEY = "chatroom:%s:messages";
@@ -75,8 +77,14 @@ public class MessageService {
         // 채팅방 참여자들에게 메시지 전송
         messagingTemplate.convertAndSend("/topic/" + chatMessage.getRoomId(), chatMessage);
 
-        // 채팅방 목록 업데이트를 위한 메시지 전송
-        messagingTemplate.convertAndSend("/topic/chatrooms", chatRoomMessageDto);
+        // 채팅방 참여 사용자 리스트 가져오기
+        List<User> participants = joinChatRepository.findUsersByChatRoomId(chatMessage.getRoomId());
+
+        // 각 사용자에게 개별 채널로 메시지 전송
+        for (User user : participants) {
+            messagingTemplate.convertAndSend("/topic/chatroom/" + user.getId(), chatRoomMessageDto);
+
+        }
     }
 
 
