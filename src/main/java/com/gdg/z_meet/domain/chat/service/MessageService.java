@@ -77,18 +77,34 @@ public class MessageService {
         // 채팅방 참여자들에게 메시지 전송
         messagingTemplate.convertAndSend("/topic/" + chatMessage.getRoomId(), chatMessage);
 
-        // 채팅방 참여자들에게 채팅방 실시간 정렬 전송
-        messagingTemplate.convertAndSend("/topic/chatroom/" + chatMessage.getRoomId(), chatRoomMessageDto);
-
 
     }
 
 
     public List<ChatMessage> getMessagesByChatRoom(Long chatRoomId, Long userId, int page, int size) {
+        // 사용자가 해당 채팅방에 존재하는지 확인
+        if (!joinChatRepository.existsByUserIdAndChatRoomId(userId, chatRoomId)) {
+            throw new BusinessException(Code.JOINCHAT_NOT_FOUND);
+        }
+
         String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
 
-        // 최신 메시지를 기준으로 가져오기 (최근 size개의 메시지만 조회)
-        List<Object> messages = redisTemplate.opsForList().range(chatRoomMessagesKey, -size, -1);
+        // Redis에서 전체 메시지 개수 가져오기
+        Long totalMessages = redisTemplate.opsForList().size(chatRoomMessagesKey);
+        if (totalMessages == null || totalMessages == 0) {
+            return List.of();
+        }
+
+        // 페이지네이션을 위한 start, end 계산
+        int start = (int) Math.max(totalMessages - ((page + 1) * size), 0);
+        int end = (int) (totalMessages - (page * size) - 1);
+
+        if (start > end) {
+            return List.of(); // 요청한 페이지에 데이터가 없는 경우
+        }
+
+        // 지정된 범위의 메시지 가져오기 (최신순 정렬되어 있음)
+        List<Object> messages = redisTemplate.opsForList().range(chatRoomMessagesKey, start, end);
         if (messages == null || messages.isEmpty()) {
             return List.of();
         }

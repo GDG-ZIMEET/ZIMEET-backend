@@ -80,7 +80,7 @@ public class ChatRoomController {
             @RequestHeader("Authorization") String token,
             @PathVariable Long roomId,
             @RequestParam(defaultValue = "0") int page, // 페이지 번호 (기본값: 0)
-            @RequestParam(defaultValue = "20") int size // 페이지 크기 (기본값: 20)
+            @RequestParam(defaultValue = "15") int size // 페이지 크기 (기본값: 20)
     ) {
         Long userId = jwtUtil.extractUserIdFromToken(token);
         List<ChatMessage> messages = messageService.getMessagesByChatRoom(roomId,userId, page, size);

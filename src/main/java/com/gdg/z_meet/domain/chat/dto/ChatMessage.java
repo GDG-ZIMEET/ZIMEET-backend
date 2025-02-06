@@ -16,7 +16,6 @@ public class ChatMessage implements Serializable {
     private String id;
     private MessageType type;
     private Long roomId;
-    private Long senderId;
     private String senderName;
     private String content;
     private LocalDateTime sendAt;

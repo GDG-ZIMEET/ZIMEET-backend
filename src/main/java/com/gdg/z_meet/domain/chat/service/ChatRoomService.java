@@ -159,11 +159,11 @@ public class ChatRoomService {
                         .build());
 
                 // 사용자 -> 참여 채팅방 매핑 데이터 Redis 저장
-                redisTemplate.opsForSet().add(joinChatsKey, chatRoomId);
+                redisTemplate.opsForSet().add(joinChatsKey, String.valueOf(chatRoomId));
 
                 // 채팅방 -> 참여 사용자 매핑 데이터 Redis 저장
                 String chatRoomUsersKey = "chatroom:" + chatRoomId + ":users";
-                redisTemplate.opsForSet().add(chatRoomUsersKey, userId);
+                redisTemplate.opsForSet().add(chatRoomUsersKey, String.valueOf(userId));
             }
         }
 
@@ -191,8 +191,8 @@ public class ChatRoomService {
         String chatRoomUsersKey = "chatroom:" + chatRoomId + ":users";
 
         // 사용자와 채팅방 간 매핑 데이터 제거 (Redis)
-        redisTemplate.opsForSet().remove(joinChatsKey, chatRoomId);
-        redisTemplate.opsForSet().remove(chatRoomUsersKey, userId);
+        redisTemplate.opsForSet().remove(joinChatsKey, String.valueOf(chatRoomId));
+        redisTemplate.opsForSet().remove(chatRoomUsersKey, String.valueOf(userId));
 
         // 채팅방에 남은 사용자가 없다면 Redis에서 해당 채팅방 삭제
         if (Boolean.FALSE.equals(redisTemplate.opsForSet().size(chatRoomUsersKey) > 0)) {
@@ -227,6 +227,7 @@ public class ChatRoomService {
                 .map(Object::toString)
                 .map(Long::valueOf)
                 .collect(Collectors.toSet());
+
 
         if (joinChatIdsSet == null || joinChatIdsSet.isEmpty()) {
             List<JoinChat> joinChats = joinChatRepository.findByUserId(userId);
@@ -340,7 +341,7 @@ public class ChatRoomService {
         Map<Long, List<String>> teamUserMap = userTeams.stream()
                 .collect(Collectors.groupingBy(
                         userTeam -> userTeam.getTeam().getId(),
-                        Collectors.mapping(userTeam -> userTeam.getUser().getName(), Collectors.toList())  // ✅ name 사용
+                        Collectors.mapping(userTeam -> userTeam.getUser().getName(), Collectors.toList())
                 ));
 
         // 팀별 사용자 매핑

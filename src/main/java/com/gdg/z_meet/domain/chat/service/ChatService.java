@@ -31,9 +31,8 @@ public class ChatService {
                 .id(UUID.randomUUID().toString())
                 .type(MessageType.ENTER)
                 .roomId(roomId)
-                .senderId(inviteId)
                 .senderName(user.getUserProfile().getNickname())
-                .content(user.getUserProfile().getNickname() + "님이 입장하셨습니다.")
+                .content(user.getUserProfile().getNickname() + " 님이 입장하셨습니다.")
                 .sendAt(LocalDateTime.now())
                 .emoji(null) // ✅ 입장/퇴장 메시지는 이모지 필요 없음
                 .build();
@@ -44,14 +43,13 @@ public class ChatService {
         handleMessage(message);
     }
 
-    public void handleExitMessage(Long roomId, Long senderId, String senderName) {
+    public void handleExitMessage(Long roomId, String senderName) {
         ChatMessage message = ChatMessage.builder()
                 .id(UUID.randomUUID().toString())
                 .type(MessageType.EXIT)
                 .roomId(roomId)
-                .senderId(senderId)
                 .senderName(senderName)
-                .content(senderName + "님이 채팅방을 나갔습니다.")
+                .content(senderName + " 님이 채팅방을 나갔습니다.")
                 .sendAt(LocalDateTime.now())
                 .emoji(null) // ✅ 입장/퇴장 메시지는 이모지 필요 없음
                 .build();
