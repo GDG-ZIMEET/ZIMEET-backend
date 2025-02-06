@@ -40,4 +40,14 @@ public class MeetingController {
 
         return Response.ok(response);
     }
+
+    @Operation(summary = "우리 팀 상세 조회")
+    @GetMapping("/myTeam")
+    public Response<MeetingResponseDTO.GetTeamDTO> getMyTeam(@RequestParam TeamType teamType) {
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        MeetingResponseDTO.GetTeamDTO response = meetingQueryService.getMyTeam(userId, teamType);
+
+        return Response.ok(response);
+    }
 }

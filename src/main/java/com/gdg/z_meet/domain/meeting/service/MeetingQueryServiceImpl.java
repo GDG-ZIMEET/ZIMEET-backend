@@ -93,6 +93,23 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         return MeetingConverter.toGetTeamDTO(team, users);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetTeamDTO getMyTeam(Long userId, TeamType teamType) {
+
+        Team team = teamRepository.findByTeamType(userId, teamType)
+                .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+
+        validateTeamType(team.getId(), teamType);
+
+        List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+        List<User> users = userTeams.stream()
+                .map(UserTeam::getUser)
+                .collect(Collectors.toList());
+
+        return MeetingConverter.toGetTeamDTO(team, users);
+    }
+
     private void validateTeamType(Long teamId, TeamType teamType) {
 
         Long userCount = userTeamRepository.countByTeamId(teamId);
