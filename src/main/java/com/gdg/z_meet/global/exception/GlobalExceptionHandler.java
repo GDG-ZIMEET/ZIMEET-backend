@@ -1,10 +1,10 @@
 package com.gdg.z_meet.global.exception;
 
 import com.gdg.z_meet.global.response.Code;
-import com.gdg.z_meet.global.response.ReasonDTO;
 import com.gdg.z_meet.global.response.Response;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -25,22 +25,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Response<Void>> businessExceptionHandler(BusinessException ex) {
 
-        log.error("BusinessException: {}", ex.getCode());
-        log.error("error: ", ex);
-        ReasonDTO reason = ex.getReason();
-
         return ResponseEntity
-                .status(reason.getStatus())
+                .status(ex.getReason().getStatus())
                 .body(Response.fail(ex.getCode()));
     }
 
     @ExceptionHandler(GlobalException.class)
     public ResponseEntity<Response<Void>> globalExceptionHandler(GlobalException ex) {
-
-        log.error("GlobalException: {}", ex.getMessage());
-        ReasonDTO reason = ex.getReason();
+        
         return ResponseEntity
-                .status(reason.getStatus())
+                .status(ex.getReason().getStatus())
                 .body(Response.fail(ex.getCode()));
     }
 
@@ -59,6 +53,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<Object> handleInvalidDataAccessApiUsageException(InvalidDataAccessApiUsageException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
