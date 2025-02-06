@@ -62,4 +62,15 @@ public class MeetingResponseDTO {
         String gender;
         List<GetTeamUserDTO> userList;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMyTeamDTO {
+        Long teamId;
+        List<String> emoji;
+        String name;
+        Integer verification;
+    }
 }

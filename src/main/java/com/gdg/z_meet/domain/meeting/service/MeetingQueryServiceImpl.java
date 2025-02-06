@@ -94,6 +94,22 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     }
 
     @Override
+    public MeetingResponseDTO.GetMyTeamDTO getPreMyTeam(Long userId, TeamType teamType) {
+
+        Team team = teamRepository.findByTeamType(userId, teamType)
+                .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+
+        validateTeamType(team.getId(), teamType);
+
+        List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+        List<String> emojiList = userTeams.stream()
+                            .map(userTeam -> userTeam.getUser().getUserProfile().getEmoji())
+                            .collect(Collectors.toList());
+
+        return MeetingConverter.toGetMyTeamDTO(team, emojiList);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetTeamDTO getMyTeam(Long userId, TeamType teamType) {
 

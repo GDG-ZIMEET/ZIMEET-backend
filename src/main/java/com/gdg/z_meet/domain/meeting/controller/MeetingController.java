@@ -41,8 +41,18 @@ public class MeetingController {
         return Response.ok(response);
     }
 
-    @Operation(summary = "우리 팀 상세 조회")
+    @Operation(summary = "우리 팀 조회")
     @GetMapping("/myTeam")
+    public Response<MeetingResponseDTO.GetMyTeamDTO> getPreMyTeam(@RequestParam TeamType teamType) {
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        MeetingResponseDTO.GetMyTeamDTO response = meetingQueryService.getPreMyTeam(userId, teamType);
+
+        return Response.ok(response);
+    }
+
+    @Operation(summary = "우리 팀 상세 조회")
+    @GetMapping("/myTeam/detail")
     public Response<MeetingResponseDTO.GetTeamDTO> getMyTeam(@RequestParam TeamType teamType) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
