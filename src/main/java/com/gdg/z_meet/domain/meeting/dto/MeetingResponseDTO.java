@@ -58,6 +58,7 @@ public class MeetingResponseDTO {
     public static class GetTeamDTO {
         Long teamId;
         String name;
+        Integer verification;
         String gender;
         List<GetTeamUserDTO> userList;
     }
