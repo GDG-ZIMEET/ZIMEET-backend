@@ -77,12 +77,9 @@ public class MessageService {
         // 채팅방 참여자들에게 메시지 전송
         messagingTemplate.convertAndSend("/topic/" + chatMessage.getRoomId(), chatMessage);
 
-        // 채팅방 참여 사용자 리스트 가져오기
-        List<User> participants = joinChatRepository.findUsersByChatRoomId(chatMessage.getRoomId());
+        // 채팅방 참여자들에게 채팅방 실시간 정렬 전송
+        messagingTemplate.convertAndSend("/topic/chatroom/" + chatMessage.getRoomId(), chatRoomMessageDto);
 
-        // 각 사용자에게 개별 채널로 메시지 전송
-        participants.stream()
-                .forEach(user -> messagingTemplate.convertAndSend("/topic/chatroom/" + user.getId(), chatRoomMessageDto));
 
     }
 
