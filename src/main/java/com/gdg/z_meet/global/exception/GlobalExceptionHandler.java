@@ -60,6 +60,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
+    }
+
     @ExceptionHandler(IncorrectResultSizeDataAccessException.class)
     public ResponseEntity<Object> handleIncorrectResultSizeException(IncorrectResultSizeDataAccessException ex) {
 
