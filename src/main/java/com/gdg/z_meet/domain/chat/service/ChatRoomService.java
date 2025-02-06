@@ -26,10 +26,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -137,30 +134,41 @@ public class ChatRoomService {
 
         teamChatRoomRepository.save(teamChatRoom);
 
-        for (User user : users){
+        //사용자별 참여 채팅방 존재 여부 확인
+        List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
+
+        // 모든 사용자에 대한 참여 여부 확인
+        Set<Long> existingUserIds = new HashSet<>(joinChatRepository.findUserIdsByUserIdInAndChatRoomId(userIds, chatRoomId));
+
+        // 새로운 사용자만 필터링하여 추가
+        List<JoinChat> newJoinChats = new ArrayList<>();
+        for (User user : users) {
             Long userId = user.getId();
 
-            // 이미 존재하는 경우 에러 발생
-            boolean isAlreadyExists = joinChatRepository.findByUserAndChatRoom(user, chatRoom).isPresent();
-            if (isAlreadyExists) {
-                throw new BusinessException(Code.JOINCHAT_ALREADY_EXIST);
-            }
-            //User 정보 DB 저장
-            JoinChat joinChat = JoinChat.builder()
-                    .user(user)
-                    .chatRoom(chatRoom)
-                    .build();
-
-            joinChatRepository.save(joinChat);
-
-            // 사용자 -> 참여 채팅방 매핑 데이터 저장
+            // Redis에 참여 여부가 있는지 먼저 체크
             String joinChatsKey = "user:" + userId + ":chatrooms";
-            redisTemplate.opsForSet().add(joinChatsKey, chatRoomId);
+            Boolean isMember = redisTemplate.opsForSet().isMember(joinChatsKey, chatRoomId);
 
-            // 채팅방 -> 참여 사용자 매핑 데이터 저장
-            String chatRoomUsersKey = "chatroom:" + chatRoomId + ":users";
-            redisTemplate.opsForSet().add(chatRoomUsersKey, userId);
+            // Redis에 없고, DB에도 존재하지 않는 경우에만 추가
+            if (Boolean.FALSE.equals(isMember) && !existingUserIds.contains(userId)) {
+                // 새로운 User 정보 DB 저장 (배치 인서트로 한 번에 저장)
+                newJoinChats.add(JoinChat.builder()
+                        .user(user)
+                        .chatRoom(chatRoom)
+                        .build());
 
+                // 사용자 -> 참여 채팅방 매핑 데이터 Redis 저장
+                redisTemplate.opsForSet().add(joinChatsKey, chatRoomId);
+
+                // 채팅방 -> 참여 사용자 매핑 데이터 Redis 저장
+                String chatRoomUsersKey = "chatroom:" + chatRoomId + ":users";
+                redisTemplate.opsForSet().add(chatRoomUsersKey, userId);
+            }
+        }
+
+        // 한번에 저장
+        if (!newJoinChats.isEmpty()) {
+            joinChatRepository.saveAll(newJoinChats);
         }
     }
 
@@ -317,17 +325,33 @@ public class ChatRoomService {
 
         // 해당 채팅방의 모든 팀 조회
         List<TeamChatRoom> teamChatRooms = teamChatRoomRepository.findByChatRoomId(roomId);
+        List<Long> teamIds = teamChatRooms.stream()
+                .map(teamChatRoom -> teamChatRoom.getTeam().getId())
+                .collect(Collectors.toList());
+
+        // 한 번의 쿼리로 해당 채팅방의 모든 팀 사용자 관계 조회 (DB 조회 1회)
+        List<UserTeam> userTeams = userTeamRepository.findByTeamIdIn(teamIds);
+
+        // 팀별 사용자 매핑을 위한 Map 생성
+        Map<Long, List<Long>> teamUserMap = userTeams.stream()
+                .collect(Collectors.groupingBy(
+                        userTeam -> userTeam.getTeam().getId(),
+                        Collectors.mapping(userTeam -> userTeam.getUser().getId(), Collectors.toList())
+                ));
 
         // 팀별 사용자 매핑
         List<ChatRoomDto.chatRoomUserList> teamUserLists = new ArrayList<>();
 
         for (TeamChatRoom teamChatRoom : teamChatRooms) {
-            // 해당 팀의 이름 가져오기
+            Long teamId = teamChatRoom.getTeam().getId();
             String teamName = teamChatRoom.getName();
 
-            // 현재 팀에 속한 사용자들 필터링
+            // 현재 팀에 속한 사용자 ID 목록 가져오기
+            List<Long> teamUserIds = teamUserMap.getOrDefault(teamId, Collections.emptyList());
+
+            // 사용자 목록을 ID 기준으로 필터링 (인메모리에서 처리)
             List<ChatRoomDto.UserProfileDto> teamUsers = userProfileDtos.stream()
-                    .filter(userProfile -> userTeamRepository.existsByUserIdAndTeamId(userProfile.getId(), teamChatRoom.getTeam().getId()))
+                    .filter(userProfile -> teamUserIds.contains(userProfile.getId()))
                     .collect(Collectors.toList());
 
             // 팀별 사용자 목록 추가

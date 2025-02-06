@@ -81,10 +81,9 @@ public class MessageService {
         List<User> participants = joinChatRepository.findUsersByChatRoomId(chatMessage.getRoomId());
 
         // 각 사용자에게 개별 채널로 메시지 전송
-        for (User user : participants) {
-            messagingTemplate.convertAndSend("/topic/chatroom/" + user.getId(), chatRoomMessageDto);
+        participants.stream()
+                .forEach(user -> messagingTemplate.convertAndSend("/topic/chatroom/" + user.getId(), chatRoomMessageDto));
 
-        }
     }
 
 
