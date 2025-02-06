@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -305,7 +306,6 @@ public class ChatRoomService {
 
         return userProfiles.stream()
                 .map(userProfile -> new ChatRoomDto.UserProfileDto(
-                        userProfile.getUser().getId(),
                         userProfile.getUser().getName(),
                         userProfile.getEmoji() //이모지
                 ))
@@ -332,11 +332,15 @@ public class ChatRoomService {
         // 한 번의 쿼리로 해당 채팅방의 모든 팀 사용자 관계 조회 (DB 조회 1회)
         List<UserTeam> userTeams = userTeamRepository.findByTeamIdIn(teamIds);
 
-        // 팀별 사용자 매핑을 위한 Map 생성
-        Map<Long, List<Long>> teamUserMap = userTeams.stream()
+        // 사용자 목록을 Map으로 변환 (name을 key로 사용)
+        Map<String, ChatRoomDto.UserProfileDto> userProfileMap = userProfileDtos.stream()
+                .collect(Collectors.toMap(ChatRoomDto.UserProfileDto::getName, Function.identity()));
+
+        // 팀별 사용자 매핑을 위한 Map 생성 (`name` 기반)
+        Map<Long, List<String>> teamUserMap = userTeams.stream()
                 .collect(Collectors.groupingBy(
                         userTeam -> userTeam.getTeam().getId(),
-                        Collectors.mapping(userTeam -> userTeam.getUser().getId(), Collectors.toList())
+                        Collectors.mapping(userTeam -> userTeam.getUser().getName(), Collectors.toList())  // ✅ name 사용
                 ));
 
         // 팀별 사용자 매핑
@@ -346,12 +350,13 @@ public class ChatRoomService {
             Long teamId = teamChatRoom.getTeam().getId();
             String teamName = teamChatRoom.getName();
 
-            // 현재 팀에 속한 사용자 ID 목록 가져오기
-            List<Long> teamUserIds = teamUserMap.getOrDefault(teamId, Collections.emptyList());
+            // 현재 팀에 속한 사용자 `name` 목록 가져오기
+            List<String> teamUserNames = teamUserMap.getOrDefault(teamId, Collections.emptyList());
 
-            // 사용자 목록을 ID 기준으로 필터링 (인메모리에서 처리)
-            List<ChatRoomDto.UserProfileDto> teamUsers = userProfileDtos.stream()
-                    .filter(userProfile -> teamUserIds.contains(userProfile.getId()))
+            // 사용자 목록을 name 기준으로 필터링
+            List<ChatRoomDto.UserProfileDto> teamUsers = teamUserNames.stream()
+                    .map(userProfileMap::get)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
             // 팀별 사용자 목록 추가
@@ -363,7 +368,6 @@ public class ChatRoomService {
 
         return teamUserLists;
     }
-
 
 
 }

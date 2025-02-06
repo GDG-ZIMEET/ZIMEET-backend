@@ -29,7 +29,6 @@ public class ChatRoomDto {
     @AllArgsConstructor
     @Builder
     public static class UserProfileDto {
-        private Long id;
         private String name;
         private String emoji;
     }
