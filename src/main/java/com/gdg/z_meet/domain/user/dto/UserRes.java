@@ -34,4 +34,16 @@ public class UserRes {
         private IdealAge idealAge;
         private IdealType idealType;
         }
+
+    @Getter
+    @Builder
+    public static class NicknameUpdateRes {
+        private String nickname;
+    }
+
+    @Getter
+    @Builder
+    public static class EmojiUpdateRes {
+        private String emoji;
+    }
 }

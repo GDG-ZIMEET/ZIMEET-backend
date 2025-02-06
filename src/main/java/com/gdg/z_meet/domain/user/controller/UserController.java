@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.user.controller;
 
+import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.global.exception.GlobalException;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;
@@ -10,6 +11,7 @@ import com.gdg.z_meet.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,6 +48,32 @@ public class UserController {
         try {
             Long userId = jwtUtil.extractUserIdFromRequest(request);
             return Response.ok(userService.getProfile(userId));
+        } catch (GlobalException exception) {
+            return Response.fail(exception.getCode());
+        }
+    }
+
+    @PatchMapping("/myprofile/nickname")
+    @Operation(summary = "내 닉네임 수정", description = "내 닉네임 수정")
+    public Response<UserRes.NicknameUpdateRes> updateNickname(
+            HttpServletRequest request,
+            @Valid @RequestBody UserReq.NicknameUpdateReq nicknameUpdateReq) {
+        try {
+            Long userId = jwtUtil.extractUserIdFromRequest(request);
+            return Response.ok(userService.updateNickname(userId, nicknameUpdateReq));
+        } catch (GlobalException exception) {
+            return Response.fail(exception.getCode());
+        }
+    }
+
+    @PatchMapping("/myprofile/emoji")
+    @Operation(summary = "내 이모지 수정", description = "내 이모지 수정")
+    public Response<UserRes.EmojiUpdateRes> updateEmoji(
+            HttpServletRequest request,
+            @Valid @RequestBody UserReq.EmojiUpdateReq emojiUpdateReq) {
+        try {
+            Long userId = jwtUtil.extractUserIdFromRequest(request);
+            return Response.ok(userService.updateEmoji(userId, emojiUpdateReq));
         } catch (GlobalException exception) {
             return Response.fail(exception.getCode());
         }

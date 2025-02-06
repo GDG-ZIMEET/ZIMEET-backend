@@ -124,4 +124,30 @@ public class UserService {
 //                .level(userProfile.getLevel())
                 .build();
     }
+
+    @Transactional
+    public UserRes.NicknameUpdateRes updateNickname(Long userId, UserReq.NicknameUpdateReq request) {
+        UserProfile userProfile = userProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+
+        userProfile.setNickname(request.getNickname());
+        userProfileRepository.save(userProfile);
+
+        return UserRes.NicknameUpdateRes.builder()
+                .nickname(userProfile.getNickname())
+                .build();
+    }
+
+    @Transactional
+    public UserRes.EmojiUpdateRes updateEmoji(Long userId, UserReq.EmojiUpdateReq request) {
+        UserProfile userProfile = userProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+
+        userProfile.setEmoji(request.getEmoji());
+        userProfileRepository.save(userProfile);
+
+        return UserRes.EmojiUpdateRes.builder()
+                .emoji(userProfile.getEmoji())
+                .build();
+    }
 }
