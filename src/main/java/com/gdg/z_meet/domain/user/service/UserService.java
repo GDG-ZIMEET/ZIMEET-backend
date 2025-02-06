@@ -34,6 +34,11 @@ public class UserService {
                     throw new IllegalArgumentException("이미 가입된 학번입니다.");
                 });
 
+        userProfileRepository.findByNickname(signUpReq.getNickname())
+                .ifPresent(user -> {
+                    throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+                });
+
         String encodedPassword = encoder.encode(signUpReq.getPassword());
 
         User user = User.builder()
@@ -74,11 +79,14 @@ public class UserService {
 
         Token token = jwtUtil.createToken(loginReq.getStudentNumber(), user.getId());
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .keyId(token.getKey())
-                .refreshToken(token.getRefreshToken())
-                .build();
-        Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByKeyId(loginReq.getStudentNumber());
+        saveRefreshToken(token);  // 트랜잭션 적용된 메서드 호출
+
+        return token;
+    }
+
+    @Transactional
+    public void saveRefreshToken(Token token) {
+        Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByKeyId(token.getKey());
 
         if (tokenOptional.isEmpty()) {
             refreshTokenRepository.save(
@@ -87,8 +95,33 @@ public class UserService {
                             .refreshToken(token.getRefreshToken())
                             .build());
         } else {
-            refreshToken.update(tokenOptional.get().getRefreshToken());
+            tokenOptional.get().update(token.getRefreshToken());
         }
-        return token;
+    }
+
+
+    @Transactional
+    public UserRes.ProfileRes getProfile(Long userId) {
+        UserProfile userProfile = userProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+
+        User user = userProfile.getUser();
+
+        return UserRes.ProfileRes.builder()
+                .name(user.getName())
+                .studentNumber(user.getStudentNumber())
+                .nickname(userProfile.getNickname())
+                .emoji(userProfile.getEmoji())
+//                .music(userProfile.getMusic())
+                .mbti(userProfile.getMbti())
+                .style(userProfile.getStyle())
+                .idealType(userProfile.getIdealType())
+                .idealAge(userProfile.getIdealAge())
+//                .gender(userProfile.getGender())
+                .grade(userProfile.getGrade())
+                .major(userProfile.getMajor())
+                .age(userProfile.getAge())
+//                .level(userProfile.getLevel())
+                .build();
     }
 }

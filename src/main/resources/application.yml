@@ -29,6 +29,8 @@ spring:
       enabled: true
     swagger-ui:
       enabled: true
+    cache:
+      disabled: true
 
 jwt:
     secret: ${JWT_SECRET_KEY}
