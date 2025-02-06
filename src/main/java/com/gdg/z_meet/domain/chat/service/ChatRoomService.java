@@ -362,6 +362,7 @@ public class ChatRoomService {
 
             // 팀별 사용자 목록 추가
             teamUserLists.add(ChatRoomDto.chatRoomUserList.builder()
+                    .teamId(teamId)
                     .teamName(teamName)
                     .userProfiles(teamUsers)
                     .build());

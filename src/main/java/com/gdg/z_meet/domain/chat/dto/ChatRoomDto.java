@@ -54,6 +54,7 @@ public class ChatRoomDto {
     @AllArgsConstructor
     @Builder
     public static class chatRoomUserList{
+        private Long teamId;
         private String teamName;
         private List<UserProfileDto> userProfiles;
     }
