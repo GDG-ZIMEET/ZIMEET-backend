@@ -31,6 +31,8 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user/**", "/swagger-ui/**", "/v3/api-docs/**", "/booths/**", "/ws/**").permitAll() // 인증 없이 접근 허용
+                        .requestMatchers("/actuator/health").permitAll()     // 헬스 체크 허용
+                        .requestMatchers("/actuator/**").permitAll()         // 모든 Actuator 엔드포인트 허용
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
