@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/meeting")
+@RequestMapping("/api/meeting")
 @Tag(name = "Meeting")
 @Validated
 public class MeetingController {
