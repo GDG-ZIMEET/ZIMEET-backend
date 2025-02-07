@@ -11,8 +11,7 @@ public class ChatRoomDto {
     @AllArgsConstructor
     @Builder
     public static class resultChatRoomDto{
-        private Long id;
-        private String name;
+        private Long chatRoomid;
     }
 
     @Getter
@@ -30,9 +29,34 @@ public class ChatRoomDto {
     @AllArgsConstructor
     @Builder
     public static class UserProfileDto {
-        private Long id;
         private String name;
         private String emoji;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class TeamListDto{
+        private Long teamId1;
+        private Long teamId2;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class chatRoomMessageDTO{
+        private Long chatRoomId;
+        private String latestMessage;
+        private LocalDateTime lastestTime;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class chatRoomUserList{
+        private Long teamId;
+        private String teamName;
+        private List<UserProfileDto> userProfiles;
     }
 
 
