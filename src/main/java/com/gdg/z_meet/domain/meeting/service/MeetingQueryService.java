@@ -7,4 +7,6 @@ public interface MeetingQueryService {
 
     MeetingResponseDTO.GetTeamGalleryDTO getTeamGallery(Long userId, TeamType teamType, Integer page);
     MeetingResponseDTO.GetTeamDTO getTeam(Long userId, Long teamId);
+    MeetingResponseDTO.GetMyTeamDTO getPreMyTeam(Long userId, TeamType teamType);
+    MeetingResponseDTO.GetTeamDTO getMyTeam(Long userId, TeamType teamType);
 }

@@ -56,8 +56,19 @@ public class MeetingConverter {
         return MeetingResponseDTO.GetTeamDTO.builder()
                 .teamId(team.getId())
                 .name(team.getName())
+                .verification(team.getVerification() == COMPLETE ? 1 : 0)
                 .gender(String.valueOf(team.getGender()))
                 .userList(teamUserDTOS)
+                .build();
+    }
+
+    public static MeetingResponseDTO.GetMyTeamDTO toGetMyTeamDTO(Team team, List<String> emojiList){
+
+        return MeetingResponseDTO.GetMyTeamDTO.builder()
+                .teamId(team.getId())
+                .emoji(emojiList)
+                .name(team.getName())
+                .verification(team.getVerification() == COMPLETE ? 1 : 0)
                 .build();
     }
 }
