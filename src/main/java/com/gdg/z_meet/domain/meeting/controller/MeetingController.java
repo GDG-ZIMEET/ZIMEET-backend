@@ -8,6 +8,7 @@ import com.gdg.z_meet.global.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +58,15 @@ public class MeetingController {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         MeetingResponseDTO.GetTeamDTO response = meetingQueryService.getMyTeam(userId, teamType);
+
+        return Response.ok(response);
+    }
+
+    @Operation(summary = "팀명 중복확인")
+    @GetMapping("/teamName")
+    public Response<MeetingResponseDTO.CheckNameDTO> checkName(@RequestParam @Size(min = 1, max = 7) String name) {
+
+        MeetingResponseDTO.CheckNameDTO response = meetingQueryService.checkName(name);
 
         return Response.ok(response);
     }
