@@ -126,6 +126,16 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         return MeetingConverter.toGetTeamDTO(team, users);
     }
 
+    @Override
+    public MeetingResponseDTO.CheckNameDTO checkName(String name) {
+
+        Boolean exist = teamRepository.existsByName(name);
+
+        return MeetingResponseDTO.CheckNameDTO.builder()
+                .check(exist == Boolean.TRUE ? 0 : 1)
+                .build();
+    }
+
     private void validateTeamType(Long teamId, TeamType teamType) {
 
         Long userCount = userTeamRepository.countByTeamId(teamId);

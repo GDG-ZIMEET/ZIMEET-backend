@@ -73,4 +73,12 @@ public class MeetingResponseDTO {
         String name;
         Integer verification;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CheckNameDTO {
+        Integer check;
+    }
 }

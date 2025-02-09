@@ -9,4 +9,5 @@ public interface MeetingQueryService {
     MeetingResponseDTO.GetTeamDTO getTeam(Long userId, Long teamId);
     MeetingResponseDTO.GetMyTeamDTO getPreMyTeam(Long userId, TeamType teamType);
     MeetingResponseDTO.GetTeamDTO getMyTeam(Long userId, TeamType teamType);
+    MeetingResponseDTO.CheckNameDTO checkName(String name);
 }
