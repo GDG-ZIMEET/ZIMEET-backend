@@ -52,6 +52,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                     List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
                     return userTeams.stream()
                             .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor()))
+                            .distinct()
                             .collect(Collectors.toList());
                 }
         ));
@@ -68,6 +69,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                     List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
                     return userTeams.stream()
                             .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMusic()))
+                            .distinct()
                             .collect(Collectors.toList());
                 }
         ));
