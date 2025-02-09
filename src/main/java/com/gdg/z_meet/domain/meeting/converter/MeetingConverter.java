@@ -2,6 +2,7 @@ package com.gdg.z_meet.domain.meeting.converter;
 
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
+import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.user.entity.User;
 
 import java.util.List;
@@ -69,6 +70,14 @@ public class MeetingConverter {
                 .emoji(emojiList)
                 .name(team.getName())
                 .verification(team.getVerification() == COMPLETE ? 1 : 0)
+                .build();
+    }
+
+    public static void toCreateUserTeam(User user, Team team) {
+
+        UserTeam.builder()
+                .user(user)
+                .team(team)
                 .build();
     }
 }

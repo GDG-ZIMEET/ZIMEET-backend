@@ -141,10 +141,10 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private void validateTeamType(Long teamId, TeamType teamType) {
 
         Long userCount = userTeamRepository.countByTeamId(teamId);
-        if (teamType != TeamType.TWO_TO_TWO && userCount == 2) {
+        if (teamType == TeamType.TWO_TO_TWO && userCount != 2) {
             throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         }
-        if (teamType != TeamType.THREE_TO_THREE && userCount == 3) {
+        if (teamType == TeamType.THREE_TO_THREE && userCount != 3) {
             throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         }
     }
