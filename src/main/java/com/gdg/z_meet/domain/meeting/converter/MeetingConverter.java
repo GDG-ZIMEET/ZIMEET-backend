@@ -71,4 +71,11 @@ public class MeetingConverter {
                 .verification(team.getVerification() == COMPLETE ? 1 : 0)
                 .build();
     }
+
+    public static MeetingResponseDTO.GetMyTeamHiDTO toGetMyTeamHiDTO(Team team){
+
+        return MeetingResponseDTO.GetMyTeamHiDTO.builder()
+                .hi(team.getHi())
+                .build();
+    }
 }

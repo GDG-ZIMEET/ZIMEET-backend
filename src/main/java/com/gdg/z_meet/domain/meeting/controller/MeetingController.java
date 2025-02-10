@@ -62,6 +62,16 @@ public class MeetingController {
         return Response.ok(response);
     }
 
+    @Operation(summary = "우리 팀 하이 개수")
+    @GetMapping("/myTeam/hi")
+    public Response<MeetingResponseDTO.GetMyTeamHiDTO> getMyTeamHi(@RequestParam TeamType teamType) {
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        MeetingResponseDTO.GetMyTeamHiDTO response = meetingQueryService.getMyTeamHi(userId, teamType);
+
+        return Response.ok(response);
+    }
+
     @Operation(summary = "팀명 중복확인")
     @GetMapping("/teamName")
     public Response<MeetingResponseDTO.CheckNameDTO> checkName(@RequestParam @Size(min = 1, max = 7) String name) {

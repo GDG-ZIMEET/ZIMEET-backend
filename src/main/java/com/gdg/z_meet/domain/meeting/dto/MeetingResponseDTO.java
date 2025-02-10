@@ -78,6 +78,14 @@ public class MeetingResponseDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class GetMyTeamHiDTO {
+        Integer hi;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CheckNameDTO {
         Integer check;
     }
