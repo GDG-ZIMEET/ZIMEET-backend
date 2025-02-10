@@ -27,6 +27,12 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     @Transactional
     public void createTeam(Long userId, TeamType teamType, MeetingRequestDTO.CreateTeamDTO request) {
 
+        // 닉네임 중복 확인
+        if (teamRepository.existsByName(request.getName())) {
+            throw new BusinessException(Code.NAME_ALREADY_EXIST);
+        }
+
+        // 팀원 수 확인
         int userCount = request.getTeamMember().size();
         if (teamType == TeamType.TWO_TO_TWO && userCount != 2) {
             throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
@@ -48,7 +54,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
             if (user.getUserProfile().getGender() != gender) {
                 throw new BusinessException(Code.TEAM_GENDER_MISMATCH);
             }
-            MeetingConverter.toCreateUserTeam(user, newTeam);
+            MeetingConverter.toUserTeam(user, newTeam);
         }
     }
 }

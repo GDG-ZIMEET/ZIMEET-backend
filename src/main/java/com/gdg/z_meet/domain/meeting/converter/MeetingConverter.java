@@ -73,7 +73,7 @@ public class MeetingConverter {
                 .build();
     }
 
-    public static void toCreateUserTeam(User user, Team team) {
+    public static void toUserTeam(User user, Team team) {
 
         UserTeam.builder()
                 .user(user)
