@@ -96,6 +96,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MeetingResponseDTO.GetMyTeamDTO getPreMyTeam(Long userId, TeamType teamType) {
 
         Team team = teamRepository.findByTeamType(userId, teamType)
@@ -129,6 +130,19 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetMyTeamHiDTO getMyTeamHi(Long userId, TeamType teamType) {
+
+        Team team = teamRepository.findByTeamType(userId, teamType)
+                .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+
+        validateTeamType(team.getId(), teamType);
+
+        return MeetingConverter.toGetMyTeamHiDTO(team);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public MeetingResponseDTO.CheckNameDTO checkName(String name) {
 
         Boolean exist = teamRepository.existsByName(name);

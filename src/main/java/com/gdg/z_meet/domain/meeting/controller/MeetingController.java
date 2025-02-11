@@ -65,6 +65,16 @@ public class MeetingController {
         return Response.ok(response);
     }
 
+    @Operation(summary = "우리 팀 하이 개수")
+    @GetMapping("/myTeam/hi")
+    public Response<MeetingResponseDTO.GetMyTeamHiDTO> getMyTeamHi(@RequestParam TeamType teamType) {
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        MeetingResponseDTO.GetMyTeamHiDTO response = meetingQueryService.getMyTeamHi(userId, teamType);
+
+        return Response.ok(response);
+    }
+
     @Operation(summary = "팀 만들기")
     @PostMapping("/myTeam")
     public Response<Void> creatTeam(@RequestParam TeamType teamType, @RequestBody MeetingRequestDTO.CreateTeamDTO request) {

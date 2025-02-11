@@ -73,6 +73,13 @@ public class MeetingConverter {
                 .build();
     }
 
+    public static MeetingResponseDTO.GetMyTeamHiDTO toGetMyTeamHiDTO(Team team){
+
+        return MeetingResponseDTO.GetMyTeamHiDTO.builder()
+                .hi(team.getHi())
+                .build();
+    }
+
     public static void toUserTeam(User user, Team team) {
 
         UserTeam.builder()
