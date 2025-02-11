@@ -13,6 +13,28 @@ public class MeetingResponseDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class GetPreTeamDTO {
+        Long teamId;
+        List<String> emoji;
+        String name;
+        Integer verification;
+        List<String> major;
+        Double age;
+        List<String> music;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetTeamGalleryDTO {
+        List<GetPreTeamDTO> teamList;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class GetTeamUserDTO {
         Long userId;
         String emoji;
@@ -36,6 +58,35 @@ public class MeetingResponseDTO {
     public static class GetTeamDTO {
         Long teamId;
         String name;
+        Integer verification;
+        String gender;
         List<GetTeamUserDTO> userList;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMyTeamDTO {
+        Long teamId;
+        List<String> emoji;
+        String name;
+        Integer verification;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMyTeamHiDTO {
+        Integer hi;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CheckNameDTO {
+        Integer check;
     }
 }

@@ -43,8 +43,7 @@ public class ChatWebSocketController {
         chatMessage = ChatMessage.builder()
                 .id(UUID.randomUUID().toString())
                 .type(chatMessage.getType())
-                .roomId(roomId.toString())
-                .senderId(senderId)
+                .roomId(roomId)
                 .senderName(user.getUserProfile().getNickname())
                 .content(chatMessage.getContent())
                 .sendAt(LocalDateTime.now())
@@ -59,7 +58,7 @@ public class ChatWebSocketController {
                 chatService.handleTalkMessage(chatMessage);
                 break;
             case EXIT:
-                chatService.handleExitMessage(roomId, senderId, chatMessage.getSenderName());
+                chatService.handleExitMessage(roomId, chatMessage.getSenderName());
                 break;
             default:
                 chatService.handleTalkMessage(chatMessage);

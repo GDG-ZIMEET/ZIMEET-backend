@@ -79,11 +79,14 @@ public class UserService {
 
         Token token = jwtUtil.createToken(loginReq.getStudentNumber(), user.getId());
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .keyId(token.getKey())
-                .refreshToken(token.getRefreshToken())
-                .build();
-        Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByKeyId(loginReq.getStudentNumber());
+        saveRefreshToken(token);  // 트랜잭션 적용된 메서드 호출
+
+        return token;
+    }
+
+    @Transactional
+    public void saveRefreshToken(Token token) {
+        Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByKeyId(token.getKey());
 
         if (tokenOptional.isEmpty()) {
             refreshTokenRepository.save(
@@ -92,10 +95,10 @@ public class UserService {
                             .refreshToken(token.getRefreshToken())
                             .build());
         } else {
-            refreshToken.update(tokenOptional.get().getRefreshToken());
+            tokenOptional.get().update(token.getRefreshToken());
         }
-        return token;
     }
+
 
     @Transactional
     public UserRes.ProfileRes getProfile(Long userId) {
