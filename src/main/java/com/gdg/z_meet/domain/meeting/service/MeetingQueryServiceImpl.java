@@ -7,6 +7,7 @@ import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
+import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
@@ -175,12 +176,12 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         if(from.getTeamType()!=to.getTeamType()) throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         if(from.getGender()==to.getGender()) throw new BusinessException(Code.SAME_GENDER);
-
         if(hiRepository.existsByFromAndTo(from,to)) throw new BusinessException(Code.HI_DUPLICATION);
 
         from.decreaseHi(); // 하이 갯수 차감
 
         Hi hi = Hi.builder()
+                .hiStatus(HiStatus.NONE)
                 .from(from)
                 .to(to)
                 .build();

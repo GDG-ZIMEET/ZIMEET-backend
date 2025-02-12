@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.entity;
 
+import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
 import com.gdg.z_meet.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,6 +16,10 @@ public class Hi extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "hi_id", unique = true)
     private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private HiStatus hiStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "from_id")
