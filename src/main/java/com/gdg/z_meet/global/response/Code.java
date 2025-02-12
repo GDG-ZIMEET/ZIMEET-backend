@@ -38,6 +38,11 @@ public enum Code implements BaseCode {
     INVALID_MY_TEAM_ACCESS(HttpStatus.BAD_REQUEST, "MEETING4004", "본인 팀은 조회할 수 없습니다."),
     INVALID_OTHER_TEAM_ACCESS(HttpStatus.BAD_REQUEST, "MEETING4005", "다른 팀은 조회할 수 없습니다."),
 
+    //Hi Error
+    HI_COUNT_ZERO(HttpStatus.BAD_REQUEST, "Hi4001","하이의 갯수가 0개 일 경우 하이를 보낼 수 없습니다."),
+    SAME_GENDER(HttpStatus.BAD_REQUEST, "Hi4002", "같은 성별의 팀에게는 하이를 보낼 수 없습니다."),
+    HI_DUPLICATION(HttpStatus.BAD_REQUEST, "Hi4003", "이미 하이를 보낸 팀입니다."),
+
     // Chat Error
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4001","채팅방을 찾을 수 없습니다."),
     JOINCHAT_ALREADY_EXIST(HttpStatus.BAD_REQUEST,"CHAT4002","이미 채팅방에 추가된 사용자입니다."),

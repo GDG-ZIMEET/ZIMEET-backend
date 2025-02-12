@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.controller;
 
+import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.TeamType;
 import com.gdg.z_meet.domain.meeting.service.MeetingQueryService;
@@ -79,5 +80,12 @@ public class MeetingController {
         MeetingResponseDTO.CheckNameDTO response = meetingQueryService.checkName(name);
 
         return Response.ok(response);
+    }
+
+    @Operation(summary = "하이 보내기")
+    @PostMapping("/hi/send")
+    public Response<String> sendHi(@RequestBody MeetingRequestDTO.hiDto hiDto){
+        meetingQueryService.sendHi(hiDto);
+        return Response.ok(hiDto.getToId() +"팀에게 하이가 보내졌습니다. ");
     }
 }

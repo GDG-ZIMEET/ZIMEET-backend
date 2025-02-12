@@ -1,10 +1,13 @@
 package com.gdg.z_meet.domain.meeting.service;
 
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
+import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
+import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
+import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
@@ -17,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +33,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
+    private final HiRepository hiRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -150,6 +155,36 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         return MeetingResponseDTO.CheckNameDTO.builder()
                 .check(exist == Boolean.TRUE ? 0 : 1)
                 .build();
+    }
+
+    @Override
+    @Transactional()
+    public void sendHi(MeetingRequestDTO.hiDto hiDto){
+        List<Long> teamIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
+        List<Team> teams = teamRepository.findByIdIn(teamIds);
+
+        if (teams.size() != 2) {
+            throw new BusinessException(Code.TEAM_NOT_FOUND); // 모든 팀을 못 찾은 경우
+        }
+
+        Team from = teams.get(0);  //보내는 팀
+        Team to = teams.get(1);    //받는 팀
+
+        validateTeamType(from.getId(), from.getTeamType());
+        validateTeamType(to.getId(), to.getTeamType());
+
+        if(from.getTeamType()!=to.getTeamType()) throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
+        if(from.getGender()==to.getGender()) throw new BusinessException(Code.SAME_GENDER);
+
+        if(hiRepository.existsByFromAndTo(from,to)) throw new BusinessException(Code.HI_DUPLICATION);
+
+        from.decreaseHi(); // 하이 갯수 차감
+
+        Hi hi = Hi.builder()
+                .from(from)
+                .to(to)
+                .build();
+        hiRepository.save(hi);
     }
 
     private void validateTeamType(Long teamId, TeamType teamType) {
