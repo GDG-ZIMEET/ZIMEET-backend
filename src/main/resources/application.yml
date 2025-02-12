@@ -1,3 +1,12 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health      # Actuator에서 health 엔드포인트를 활성화
+  endpoint:
+    health:
+      show-details: always
+
 spring:
   server:
     port: 8080

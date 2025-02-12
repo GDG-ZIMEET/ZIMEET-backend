@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/payments")
+@RequestMapping("/api/payments")
 public class OrderVerifyController {
 
     @Operation(summary="주문 정보 임시 저장 API" ,

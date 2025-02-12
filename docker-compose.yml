@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   mysql:      # dev 환경
     container_name: mysql1
@@ -42,9 +40,6 @@ services:
       - .env
     ports:
       - "8081:8080"
-    depends_on:
-      mysql:
-        condition: service_healthy
     environment:
       - MYSQL_USER=${PROD_DB_USERNAME}
       - MYSQL_PASSWORD=${PROD_DB_PASSWORD}
@@ -52,8 +47,20 @@ services:
     networks:
       - gdg_network
 
-# 동일 네트워크에서 컨테이너 간 통신을 위한 네트워크 설정
-# 각 컨테이너들은 backend 와 네트워크 내부에서 통신 or 외부와 통신 가능
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - gdg_network
+    restart: always
+
 networks:
   gdg_network:
     driver: bridge
