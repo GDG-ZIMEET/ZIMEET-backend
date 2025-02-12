@@ -188,6 +188,26 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         hiRepository.save(hi);
     }
 
+    @Override
+    @Transactional
+    public void refuseHi(MeetingRequestDTO.hiDto hiDto) {
+        List<Long> teamIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
+        List<Team> teams = teamRepository.findByIdIn(teamIds);
+
+        if (teams.size() != 2) {
+            throw new BusinessException(Code.TEAM_NOT_FOUND); // 모든 팀을 못 찾은 경우
+        }
+
+        Team from = teams.get(0);  //보내는 팀
+        Team to = teams.get(1);    //받는 팀
+
+        validateTeamType(from.getId(), from.getTeamType());
+        validateTeamType(to.getId(), to.getTeamType());
+
+        Hi hi = hiRepository.findByFromAndTo(from,to);
+        hi.changeStatus(HiStatus.REFUSE);
+    }
+
     private void validateTeamType(Long teamId, TeamType teamType) {
 
         Long userCount = userTeamRepository.countByTeamId(teamId);

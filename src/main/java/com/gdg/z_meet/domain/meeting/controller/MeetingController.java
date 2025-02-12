@@ -88,4 +88,11 @@ public class MeetingController {
         meetingQueryService.sendHi(hiDto);
         return Response.ok(hiDto.getToId() +"팀에게 하이가 보내졌습니다. ");
     }
+
+    @Operation(summary = "하이 보내기")
+    @PostMapping("/hi/refuse")
+    public Response<String> refuseHi(@RequestBody MeetingRequestDTO.hiDto hiDto){
+        meetingQueryService.refuseHi(hiDto);
+        return Response.ok(hiDto.getFromId() +"팀이 보낸 하이가 거절되었습니다. ");
+    }
 }
