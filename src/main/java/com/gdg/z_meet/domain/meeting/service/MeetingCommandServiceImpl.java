@@ -5,6 +5,7 @@ import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.TeamType;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
+import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
@@ -20,12 +21,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class MeetingCommandServiceImpl implements MeetingCommandService {
 
     private final UserRepository userRepository;
+    private final UserTeamRepository userTeamRepository;
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
 
     @Override
     @Transactional
     public void createTeam(Long userId, TeamType teamType, MeetingRequestDTO.CreateTeamDTO request) {
+
+        // 팀 존재하는지 확인
+        if (userTeamRepository.existsByUserIdAndTeamType(userId, teamType)) {
+         throw new BusinessException(Code.TEAM_ALREADY_EXIST);
+        }
 
         // 닉네임 중복 확인
         if (teamRepository.existsByName(request.getName())) {
