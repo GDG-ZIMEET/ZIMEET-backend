@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -70,9 +71,12 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetMyTeamDTO getPreMyTeam(Long userId, TeamType teamType) {
 
-        Team team = teamRepository.findByTeamType(userId, teamType)
-                .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+        Optional<Team> teamOptional = teamRepository.findByTeamType(userId, teamType);
+        if (teamOptional.isEmpty()) {
+            return null;
+        }
 
+        Team team = teamOptional.get();
         validateTeamType(team.getId(), teamType);
 
         List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
