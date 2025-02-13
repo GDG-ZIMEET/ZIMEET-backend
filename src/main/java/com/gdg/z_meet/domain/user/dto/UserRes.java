@@ -33,7 +33,20 @@ public class UserRes {
         private Style style;
         private IdealAge idealAge;
         private IdealType idealType;
-        }
+    }
+
+    @Getter
+    @Builder
+    public static class UserProfileRes {
+        private String nickname;
+        private String emoji;
+        private int age;
+        private Major major;
+        private MBTI mbti;
+        private Style style;
+        private IdealType idealType;
+        private IdealAge idealAge;
+    }
 
     @Getter
     @Builder

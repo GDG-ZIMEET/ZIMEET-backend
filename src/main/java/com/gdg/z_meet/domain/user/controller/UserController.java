@@ -53,6 +53,16 @@ public class UserController {
         }
     }
 
+    @GetMapping("profile/{nickname}")
+    @Operation(summary = "유저 프로필 조회", description = "유저 프로필 조회")
+    public Response<UserRes.UserProfileRes> getProfile(@PathVariable String nickname) {
+        try {
+            return Response.ok(userService.getUserProfile(nickname));
+        } catch (GlobalException exception) {
+            return Response.fail(exception.getCode());
+        }
+    }
+
     @PatchMapping("/myprofile/nickname")
     @Operation(summary = "내 닉네임 수정", description = "내 닉네임 수정")
     public Response<UserRes.NicknameUpdateRes> updateNickname(

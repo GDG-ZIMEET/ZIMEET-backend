@@ -112,16 +112,32 @@ public class UserService {
                 .studentNumber(user.getStudentNumber())
                 .nickname(userProfile.getNickname())
                 .emoji(userProfile.getEmoji())
-//                .music(userProfile.getMusic())
                 .mbti(userProfile.getMbti())
                 .style(userProfile.getStyle())
                 .idealType(userProfile.getIdealType())
                 .idealAge(userProfile.getIdealAge())
-//                .gender(userProfile.getGender())
                 .grade(userProfile.getGrade())
                 .major(userProfile.getMajor())
                 .age(userProfile.getAge())
-//                .level(userProfile.getLevel())
+                .build();
+    }
+
+    @Transactional
+    public UserRes.UserProfileRes getUserProfile(String nickname) {
+        UserProfile userProfile = userProfileRepository.findByNickname(nickname)
+                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+
+        User user = userProfile.getUser();
+
+        return UserRes.UserProfileRes.builder()
+                .nickname(userProfile.getNickname())
+                .emoji(userProfile.getEmoji())
+                .mbti(userProfile.getMbti())
+                .style(userProfile.getStyle())
+                .idealType(userProfile.getIdealType())
+                .idealAge(userProfile.getIdealAge())
+                .major(userProfile.getMajor())
+                .age(userProfile.getAge())
                 .build();
     }
 

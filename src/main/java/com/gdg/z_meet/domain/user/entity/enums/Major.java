@@ -70,9 +70,4 @@ public enum Major {
     public String getDisplayName() {
         return displayName;
     }
-
-    @JsonValue
-    public String getShortName() {
-        return shortName;
-    }
 }
