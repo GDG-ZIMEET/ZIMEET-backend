@@ -16,6 +16,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class MeetingCommandServiceImpl implements MeetingCommandService {
@@ -28,10 +33,8 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     @Transactional
     public void createTeam(Long userId, TeamType teamType, MeetingRequestDTO.CreateTeamDTO request) {
 
-        // 팀 존재하는지 확인
-        if (teamRepository.existsByTeamType(userId, teamType)) {
-         throw new BusinessException(Code.TEAM_ALREADY_EXIST);
-        }
+        Set<Long> memberIds = new HashSet<>(request.getTeamMember());
+        memberIds.add(userId);
 
         // 닉네임 중복 확인
         if (teamRepository.existsByName(request.getName())) {
@@ -39,33 +42,32 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         }
 
         // 팀원 수 확인
-        int userCount = request.getTeamMember().size();
+        int userCount = memberIds.size();
         if (teamType == TeamType.TWO_TO_TWO && userCount != 2) {
             throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         } else if (teamType == TeamType.THREE_TO_THREE && userCount != 3) {
             throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         }
 
-        Gender gender = userProfileRepository.findById(userId).get().getGender();
-        Team newTeam = Team.builder()
-                        .teamType(teamType)
-                        .name(request.getName())
-                        .gender(gender)
-                        .build();
-        teamRepository.save(newTeam);
-
-        for(Long teamMemberId : request.getTeamMember()) {
-
-            // 팀 존재하는지 확인
-            if (teamRepository.existsByTeamType(teamMemberId, teamType)) {
-                throw new BusinessException(Code.TEAM_ALREADY_EXIST);
-            }
-
-            User user = userRepository.findById(teamMemberId).get();
-            if (user.getUserProfile().getGender() != gender) {
-                throw new BusinessException(Code.TEAM_GENDER_MISMATCH);
-            }
-            MeetingConverter.toUserTeam(user, newTeam);
+        // 팀 존재하는지 확인
+        if (teamRepository.existsAnyMemberByTeamType(new ArrayList<>(memberIds), teamType)) {
+            throw new BusinessException(Code.TEAM_ALREADY_EXIST);
         }
+
+        // 성별 확인
+        List<User> teamMembers = userRepository.findAllByIdWithProfile(new ArrayList<>(memberIds));
+        Gender gender = userProfileRepository.findByUserId(userId).get().getGender();
+        if (teamMembers.stream()
+                .anyMatch(user -> user.getUserProfile().getGender() != gender)) {
+            throw new BusinessException(Code.TEAM_GENDER_MISMATCH);
+        }
+
+        Team newTeam = Team.builder()
+                .teamType(teamType)
+                .name(request.getName())
+                .gender(gender)
+                .build();
+        teamRepository.save(newTeam);
+        teamMembers.forEach(user -> MeetingConverter.toUserTeam(user, newTeam));
     }
 }
