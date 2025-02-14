@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class MeetingCommandServiceImpl implements MeetingCommandService {
 
     private final UserRepository userRepository;
-    private final UserTeamRepository userTeamRepository;
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
 
@@ -30,7 +29,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     public void createTeam(Long userId, TeamType teamType, MeetingRequestDTO.CreateTeamDTO request) {
 
         // 팀 존재하는지 확인
-        if (userTeamRepository.existsByUserIdAndTeamType(userId, teamType)) {
+        if (teamRepository.existsByTeamType(userId, teamType)) {
          throw new BusinessException(Code.TEAM_ALREADY_EXIST);
         }
 
@@ -56,6 +55,11 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         teamRepository.save(newTeam);
 
         for(Long teamMemberId : request.getTeamMember()) {
+
+            // 팀 존재하는지 확인
+            if (teamRepository.existsByTeamType(teamMemberId, teamType)) {
+                throw new BusinessException(Code.TEAM_ALREADY_EXIST);
+            }
 
             User user = userRepository.findById(teamMemberId).get();
             if (user.getUserProfile().getGender() != gender) {

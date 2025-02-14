@@ -10,7 +10,6 @@ import java.util.Optional;
 public interface UserTeamRepository extends JpaRepository<UserTeam, Long> {
 
     boolean existsByUserIdAndTeamId(Long userId, Long teamId);
-    boolean existsByUserIdAndTeamType(Long userId, TeamType teamType);
     List<UserTeam> findByTeamId(Long teamId);
     List<UserTeam> findByTeamIdIn(List<Long> teamIds);
     Long countByTeamId(Long id);
