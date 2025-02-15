@@ -1,28 +1,4 @@
 services:
-  mysql:      # dev 환경
-    container_name: mysql1
-    image: mysql:8.0
-    environment:
-      MYSQL_DATABASE: gdg
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}     # 컨테이너 초기화 시 필요
-      TZ: 'Asia/Seoul'
-    volumes:
-      - ./mysql/conf.d:/etc/mysql/conf.d
-    command:
-      - "mysqld"
-      - "--character-set-server=utf8mb4"
-      - "--collation-server=utf8mb4_unicode_ci"
-    networks:
-      - gdg_network
-    restart: on-failure
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
-      timeout: 10s
-      retries: 5
-
   redis:
     container_name: redis1
     image: redis:latest
@@ -46,6 +22,11 @@ services:
       - MYSQL_URL=jdbc:mysql://${PROD_DB_ENDPOINT}:3306/${PROD_DB_NAME}?serverTimezone=UTC
     networks:
       - gdg_network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   nginx:
     container_name: nginx
