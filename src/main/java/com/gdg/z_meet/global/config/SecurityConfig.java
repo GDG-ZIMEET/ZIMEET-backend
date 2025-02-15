@@ -27,6 +27,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용 안 함
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico").permitAll() // 정적 파일 허용
                         .requestMatchers("/","/api/health","/user/**", "/swagger-ui/**", "/v3/api-docs/**", "/booths/**", "/ws/**").permitAll() // 인증 없이 접근 허용
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
