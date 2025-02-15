@@ -52,6 +52,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                     List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
                     return userTeams.stream()
                             .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor()))
+                            .distinct()
                             .collect(Collectors.toList());
                 }
         ));
@@ -68,6 +69,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                     List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
                     return userTeams.stream()
                             .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMusic()))
+                            .distinct()
                             .collect(Collectors.toList());
                 }
         ));
@@ -94,6 +96,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MeetingResponseDTO.GetMyTeamDTO getPreMyTeam(Long userId, TeamType teamType) {
 
         Team team = teamRepository.findByTeamType(userId, teamType)
@@ -124,6 +127,29 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .collect(Collectors.toList());
 
         return MeetingConverter.toGetTeamDTO(team, users);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetMyTeamHiDTO getMyTeamHi(Long userId, TeamType teamType) {
+
+        Team team = teamRepository.findByTeamType(userId, teamType)
+                .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+
+        validateTeamType(team.getId(), teamType);
+
+        return MeetingConverter.toGetMyTeamHiDTO(team);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.CheckNameDTO checkName(String name) {
+
+        Boolean exist = teamRepository.existsByName(name);
+
+        return MeetingResponseDTO.CheckNameDTO.builder()
+                .check(exist == Boolean.TRUE ? 0 : 1)
+                .build();
     }
 
     private void validateTeamType(Long teamId, TeamType teamType) {
