@@ -16,7 +16,4 @@ public interface MeetingQueryService {
     MeetingResponseDTO.GetTeamDTO getMyTeam(Long userId, TeamType teamType);
     MeetingResponseDTO.GetMyTeamHiDTO getMyTeamHi(Long userId, TeamType teamType);
     MeetingResponseDTO.CheckNameDTO checkName(String name);
-    void sendHi(MeetingRequestDTO.hiDto hiDto);
-    void refuseHi(MeetingRequestDTO.hiDto hiDto);
-    List<MeetingResponseDTO.hiListDto> checkHiList(Long teamId, String action);
 }
