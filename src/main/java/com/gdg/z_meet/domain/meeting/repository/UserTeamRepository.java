@@ -13,5 +13,6 @@ public interface UserTeamRepository extends JpaRepository<UserTeam, Long> {
     List<UserTeam> findByTeamId(Long teamId);
     List<UserTeam> findByTeamIdIn(List<Long> teamIds);
     Long countByTeamId(Long id);
+    void deleteAllByTeamId(Long teamId);
 
 }

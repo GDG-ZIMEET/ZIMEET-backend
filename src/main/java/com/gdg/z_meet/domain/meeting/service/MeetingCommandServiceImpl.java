@@ -8,6 +8,7 @@ import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
+import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
@@ -79,6 +80,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     }
 
     @Override
+    @Transactional
     public void delTeam(Long userId, TeamType teamType) {
 
         Team team = teamRepository.findByTeamType(userId, teamType)
@@ -94,10 +96,12 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         List<User> teamMembers = userRepository.findAllByIdWithProfile(new ArrayList<>(users));
 
         if (teamMembers.stream()
-                .anyMatch(user -> user.getUserProfile().getDeleteTeam() == 0)) {
+                .anyMatch(user -> user.getUserProfile().getLeftDelete() == 0)) {
             throw new BusinessException(Code.DELETE_LIMIT_EXCEEDED);
         }
 
+        userProfileRepository.subtractDelete(users);
+        userTeamRepository.deleteAllByTeamId(teamId);
         teamRepository.delete(team);
 
         if (teamRepository.existsById(teamId)) {

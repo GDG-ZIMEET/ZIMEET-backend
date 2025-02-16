@@ -94,7 +94,7 @@ public class MeetingController {
         return Response.ok(response);
     }
 
-    @Operation(summary = "팀 만들기")
+    @Operation(summary = "팀 삭제하기")
     @DeleteMapping("/myTeam")
     public Response<Void> delTeam(@RequestParam(name = "teamType") TeamType teamType) {
 
