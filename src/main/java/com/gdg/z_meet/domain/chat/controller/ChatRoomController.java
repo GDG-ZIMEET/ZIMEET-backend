@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/chat/rooms") // API 기본 URL 설정
+@RequestMapping("/api/chat/rooms") // API 기본 URL 설정
 @RequiredArgsConstructor
 @Tag(name = "ChatAPI",description = "채팅방 관련 기능 API 입니다.")
 public class ChatRoomController {

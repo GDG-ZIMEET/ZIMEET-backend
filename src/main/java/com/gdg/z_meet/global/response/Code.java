@@ -37,6 +37,9 @@ public enum Code implements BaseCode {
     TEAM_TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "MEETING4003", "팀원 수가 일치하지 않습니다."),
     INVALID_MY_TEAM_ACCESS(HttpStatus.BAD_REQUEST, "MEETING4004", "본인 팀은 조회할 수 없습니다."),
     INVALID_OTHER_TEAM_ACCESS(HttpStatus.BAD_REQUEST, "MEETING4005", "다른 팀은 조회할 수 없습니다."),
+    NAME_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "MEETING4006", "이미 존재하는 팀명입니다."),
+    TEAM_GENDER_MISMATCH(HttpStatus.BAD_REQUEST, "MEETING4007", "팀의 성별과 일치하지 않습니다."),
+    TEAM_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "MEETING4008", "팀이 이미 존재합니다."),
 
     //Hi Error
     HI_COUNT_ZERO(HttpStatus.BAD_REQUEST, "Hi4001","하이의 갯수가 0개 일 경우 하이를 보낼 수 없습니다."),

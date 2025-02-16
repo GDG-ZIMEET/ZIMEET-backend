@@ -25,4 +25,9 @@ spring:
     redis:
       host: redis
       port: 6379
+  mvc:
+    static-path-pattern: /static/**
+  web:
+    resources:
+      static-locations: classpath:/static/, file:/static/
 

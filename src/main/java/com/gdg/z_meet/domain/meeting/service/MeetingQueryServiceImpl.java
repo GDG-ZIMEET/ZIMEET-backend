@@ -25,7 +25,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.util.*;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -44,41 +51,10 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<Team> teamList = teamRepository.findAllByTeamType(userId, gender, teamType, PageRequest.of(page, 12));
         Collections.shuffle(teamList);
 
-        Map<Long, List<String>> emojiList = teamList.stream().collect(Collectors.toMap(
-                Team::getId, team -> {
-                    List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
-                    return userTeams.stream()
-                            .map(userTeam -> userTeam.getUser().getUserProfile().getEmoji())
-                            .collect(Collectors.toList());
-                }
-        ));
-
-        Map<Long, List<String>> majorList = teamList.stream().collect(Collectors.toMap(
-                Team::getId, team -> {
-                    List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
-                    return userTeams.stream()
-                            .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor()))
-                            .distinct()
-                            .collect(Collectors.toList());
-                }
-        ));
-
-        Map<Long, Double> age = teamList.stream().collect(Collectors.toMap(
-                Team::getId, team -> userTeamRepository.findByTeamId(team.getId()).stream()
-                        .mapToInt(userTeam -> userTeam.getUser().getUserProfile().getAge())
-                        .average()
-                        .orElse(0.0)
-        ));
-
-        Map<Long, List<String>> musicList = teamList.stream().collect(Collectors.toMap(
-                Team::getId, team -> {
-                    List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
-                    return userTeams.stream()
-                            .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMusic()))
-                            .distinct()
-                            .collect(Collectors.toList());
-                }
-        ));
+        Map<Long, List<String>> emojiList = collectEmoji(teamList);
+        Map<Long, List<String>> majorList = collectMajor(teamList);
+        Map<Long, Double> age = collectAge(teamList);
+        Map<Long, List<String>> musicList = collectMusic(teamList);
 
         return MeetingConverter.toGetTeamGalleryDTO(teamList, emojiList, majorList, age, musicList);
     }
@@ -105,9 +81,12 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetMyTeamDTO getPreMyTeam(Long userId, TeamType teamType) {
 
-        Team team = teamRepository.findByTeamType(userId, teamType)
-                .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+        Optional<Team> teamOptional = teamRepository.findByTeamType(userId, teamType);
+        if (teamOptional.isEmpty()) {
+            return null;
+        }
 
+        Team team = teamOptional.get();
         validateTeamType(team.getId(), teamType);
 
         List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
@@ -221,13 +200,61 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         hi.changeStatus(HiStatus.REFUSE);
     }
 
-    private void validateTeamType(Long teamId, TeamType teamType) {
+    private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
+
+        return collectTeamInfo(teamList,
+                userTeam -> userTeam.getUser().getUserProfile().getEmoji(),
+                false);
+    }
+
+    private Map<Long, List<String>> collectMajor(List<Team> teamList) {
+
+        return collectTeamInfo(teamList,
+                userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor()),
+                true);
+    }
+
+    private Map<Long, Double> collectAge(List<Team> teamList) {
+
+        return teamList.stream().collect(Collectors.toMap(
+                Team::getId, team -> userTeamRepository.findByTeamId(team.getId()).stream()
+                        .mapToInt(userTeam -> userTeam.getUser().getUserProfile().getAge())
+                        .average()
+                        .orElse(0.0)
+        ));
+    }
+
+    private Map<Long, List<String>> collectMusic(List<Team> teamList) {
+
+        return collectTeamInfo(teamList,
+                userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMusic()),
+                true);
+    }
+
+    @Transactional(readOnly = true)
+    protected Map<Long, List<String>> collectTeamInfo(List<Team> teamList,
+                                                      Function<UserTeam, String> mapper,
+                                                      boolean distinct) {
+
+        return teamList.stream().collect(Collectors.toMap(
+                Team::getId, team -> {
+                    Stream<String> stream = userTeamRepository.findByTeamId(team.getId())
+                            .stream()
+                            .map(mapper);
+                    return (distinct ? stream.distinct() : stream)
+                            .collect(Collectors.toList());
+                }
+        ));
+    }
+
+    @Transactional(readOnly = true)
+    protected void validateTeamType(Long teamId, TeamType teamType) {
 
         Long userCount = userTeamRepository.countByTeamId(teamId);
-        if (teamType != TeamType.TWO_TO_TWO && userCount == 2) {
+        if (teamType == TeamType.TWO_TO_TWO && userCount != 2) {
             throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         }
-        if (teamType != TeamType.THREE_TO_THREE && userCount == 3) {
+        if (teamType == TeamType.THREE_TO_THREE && userCount != 3) {
             throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         }
     }
