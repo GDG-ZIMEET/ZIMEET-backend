@@ -136,8 +136,9 @@ public class UserService {
                 .style(userProfile.getStyle())
                 .idealType(userProfile.getIdealType())
                 .idealAge(userProfile.getIdealAge())
-                .major(userProfile.getMajor())
+                .major(userProfile.getMajor().getShortName())
                 .age(userProfile.getAge())
+                .music(userProfile.getMusic())
                 .build();
     }
 

@@ -70,4 +70,8 @@ public enum Major {
     public String getDisplayName() {
         return displayName;
     }
+
+    public String getShortName() {
+        return shortName;
+    }
 }
