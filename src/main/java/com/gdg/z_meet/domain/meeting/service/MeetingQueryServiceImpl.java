@@ -198,7 +198,9 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         }
 
         Hi hi = hiRepository.findByFromAndTo(from,to);
+        if(hi==null) throw new BusinessException(Code.HI_NOT_FOUND);
         hi.changeStatus(HiStatus.REFUSE);
+        hiRepository.save(hi);
     }
 
     private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
