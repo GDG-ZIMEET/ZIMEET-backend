@@ -71,7 +71,11 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
                 .gender(gender)
                 .build();
         teamRepository.save(newTeam);
-        teamMembers.forEach(user -> MeetingConverter.toUserTeam(user, newTeam));
+
+        List<UserTeam> userTeams = teamMembers.stream()
+                .map(user -> MeetingConverter.toUserTeam(user, newTeam))
+                .collect(Collectors.toList());
+        userTeamRepository.saveAll(userTeams);
     }
 
     @Override
