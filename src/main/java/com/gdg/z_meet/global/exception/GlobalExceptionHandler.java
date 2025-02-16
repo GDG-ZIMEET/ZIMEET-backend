@@ -4,12 +4,14 @@ import com.gdg.z_meet.global.response.Code;
 import com.gdg.z_meet.global.response.Response;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -61,6 +63,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
 
@@ -83,6 +93,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
+    }
+
+    @ExceptionHandler(JpaSystemException.class)
+    public ResponseEntity<Object> handleJpaSystemException(JpaSystemException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Response.fail(Code.INTERNAL_SERVER_ERROR, ex.getMessage()));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
