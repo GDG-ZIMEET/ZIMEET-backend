@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.service;
 
+import com.gdg.z_meet.domain.chat.entity.TeamChatRoom;
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
@@ -21,10 +22,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.util.*;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @Service
@@ -168,11 +168,18 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
             throw new BusinessException(Code.TEAM_NOT_FOUND); // 모든 팀을 못 찾은 경우
         }
 
-        Team from = teams.get(0);  //보내는 팀
-        Team to = teams.get(1);    //받는 팀
+        Team from = null;
+        Team to = null;
 
-        validateTeamType(from.getId(), from.getTeamType());
-        validateTeamType(to.getId(), to.getTeamType());
+        // 팀 순서 확인 후 할당
+        if (teams.get(0).getId().equals(hiDto.getFromId())) {
+            from = teams.get(0); // 보내는 팀
+            to = teams.get(1);   // 받는 팀
+        } else {
+            from = teams.get(1); // 보내는 팀
+            to = teams.get(0);   // 받는 팀
+        }
+
 
         if(from.getTeamType()!=to.getTeamType()) throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         if(from.getGender()==to.getGender()) throw new BusinessException(Code.SAME_GENDER);
@@ -198,11 +205,17 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
             throw new BusinessException(Code.TEAM_NOT_FOUND); // 모든 팀을 못 찾은 경우
         }
 
-        Team from = teams.get(0);  //보내는 팀
-        Team to = teams.get(1);    //받는 팀
+        Team from = null;
+        Team to = null;
 
-        validateTeamType(from.getId(), from.getTeamType());
-        validateTeamType(to.getId(), to.getTeamType());
+        // 팀 순서 확인 후 할당
+        if (teams.get(0).getId().equals(hiDto.getFromId())) {
+            from = teams.get(0); // 보내는 팀
+            to = teams.get(1);   // 받는 팀
+        } else {
+            from = teams.get(1); // 보내는 팀
+            to = teams.get(0);   // 받는 팀
+        }
 
         Hi hi = hiRepository.findByFromAndTo(from,to);
         hi.changeStatus(HiStatus.REFUSE);
@@ -218,4 +231,94 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
             throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MeetingResponseDTO.hiListDto> receiveHiList(Long teamId) {
+        List<Hi> hiList = hiRepository.findRecevieHiList(teamId);
+        List<Long> teamIds = hiList.stream()
+                .map(hi -> hi.getFrom().getId()) // 보낸 팀의 id
+                .collect(Collectors.toList());
+
+        List<Team> teamList = teamRepository.findByIdIn(teamIds);
+
+        Map<Long, List<String>> emojiList = teamList.stream().collect(Collectors.toMap(
+                Team::getId, team -> {
+                    List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+                    return userTeams.stream()
+                            .map(userTeam -> userTeam.getUser().getUserProfile().getEmoji())
+                            .collect(Collectors.toList());
+                }
+        ));
+
+        Map<Long, List<String>> majorList = teamList.stream().collect(Collectors.toMap(
+                Team::getId, team -> {
+                    List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+                    return userTeams.stream()
+                            .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor()))
+                            .distinct()
+                            .collect(Collectors.toList());
+                }
+        ));
+
+        Map<Long, Double> age = teamList.stream().collect(Collectors.toMap(
+                Team::getId, team -> userTeamRepository.findByTeamId(team.getId()).stream()
+                        .mapToInt(userTeam -> userTeam.getUser().getUserProfile().getAge())
+                        .average()
+                        .orElse(0.0)
+        ));
+
+        Map<Long, List<String>> musicList = teamList.stream().collect(Collectors.toMap(
+                Team::getId, team -> {
+                    List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+                    return userTeams.stream()
+                            .map(userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMusic()))
+                            .distinct()
+                            .collect(Collectors.toList());
+                }
+        ));
+
+        // 여러 개의 hiListDto 생성
+        List<MeetingResponseDTO.hiListDto> hiListDtos = new ArrayList<>();
+        for (Hi hi : hiList) {
+            if(hi.getHiStatus()!=HiStatus.NONE) continue;
+            // 각 팀에 대해 UserProfileDto 만들기
+            List<MeetingResponseDTO.hiListDto.UserProfileDto> userProfileDtos = new ArrayList<>();
+            Team team = hi.getFrom(); // 보내는 팀
+            MeetingResponseDTO.hiListDto.UserProfileDto userProfileDto = MeetingResponseDTO.hiListDto.UserProfileDto.builder()
+                    .major(String.join(", ", majorList.get(team.getId())))
+                    .emoji(String.join(", ", emojiList.get(team.getId())))
+                    .music(String.join(", ", musicList.get(team.getId())))
+                    .build();
+
+            userProfileDtos.add(userProfileDto);
+
+            LocalDateTime sentTime = hi.getCreatedAt(); // Hi 생성 시간
+            LocalDateTime now = LocalDateTime.now(); // 현재 시간
+
+            Duration duration = Duration.between(sentTime, now);
+            long remainingHours = 5 - duration.toHours(); // 남은 시간 계산 (5시간 기준)
+            long remainingMinutes = 60 - duration.toMinutesPart(); // 남은 분 계산
+
+            String remainingTime = String.format("%d시간 %d분 남음", remainingHours, remainingMinutes);
+
+            if(remainingHours==0 && remainingMinutes==0){
+                hi.changeStatus(HiStatus.REFUSE);
+                continue;
+            }
+
+            // 하나의 hiListDto 생성
+            MeetingResponseDTO.hiListDto hiDto = MeetingResponseDTO.hiListDto.builder()
+                    .teamName(team.getName())
+                    .teamList(userProfileDtos)
+                    .age(Math.round(age.get(team.getId()) * 10.0) / 10.0)
+                    .dateTime(remainingTime) // 남은 시간 추가
+                    .build();
+
+            hiListDtos.add(hiDto); // hiListDto를 리스트에 추가
+        }
+
+        return hiListDtos;
+    }
+
 }

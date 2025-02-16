@@ -51,4 +51,16 @@ public class Team extends BaseEntity {
             throw new BusinessException(Code.HI_COUNT_ZERO);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Team{" +
+                "id=" + id +
+                ", teamType=" + teamType +
+                ", name='" + name + '\'' +
+                ", gender=" + gender +
+                ", hi=" + hi +
+                ", verification=" + verification +
+                '}';
+    }
 }

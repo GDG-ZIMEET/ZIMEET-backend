@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/meeting")
@@ -89,10 +91,18 @@ public class MeetingController {
         return Response.ok(hiDto.getToId() +"팀에게 하이가 보내졌습니다. ");
     }
 
-    @Operation(summary = "하이 보내기")
-    @PostMapping("/hi/refuse")
+    @Operation(summary = "하이 거절하기")
+    @PatchMapping("/hi/refuse")
     public Response<String> refuseHi(@RequestBody MeetingRequestDTO.hiDto hiDto){
         meetingQueryService.refuseHi(hiDto);
         return Response.ok(hiDto.getFromId() +"팀이 보낸 하이가 거절되었습니다. ");
     }
+
+    @Operation(summary = "받은 하이 목록")
+    @GetMapping("/hiList/recevie")
+    public Response<List<MeetingResponseDTO.hiListDto>> receiveHiList(@RequestParam Long teamId) {
+        return Response.ok(meetingQueryService.receiveHiList(teamId));
+    }
+
+
 }

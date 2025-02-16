@@ -5,6 +5,8 @@ import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.TeamType;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 public interface MeetingQueryService {
 
     MeetingResponseDTO.GetTeamGalleryDTO getTeamGallery(Long userId, TeamType teamType, Integer page);
@@ -15,4 +17,5 @@ public interface MeetingQueryService {
     MeetingResponseDTO.CheckNameDTO checkName(String name);
     void sendHi(MeetingRequestDTO.hiDto hiDto);
     void refuseHi(MeetingRequestDTO.hiDto hiDto);
+    List<MeetingResponseDTO.hiListDto> receiveHiList(Long teamId);
 }
