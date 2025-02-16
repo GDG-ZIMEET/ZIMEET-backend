@@ -1,26 +1,22 @@
 package com.gdg.z_meet.domain.chat.controller;
 
-import com.gdg.z_meet.domain.chat.converter.ChatRoomConverter;
 import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.service.ChatRoomService;
 import com.gdg.z_meet.domain.chat.service.MessageService;
-import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/chat/rooms") // API 기본 URL 설정
+@RequestMapping("/api/chat/rooms") // API 기본 URL 설정
 @RequiredArgsConstructor
 @Tag(name = "ChatAPI",description = "채팅방 관련 기능 API 입니다.")
 public class ChatRoomController {
@@ -28,14 +24,6 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
     private final MessageService messageService;
     private final JwtUtil jwtUtil;
-
-    @Operation(summary = "채팅방 생성", description = "새로운 채팅방을 생성합니다.")
-    @PostMapping("")
-    public Response<ChatRoomDto.resultChatRoomDto> createChatRoom(
-            @RequestParam String name) {
-        ChatRoom chatRoom = chatRoomService.createChatRoom(name);
-        return Response.ok(ChatRoomConverter.chatRoomtoResultDto(chatRoom)); // 생성된 채팅방 반환
-    }
 
     @Operation(summary = "채팅방 삭제", description = "기존 채팅방을 삭제합니다.")
     @DeleteMapping("/{roomId}")
@@ -45,15 +33,12 @@ public class ChatRoomController {
         return Response.ok(roomId+" 삭제 완료되었습니다.");
     }
 
-    @Operation(summary = "사용자 채팅방 추가", description = "관리자가 사용자를 지정된 채팅방에 추가합니다.")
-    @PostMapping("/{roomId}/users")
-    public Response<String> addUserToChatRoom(
-            @PathVariable Long roomId,
-            @RequestParam Long userId) {
-        chatRoomService.addUserToChatRoom(roomId, userId); // 채팅방에 사용자 추가
-        return Response.ok(roomId+" 추가 완료되었습니다."); // 추가 성공 응답 반환
+    @Operation(summary = "팀 채팅방 추가", description = "관리자가 팀을 지정된 채팅방에 추가합니다. 추가할 팀 아이디를 주세요")
+    @PostMapping("/users")
+    public Response<ChatRoomDto.resultChatRoomDto> addUserToChatRoom(
+            @RequestBody ChatRoomDto.TeamListDto teamListDto) {
+        return Response.ok(chatRoomService.addTeamJoinChat(teamListDto));
     }
-
 
     @Operation(summary = "사용자 채팅방 제거", description = "사용자를 지정된 채팅방에서 제거합니다. 채팅방 나가기와 동일한 기능 입니다. ")
     @DeleteMapping("/{roomId}/users")
@@ -63,7 +48,6 @@ public class ChatRoomController {
 
         // 토큰에서 사용자 ID 추출
         Long userId = jwtUtil.extractUserIdFromToken(token);
-        System.out.println("UserID: "+userId);
 
         // 채팅방에서 사용자 제거
         chatRoomService.removeUserFromChatRoom(roomId, userId);
@@ -82,7 +66,7 @@ public class ChatRoomController {
 
     @Operation(summary = "채팅방 사용자 조회 ", description = "특정 채팅방에 있는 사용자들을 조회합니다. ")
     @GetMapping("/{roomId}")
-    public Response<List<ChatRoomDto.UserProfileDto>> sendMessage(
+    public Response<List<ChatRoomDto.chatRoomUserList>> sendMessage(
             @RequestHeader("Authorization") String token,
             @PathVariable Long roomId) {
         Long userId = jwtUtil.extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
@@ -96,7 +80,7 @@ public class ChatRoomController {
             @RequestHeader("Authorization") String token,
             @PathVariable Long roomId,
             @RequestParam(defaultValue = "0") int page, // 페이지 번호 (기본값: 0)
-            @RequestParam(defaultValue = "20") int size // 페이지 크기 (기본값: 20)
+            @RequestParam(defaultValue = "15") int size // 페이지 크기 (기본값: 20)
     ) {
         Long userId = jwtUtil.extractUserIdFromToken(token);
         List<ChatMessage> messages = messageService.getMessagesByChatRoom(roomId,userId, page, size);

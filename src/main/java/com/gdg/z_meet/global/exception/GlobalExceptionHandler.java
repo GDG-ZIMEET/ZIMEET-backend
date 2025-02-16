@@ -4,6 +4,7 @@ import com.gdg.z_meet.global.response.Code;
 import com.gdg.z_meet.global.response.Response;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @RestControllerAdvice
@@ -59,8 +61,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
+    }
+
+    @ExceptionHandler(IncorrectResultSizeDataAccessException.class)
+    public ResponseEntity<Object> handleIncorrectResultSizeException(IncorrectResultSizeDataAccessException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
+    }
+
     @ExceptionHandler(InvalidDataAccessApiUsageException.class)
     public ResponseEntity<Object> handleInvalidDataAccessApiUsageException(InvalidDataAccessApiUsageException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<Object> handleNoSuchElementException(NoSuchElementException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

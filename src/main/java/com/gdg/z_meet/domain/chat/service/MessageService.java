@@ -5,7 +5,9 @@ import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.entity.status.MessageType;
 import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
+import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
 import com.gdg.z_meet.domain.chat.repository.MessageRepository;
+import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.domain.user.service.UserService;
@@ -29,7 +31,7 @@ public class MessageService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatRoomService chatRoomService;
+    private final JoinChatRepository joinChatRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     private static final String CHAT_ROOM_MESSAGES_KEY = "chatroom:%s:messages";
@@ -44,7 +46,7 @@ public class MessageService {
 
     @Transactional
     public void saveMessage(ChatMessage chatMessage) {
-        Long chatRoomId = Long.parseLong(chatMessage.getRoomId());
+        Long chatRoomId = chatMessage.getRoomId();
 
         // Redis에 메시지 저장
         String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
@@ -60,35 +62,49 @@ public class MessageService {
     }
 
     public void broadcastMessage(ChatMessage chatMessage) {
-        Long chatRoomId = Long.parseLong(chatMessage.getRoomId());
 
         // 최신 채팅방 정보 생성
-        ChatRoom updatedChatRoom = chatRoomRepository.findById(chatRoomId)
+        ChatRoom updatedChatRoom = chatRoomRepository.findById(chatMessage.getRoomId())
                 .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
 
-        List<ChatRoomDto.UserProfileDto> userProfiles = chatRoomService.getUserProfilesByChatRoomId(chatRoomId);
 
-        ChatRoomDto.chatRoomListDto chatRoomDto = new ChatRoomDto.chatRoomListDto(
+        ChatRoomDto.chatRoomMessageDTO chatRoomMessageDto = new ChatRoomDto.chatRoomMessageDTO(
                 updatedChatRoom.getId(),
-                updatedChatRoom.getName(),
                 chatMessage.getContent(),
-                LocalDateTime.now(),
-                userProfiles
+                LocalDateTime.now()
         );
 
         // 채팅방 참여자들에게 메시지 전송
-        messagingTemplate.convertAndSend("/topic/" + chatRoomId, chatMessage);
+        messagingTemplate.convertAndSend("/topic/" + chatMessage.getRoomId(), chatMessage);
 
-        // 채팅방 목록 업데이트를 위한 메시지 전송
-        messagingTemplate.convertAndSend("/topic/chatrooms", chatRoomDto);
+
     }
 
 
     public List<ChatMessage> getMessagesByChatRoom(Long chatRoomId, Long userId, int page, int size) {
+        // 사용자가 해당 채팅방에 존재하는지 확인
+        if (!joinChatRepository.existsByUserIdAndChatRoomId(userId, chatRoomId)) {
+            throw new BusinessException(Code.JOINCHAT_NOT_FOUND);
+        }
+
         String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
 
-        // 최신 메시지를 기준으로 가져오기 (최근 size개의 메시지만 조회)
-        List<Object> messages = redisTemplate.opsForList().range(chatRoomMessagesKey, -size, -1);
+        // Redis에서 전체 메시지 개수 가져오기
+        Long totalMessages = redisTemplate.opsForList().size(chatRoomMessagesKey);
+        if (totalMessages == null || totalMessages == 0) {
+            return List.of();
+        }
+
+        // 페이지네이션을 위한 start, end 계산
+        int start = (int) Math.max(totalMessages - ((page + 1) * size), 0);
+        int end = (int) (totalMessages - (page * size) - 1);
+
+        if (start > end) {
+            return List.of(); // 요청한 페이지에 데이터가 없는 경우
+        }
+
+        // 지정된 범위의 메시지 가져오기 (최신순 정렬되어 있음)
+        List<Object> messages = redisTemplate.opsForList().range(chatRoomMessagesKey, start, end);
         if (messages == null || messages.isEmpty()) {
             return List.of();
         }

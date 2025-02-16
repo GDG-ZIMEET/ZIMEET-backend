@@ -18,12 +18,14 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/api/chat")
 public class ChatWebSocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -34,7 +36,7 @@ public class ChatWebSocketController {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatService chatService; // ChatService 추가
 
-    @MessageMapping("/chat/{roomId}")
+    @MessageMapping("/{roomId}")
     public void sendMessage(@DestinationVariable Long roomId, @Payload ChatMessage chatMessage, @Header("Authorization") String token) {
         Long senderId = jwtUtil.extractUserIdFromToken(token);
         User user = userRepository.findById(senderId)
@@ -43,8 +45,7 @@ public class ChatWebSocketController {
         chatMessage = ChatMessage.builder()
                 .id(UUID.randomUUID().toString())
                 .type(chatMessage.getType())
-                .roomId(roomId.toString())
-                .senderId(senderId)
+                .roomId(roomId)
                 .senderName(user.getUserProfile().getNickname())
                 .content(chatMessage.getContent())
                 .sendAt(LocalDateTime.now())
@@ -59,7 +60,7 @@ public class ChatWebSocketController {
                 chatService.handleTalkMessage(chatMessage);
                 break;
             case EXIT:
-                chatService.handleExitMessage(roomId, senderId, chatMessage.getSenderName());
+                chatService.handleExitMessage(roomId, chatMessage.getSenderName());
                 break;
             default:
                 chatService.handleTalkMessage(chatMessage);

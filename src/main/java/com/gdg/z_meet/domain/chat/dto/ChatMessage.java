@@ -15,8 +15,7 @@ import java.time.LocalDateTime;
 public class ChatMessage implements Serializable {
     private String id;
     private MessageType type;
-    private String roomId;
-    private Long senderId;
+    private Long roomId;
     private String senderName;
     private String content;
     private LocalDateTime sendAt;
