@@ -4,6 +4,7 @@ import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.TeamType;
+import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
+    private final UserTeamRepository userTeamRepository;
 
     @Override
     @Transactional
@@ -69,5 +72,32 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
                 .build();
         teamRepository.save(newTeam);
         teamMembers.forEach(user -> MeetingConverter.toUserTeam(user, newTeam));
+    }
+
+    @Override
+    public void delTeam(Long userId, TeamType teamType) {
+
+        Team team = teamRepository.findByTeamType(userId, teamType)
+                .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+        Long teamId = team.getId();
+
+        // 삭제 기회 확인
+        List<UserTeam> userTeams = userTeamRepository.findByTeamId(teamId);
+        List<Long> users = userTeams.stream()
+                .map(UserTeam -> UserTeam.getUser().getId())
+                .collect(Collectors.toList());
+
+        List<User> teamMembers = userRepository.findAllByIdWithProfile(new ArrayList<>(users));
+
+        if (teamMembers.stream()
+                .anyMatch(user -> user.getUserProfile().getDeleteTeam() == 0)) {
+            throw new BusinessException(Code.DELETE_LIMIT_EXCEEDED);
+        }
+
+        teamRepository.delete(team);
+
+        if (teamRepository.existsById(teamId)) {
+            throw new BusinessException(Code.TEAM_DELETE_FAILED);
+        }
     }
 }
