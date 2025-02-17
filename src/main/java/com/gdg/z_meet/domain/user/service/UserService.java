@@ -111,6 +111,7 @@ public class UserService {
         return UserRes.ProfileRes.builder()
                 .name(user.getName())
                 .studentNumber(user.getStudentNumber())
+                .phoneNumber(user.getPhoneNumber())
                 .nickname(userProfile.getNickname())
                 .emoji(userProfile.getEmoji())
                 .mbti(userProfile.getMbti())

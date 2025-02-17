@@ -18,6 +18,7 @@ public class UserRes {
     public static class ProfileRes {
         private String name;
         private String studentNumber;
+        private String phoneNumber;
         //유저 상세정보
         private String nickname;
         private Grade grade;
