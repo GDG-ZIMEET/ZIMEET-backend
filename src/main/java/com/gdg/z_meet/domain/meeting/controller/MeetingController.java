@@ -99,7 +99,8 @@ public class MeetingController {
     public Response<MeetingResponseDTO.GetSearchListDTO> getSearch(@RequestParam(name = "nickname", required = false) @Size(min = 1, max = 8) String nickname,
                                                                @RequestParam(name = "phoneNumber", required = false) @Size(min = 1, max = 11) String phoneNumber) {
 
-        MeetingResponseDTO.GetSearchListDTO response = meetingQueryService.getSearch(nickname, phoneNumber);
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        MeetingResponseDTO.GetSearchListDTO response = meetingQueryService.getSearch(userId, nickname, phoneNumber);
 
         return Response.ok(response);
     }

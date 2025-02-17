@@ -128,7 +128,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public MeetingResponseDTO.GetSearchListDTO getSearch(String nickname, String phoneNumber) {
+    public MeetingResponseDTO.GetSearchListDTO getSearch(Long userId, String nickname, String phoneNumber) {
 
         if (nickname == null && phoneNumber == null) {
             throw new BusinessException(Code.SEARCH_FILTER_NULL);
@@ -137,13 +137,15 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
             throw new BusinessException(Code.SEARCH_FILTER_EXCEEDED);
         }
 
+        Gender gender = userProfileRepository.findByUserId(userId).get().getGender();
+        List<User> users;
+
         if (nickname != null) {
-            List<User> users = userRepository.findAllByNicknameContainingWithProfile(nickname);
-            return MeetingConverter.GetSearchListDTO(users);
+            users = userRepository.findAllByNicknameContainingWithProfile(gender, nickname);
         } else {
-            List<User> users = userRepository.findAllByPhoneNumberContainingWithProfile(phoneNumber);
-            return MeetingConverter.GetSearchListDTO(users);
+            users = userRepository.findAllByPhoneNumberContainingWithProfile(gender, phoneNumber);
         }
+        return MeetingConverter.GetSearchListDTO(users);
     }
 
     @Override
