@@ -11,4 +11,5 @@ public interface MeetingQueryService {
     MeetingResponseDTO.GetTeamDTO getMyTeam(Long userId, TeamType teamType);
     MeetingResponseDTO.GetMyTeamHiDTO getMyTeamHi(Long userId, TeamType teamType);
     MeetingResponseDTO.CheckNameDTO checkName(String name);
+    MeetingResponseDTO.GetMyDeleteDTO getMyDelete(Long userId);
 }

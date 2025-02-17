@@ -103,4 +103,14 @@ public class MeetingController {
 
         return Response.ok();
     }
+
+    @Operation(summary = "팀 삭제 기회")
+    @GetMapping("/myTeam/delete")
+    public Response<MeetingResponseDTO.GetMyDeleteDTO> getMyDelete() {
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        MeetingResponseDTO.GetMyDeleteDTO response = meetingQueryService.getMyDelete(userId);
+
+        return Response.ok(response);
+    }
 }

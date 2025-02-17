@@ -10,6 +10,7 @@ import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
+import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,6 +27,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class MeetingQueryServiceImpl implements MeetingQueryService {
 
+    private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
@@ -125,6 +124,15 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         return MeetingResponseDTO.CheckNameDTO.builder()
                 .check(exist == Boolean.TRUE ? 0 : 1)
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetMyDeleteDTO getMyDelete(Long userId) {
+
+        User user = userRepository.findByIdWithProfile(userId);
+
+        return MeetingConverter.toGetMyDeleteDTO(user);
     }
 
     private Map<Long, List<String>> collectEmoji(List<Team> teamList) {

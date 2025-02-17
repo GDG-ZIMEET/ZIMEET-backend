@@ -87,4 +87,11 @@ public class MeetingConverter {
                 .team(team)
                 .build();
     }
+
+    public static MeetingResponseDTO.GetMyDeleteDTO toGetMyDeleteDTO(User user){
+
+        return MeetingResponseDTO.GetMyDeleteDTO.builder()
+                .leftDelete(user.getUserProfile().getLeftDelete())
+                .build();
+    }
 }
