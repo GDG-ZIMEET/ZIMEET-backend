@@ -30,6 +30,8 @@ public class UserReq {
         private String studentNumber;
         @NotNull(message = "비밀번호 입력은 필수입니다.")
         private String password;
+        @NotNull(message = "전화번호 입력은 필수입니다.")
+        private String phoneNumber;
 
         //유저 상세정보
         @NotNull(message = "닉네임 입력은 필수입니다.")

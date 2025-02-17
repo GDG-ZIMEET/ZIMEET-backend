@@ -30,6 +30,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String phoneNumber;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserProfile userProfile;
 
