@@ -94,7 +94,7 @@ public class MeetingConverter {
                 .map(user -> MeetingResponseDTO.GetSearchDTO.builder()
                         .userId(user.getId())
                         .nickname(user.getUserProfile().getNickname())
-                        .major(String.valueOf(user.getUserProfile().getMajor()))
+                        .major(String.valueOf(user.getUserProfile().getMajor().getDisplayName()))
                         .grade(String.valueOf(user.getUserProfile().getGrade()))
                         .phoneNumber(user.getPhoneNumber())
                         .build())
