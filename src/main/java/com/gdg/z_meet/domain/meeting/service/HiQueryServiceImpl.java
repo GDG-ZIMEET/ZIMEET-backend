@@ -28,7 +28,7 @@ public class HiQueryServiceImpl implements HiQueryService{
     private final MeetingQueryServiceImpl meetingQueryService;
 
     // 공통 메서드로 분리
-    private Map<String, Team> assignTeams(List<Long> teamIds, Long fromId) {
+    public Map<String, Team> assignTeams(List<Long> teamIds, Long fromId) {
         List<Team> teams = teamRepository.findByIdIn(teamIds);
 
         if (teams.size() != 2) {

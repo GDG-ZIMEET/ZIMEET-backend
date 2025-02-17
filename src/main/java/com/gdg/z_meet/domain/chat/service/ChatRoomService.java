@@ -6,10 +6,16 @@ import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
 import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
 import com.gdg.z_meet.domain.chat.repository.MessageRepository;
 import com.gdg.z_meet.domain.chat.repository.TeamChatRoomRepository;
+import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
+import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
+import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
+import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
+import com.gdg.z_meet.domain.meeting.service.HiQueryService;
+import com.gdg.z_meet.domain.meeting.service.HiQueryServiceImpl;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
@@ -43,6 +49,8 @@ public class ChatRoomService {
     private final UserTeamRepository userTeamRepository;
     private final TeamRepository teamRepository;
     private final TeamChatRoomRepository teamChatRoomRepository;
+    private final HiQueryServiceImpl hiQueryService;
+    private final HiRepository hiRepository;
 
     private static final String CHAT_ROOMS_KEY = "chatrooms";
     private static final String CHAT_ROOM_ACTIVITY_KEY = "chatroom:activity";
@@ -100,17 +108,25 @@ public class ChatRoomService {
 
     // 사용자 추가
     @Transactional
-    public ChatRoomDto.resultChatRoomDto addTeamJoinChat(ChatRoomDto.TeamListDto teamListDto) {
+    public ChatRoomDto.resultChatRoomDto addTeamJoinChat(MeetingRequestDTO.hiDto hiDto) {
+        List<Long> teamIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
+
+        // 공통 메서드 호출하여 from, to 팀 할당
+        Map<String, Team> teams = hiQueryService.assignTeams(teamIds, hiDto.getFromId());
+        Team from = teams.get("from");
+        Team to = teams.get("to");
+
+        Hi hi = hiRepository.findByFromAndTo(from, to);
+        if (hi == null) throw new BusinessException(Code.HI_NOT_FOUND);
+        hi.changeStatus(HiStatus.ACCEPT);
+        hiRepository.save(hi);
 
         //채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder().build();
         chatRoom = chatRoomRepository.save(chatRoom);
 
-        Team team1 = teamRepository.findById(teamListDto.getTeamId1()).orElseThrow(()-> new BusinessException(Code.TEAM_NOT_FOUND));
-        Team team2 = teamRepository.findById(teamListDto.getTeamId2()).orElseThrow(()-> new BusinessException(Code.TEAM_NOT_FOUND));
-
-        addTeamToChatRoom(chatRoom, team1, team2.getName());
-        addTeamToChatRoom(chatRoom, team2, team1.getName());
+        addTeamToChatRoom(chatRoom, from, to.getName());
+        addTeamToChatRoom(chatRoom, to, from.getName());
 
         return ChatRoomDto.resultChatRoomDto.builder()
                 .chatRoomid(chatRoom.getId())
