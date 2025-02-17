@@ -61,7 +61,7 @@ public class UserProfile {
 
     @Column(nullable = false)
     @Builder.Default
-    private int deleteTeam = 0;
+    private int leftDelete = 2;
 
     @Column(nullable = false)
     @Builder.Default

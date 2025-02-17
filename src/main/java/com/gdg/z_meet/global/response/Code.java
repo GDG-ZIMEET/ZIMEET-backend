@@ -40,6 +40,8 @@ public enum Code implements BaseCode {
     NAME_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "MEETING4006", "이미 존재하는 팀명입니다."),
     TEAM_GENDER_MISMATCH(HttpStatus.BAD_REQUEST, "MEETING4007", "팀의 성별과 일치하지 않습니다."),
     TEAM_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "MEETING4008", "팀이 이미 존재합니다."),
+    DELETE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "MEETING4009", "삭제 기회가 부족합니다."),
+    TEAM_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MEETING4010", "팀 삭제가 실패하였습니다."),
 
     // Chat Error
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4001","채팅방을 찾을 수 없습니다."),

@@ -89,4 +89,12 @@ public class MeetingResponseDTO {
     public static class CheckNameDTO {
         Integer check;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMyDeleteDTO {
+        Integer leftDelete;
+    }
 }

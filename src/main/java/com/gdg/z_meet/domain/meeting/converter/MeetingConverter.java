@@ -80,11 +80,18 @@ public class MeetingConverter {
                 .build();
     }
 
-    public static void toUserTeam(User user, Team team) {
+    public static UserTeam toUserTeam(User user, Team team) {
 
-        UserTeam.builder()
+        return UserTeam.builder()
                 .user(user)
                 .team(team)
+                .build();
+    }
+
+    public static MeetingResponseDTO.GetMyDeleteDTO toGetMyDeleteDTO(User user){
+
+        return MeetingResponseDTO.GetMyDeleteDTO.builder()
+                .leftDelete(user.getUserProfile().getLeftDelete())
                 .build();
     }
 }
