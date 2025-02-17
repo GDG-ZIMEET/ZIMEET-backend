@@ -114,13 +114,13 @@ public class MeetingController {
 
     @Operation(summary = "받은 하이 목록")
     @GetMapping("/hiList/recevie")
-    public Response<List<MeetingResponseDTO.hiListDto>> receiveHiList(@RequestParam Long teamId) {
+    public Response<List<MeetingResponseDTO.hiListDto>> receiveHiList(@RequestBody Long teamId) {
         return Response.ok(hiQueryService.checkHiList(teamId, "Receive"));
     }
 
     @Operation(summary = "보낸 하이 목록")
     @GetMapping("/hiList/send")
-    public Response<List<MeetingResponseDTO.hiListDto>> sendHiList(@RequestParam Long teamId) {
+    public Response<List<MeetingResponseDTO.hiListDto>> sendHiList(@RequestBody Long teamId) {
         return Response.ok(hiQueryService.checkHiList(teamId, "Send"));
     }
 
