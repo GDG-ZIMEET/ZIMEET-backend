@@ -1,10 +1,6 @@
 package com.gdg.z_meet.domain.user.dto;
 
-import com.gdg.z_meet.domain.user.entity.User;
-import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 public class UserRes {
@@ -39,6 +35,8 @@ public class UserRes {
     @Builder
     public static class UserProfileRes {
         private String nickname;
+        private String studentNumber;
+        private Gender gender;
         private String emoji;
         private int age;
         private String major;

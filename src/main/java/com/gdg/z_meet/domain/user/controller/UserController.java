@@ -1,6 +1,5 @@
 package com.gdg.z_meet.domain.user.controller;
 
-import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.global.exception.GlobalException;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;

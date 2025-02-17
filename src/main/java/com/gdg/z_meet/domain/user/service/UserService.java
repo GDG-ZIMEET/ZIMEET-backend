@@ -119,6 +119,7 @@ public class UserService {
                 .grade(userProfile.getGrade())
                 .major(userProfile.getMajor())
                 .age(userProfile.getAge())
+                .music(userProfile.getMusic())
                 .build();
     }
 
@@ -129,8 +130,13 @@ public class UserService {
 
         User user = userProfile.getUser();
 
+        String studentNumber = user.getStudentNumber();
+        String studentYear = studentNumber.substring(2,4) + "학번";
+
         return UserRes.UserProfileRes.builder()
                 .nickname(userProfile.getNickname())
+                .studentNumber(studentYear)
+                .gender(userProfile.getGender())
                 .emoji(userProfile.getEmoji())
                 .mbti(userProfile.getMbti())
                 .style(userProfile.getStyle())
