@@ -128,6 +128,28 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
     @Override
     @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetSearchListDTO getSearch(Long userId, String nickname, String phoneNumber) {
+
+        if (nickname == null && phoneNumber == null) {
+            throw new BusinessException(Code.SEARCH_FILTER_NULL);
+        }
+        if (nickname != null && phoneNumber != null) {
+            throw new BusinessException(Code.SEARCH_FILTER_EXCEEDED);
+        }
+
+        Gender gender = userProfileRepository.findByUserId(userId).get().getGender();
+        List<User> users;
+
+        if (nickname != null) {
+            users = userRepository.findAllByNicknameContainingWithProfile(gender, nickname);
+        } else {
+            users = userRepository.findAllByPhoneNumberContainingWithProfile(gender, phoneNumber);
+        }
+        return MeetingConverter.GetSearchListDTO(users);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public MeetingResponseDTO.GetMyDeleteDTO getMyDelete(Long userId) {
 
         User user = userRepository.findByIdWithProfile(userId);

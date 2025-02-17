@@ -87,9 +87,20 @@ public class MeetingController {
 
     @Operation(summary = "팀명 중복확인")
     @GetMapping("/teamName")
-    public Response<MeetingResponseDTO.CheckNameDTO> checkName(@RequestParam(name = "name") @Size(min = 1, max = 7) String name) {
+    public Response<MeetingResponseDTO.CheckNameDTO> checkName(@RequestParam(name = "name") @Size(min = 1, max = 8) String name) {
 
         MeetingResponseDTO.CheckNameDTO response = meetingQueryService.checkName(name);
+
+        return Response.ok(response);
+    }
+
+    @Operation(summary = "팀원 검색하기")
+    @GetMapping("/search")
+    public Response<MeetingResponseDTO.GetSearchListDTO> getSearch(@RequestParam(name = "nickname", required = false) @Size(min = 1, max = 8) String nickname,
+                                                               @RequestParam(name = "phoneNumber", required = false) @Size(min = 1, max = 11) String phoneNumber) {
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        MeetingResponseDTO.GetSearchListDTO response = meetingQueryService.getSearch(userId, nickname, phoneNumber);
 
         return Response.ok(response);
     }
