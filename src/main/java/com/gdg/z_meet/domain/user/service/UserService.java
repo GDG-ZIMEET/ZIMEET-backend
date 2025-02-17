@@ -45,6 +45,7 @@ public class UserService {
                 .studentNumber(signUpReq.getStudentNumber())
                 .password(encodedPassword)
                 .name(signUpReq.getName())
+                .phoneNumber(signUpReq.getPhoneNumber())
                 .build();
         User newUser = userRepository.save(user);
 
