@@ -4,12 +4,11 @@ import com.gdg.z_meet.domain.user.entity.enums.*;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
-
 import static com.gdg.z_meet.domain.user.entity.enums.Level.LIGHT;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

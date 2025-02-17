@@ -112,16 +112,65 @@ public class UserService {
                 .studentNumber(user.getStudentNumber())
                 .nickname(userProfile.getNickname())
                 .emoji(userProfile.getEmoji())
-//                .music(userProfile.getMusic())
                 .mbti(userProfile.getMbti())
                 .style(userProfile.getStyle())
                 .idealType(userProfile.getIdealType())
                 .idealAge(userProfile.getIdealAge())
-//                .gender(userProfile.getGender())
                 .grade(userProfile.getGrade())
                 .major(userProfile.getMajor())
                 .age(userProfile.getAge())
-//                .level(userProfile.getLevel())
+                .music(userProfile.getMusic())
+                .build();
+    }
+
+    @Transactional
+    public UserRes.UserProfileRes getUserProfile(String nickname) {
+        UserProfile userProfile = userProfileRepository.findByNickname(nickname)
+                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+
+        User user = userProfile.getUser();
+
+        String studentNumber = user.getStudentNumber();
+        String studentYear = studentNumber.substring(2,4) + "학번";
+
+        return UserRes.UserProfileRes.builder()
+                .nickname(userProfile.getNickname())
+                .studentNumber(studentYear)
+                .gender(userProfile.getGender())
+                .emoji(userProfile.getEmoji())
+                .mbti(userProfile.getMbti())
+                .style(userProfile.getStyle())
+                .idealType(userProfile.getIdealType())
+                .idealAge(userProfile.getIdealAge())
+                .major(userProfile.getMajor().getShortName())
+                .age(userProfile.getAge())
+                .music(userProfile.getMusic())
+                .build();
+    }
+
+    @Transactional
+    public UserRes.NicknameUpdateRes updateNickname(Long userId, UserReq.NicknameUpdateReq request) {
+        UserProfile userProfile = userProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+
+        userProfile.setNickname(request.getNickname());
+        userProfileRepository.save(userProfile);
+
+        return UserRes.NicknameUpdateRes.builder()
+                .nickname(userProfile.getNickname())
+                .build();
+    }
+
+    @Transactional
+    public UserRes.EmojiUpdateRes updateEmoji(Long userId, UserReq.EmojiUpdateReq request) {
+        UserProfile userProfile = userProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+
+        userProfile.setEmoji(request.getEmoji());
+        userProfileRepository.save(userProfile);
+
+        return UserRes.EmojiUpdateRes.builder()
+                .emoji(userProfile.getEmoji())
                 .build();
     }
 }
