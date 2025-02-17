@@ -30,10 +30,12 @@ public class UserReq {
         private String studentNumber;
         @NotNull(message = "비밀번호 입력은 필수입니다.")
         private String password;
+        @NotNull(message = "전화번호 입력은 필수입니다.")
+        private String phoneNumber;
 
         //유저 상세정보
         @NotNull(message = "닉네임 입력은 필수입니다.")
-        @Size(min = 1, max = 7, message = "닉네임은 2자 이상 7자 이하로 입력해주세요.")
+        @Size(min = 2, max = 7, message = "닉네임은 2자 이상 7자 이하로 입력해주세요.")
         private String nickname;
         private Grade grade;
         @Size(min = 20, max = 28, message = "20세에서 28세까지 이용 가능합니다.")
@@ -46,5 +48,24 @@ public class UserReq {
         private Style style;
         private IdealAge idealAge;
         private IdealType idealType;
+    }
+
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class NicknameUpdateReq {
+        @Size(min = 2, max = 7, message = "닉네임은 2자 이상 7자 이하로 입력해주세요.")
+        private String nickname;
+    }
+
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class EmojiUpdateReq{
+        private String emoji;
     }
 }
