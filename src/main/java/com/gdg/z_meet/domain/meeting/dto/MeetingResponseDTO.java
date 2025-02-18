@@ -96,7 +96,7 @@ public class MeetingResponseDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class hiListDto{
+    public static class hiListDto {
         String teamName;
         List<UserProfileDto> teamList;
         Double age;
@@ -110,6 +110,7 @@ public class MeetingResponseDTO {
             private String emoji;
             private String music;
         }
+    }
 
     public static class GetSearchDTO {
         Long userId;
