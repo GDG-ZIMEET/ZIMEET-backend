@@ -16,6 +16,7 @@ public class UserRes {
     @Getter
     @Builder
     public static class ProfileRes {
+        private Long id;
         private String name;
         private String studentNumber;
         private String phoneNumber;

@@ -106,9 +106,11 @@ public class UserService {
         User user = userProfile.getUser();
 
         return UserRes.ProfileRes.builder()
+                .id(user.getId())
                 .name(user.getName())
                 .studentNumber(user.getStudentNumber())
                 .nickname(userProfile.getNickname())
+                .phoneNumber(user.getPhoneNumber())
                 .emoji(userProfile.getEmoji())
                 .mbti(userProfile.getMbti())
                 .style(userProfile.getStyle())

@@ -49,6 +49,7 @@ public class JwtUtil {
         return Token.builder()
                 .accessToken(accessToken)
                 .key(studentNumber)
+                .userId(id)
                 .build();
     }
 
@@ -70,7 +71,7 @@ public class JwtUtil {
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setMaxAge((int) (refreshTokenValidTime / 1000));
+        cookie.setMaxAge((int) refreshTokenValidTime);
 
         response.addCookie(cookie);
 
