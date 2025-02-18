@@ -5,6 +5,7 @@ import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.service.ChatRoomService;
 import com.gdg.z_meet.domain.chat.service.MessageService;
+import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,8 +37,8 @@ public class ChatRoomController {
     @Operation(summary = "팀 채팅방 추가", description = "관리자가 팀을 지정된 채팅방에 추가합니다. 추가할 팀 아이디를 주세요")
     @PostMapping("/users")
     public Response<ChatRoomDto.resultChatRoomDto> addUserToChatRoom(
-            @RequestBody ChatRoomDto.TeamListDto teamListDto) {
-        return Response.ok(chatRoomService.addTeamJoinChat(teamListDto));
+            @RequestBody MeetingRequestDTO.hiDto hiDto) {
+        return Response.ok(chatRoomService.addTeamJoinChat(hiDto));
     }
 
     @Operation(summary = "사용자 채팅방 제거", description = "사용자를 지정된 채팅방에서 제거합니다. 채팅방 나가기와 동일한 기능 입니다. ")

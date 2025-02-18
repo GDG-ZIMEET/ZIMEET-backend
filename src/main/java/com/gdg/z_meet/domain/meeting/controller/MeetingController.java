@@ -3,6 +3,7 @@ package com.gdg.z_meet.domain.meeting.controller;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.TeamType;
+import com.gdg.z_meet.domain.meeting.service.HiQueryService;
 import com.gdg.z_meet.domain.meeting.service.MeetingCommandService;
 import com.gdg.z_meet.domain.meeting.service.MeetingQueryService;
 import com.gdg.z_meet.global.common.AuthenticatedUserUtils;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/meeting")
@@ -24,6 +27,7 @@ public class MeetingController {
 
     private final MeetingQueryService meetingQueryService;
     private final MeetingCommandService meetingCommandService;
+    private final HiQueryService hiQueryService;
 
     @Operation(summary = "팀 갤러리 조회", description = "12팀씩 페이징 됩니다.")
     @GetMapping
@@ -94,6 +98,34 @@ public class MeetingController {
         return Response.ok(response);
     }
 
+
+    @Operation(summary = "하이 보내기")
+    @PostMapping("/hi/send")
+    public Response<String> sendHi(@RequestBody MeetingRequestDTO.hiDto hiDto){
+        hiQueryService.sendHi(hiDto);
+        return Response.ok(hiDto.getToId() +"팀에게 하이가 보내졌습니다. ");
+    }
+
+    @Operation(summary = "하이 거절하기")
+    @PatchMapping("/hi/refuse")
+    public Response<String> refuseHi(@RequestBody MeetingRequestDTO.hiDto hiDto){
+        hiQueryService.refuseHi(hiDto);
+        return Response.ok(hiDto.getFromId() +"팀이 보낸 하이가 거절되었습니다. ");
+    }
+
+    @Operation(summary = "받은 하이 목록")
+    @GetMapping("/hiList/recevie")
+    public Response<List<MeetingResponseDTO.hiListDto>> receiveHiList(@RequestBody Long teamId) {
+        return Response.ok(hiQueryService.checkHiList(teamId, "Receive"));
+    }
+
+    @Operation(summary = "보낸 하이 목록")
+    @GetMapping("/hiList/send")
+    public Response<List<MeetingResponseDTO.hiListDto>> sendHiList(@RequestBody Long teamId) {
+        return Response.ok(hiQueryService.checkHiList(teamId, "Send"));
+    }
+
+
     @Operation(summary = "팀원 검색하기")
     @GetMapping("/search")
     public Response<MeetingResponseDTO.GetSearchListDTO> getSearch(@RequestParam(name = "nickname", required = false) @Size(min = 1, max = 8) String nickname,
@@ -124,4 +156,5 @@ public class MeetingController {
 
         return Response.ok(response);
     }
+
 }
