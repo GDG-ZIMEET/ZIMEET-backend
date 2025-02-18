@@ -31,7 +31,7 @@ public class MeetingController {
 
     @Operation(summary = "팀 갤러리 조회", description = "12팀씩 페이징 됩니다.")
     @GetMapping
-    public Response<MeetingResponseDTO.GetTeamGalleryDTO> getTeamGallery(@RequestParam TeamType teamType, @RequestParam Integer page) {
+    public Response<MeetingResponseDTO.GetTeamGalleryDTO> getTeamGallery(@RequestParam(name = "teamType") TeamType teamType, @RequestParam(name = "page") Integer page) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         MeetingResponseDTO.GetTeamGalleryDTO response = meetingQueryService.getTeamGallery(userId, teamType, page);
@@ -51,7 +51,7 @@ public class MeetingController {
 
     @Operation(summary = "우리 팀 조회")
     @GetMapping("/myTeam")
-    public Response<MeetingResponseDTO.GetMyTeamDTO> getPreMyTeam(@RequestParam TeamType teamType) {
+    public Response<MeetingResponseDTO.GetMyTeamDTO> getPreMyTeam(@RequestParam(name = "teamType") TeamType teamType) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         MeetingResponseDTO.GetMyTeamDTO response = meetingQueryService.getPreMyTeam(userId, teamType);
@@ -61,7 +61,7 @@ public class MeetingController {
 
     @Operation(summary = "우리 팀 상세 조회")
     @GetMapping("/myTeam/detail")
-    public Response<MeetingResponseDTO.GetTeamDTO> getMyTeam(@RequestParam TeamType teamType) {
+    public Response<MeetingResponseDTO.GetTeamDTO> getMyTeam(@RequestParam(name = "teamType") TeamType teamType) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         MeetingResponseDTO.GetTeamDTO response = meetingQueryService.getMyTeam(userId, teamType);
@@ -71,7 +71,7 @@ public class MeetingController {
 
     @Operation(summary = "우리 팀 하이 개수")
     @GetMapping("/myTeam/hi")
-    public Response<MeetingResponseDTO.GetMyTeamHiDTO> getMyTeamHi(@RequestParam TeamType teamType) {
+    public Response<MeetingResponseDTO.GetMyTeamHiDTO> getMyTeamHi(@RequestParam(name = "teamType") TeamType teamType) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         MeetingResponseDTO.GetMyTeamHiDTO response = meetingQueryService.getMyTeamHi(userId, teamType);
@@ -81,7 +81,7 @@ public class MeetingController {
 
     @Operation(summary = "팀 만들기")
     @PostMapping("/myTeam")
-    public Response<Void> creatTeam(@RequestParam TeamType teamType, @RequestBody MeetingRequestDTO.CreateTeamDTO request) {
+    public Response<Void> creatTeam(@RequestParam(name = "teamType") TeamType teamType, @RequestBody MeetingRequestDTO.CreateTeamDTO request) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         meetingCommandService.createTeam(userId, teamType, request);
@@ -91,12 +91,13 @@ public class MeetingController {
 
     @Operation(summary = "팀명 중복확인")
     @GetMapping("/teamName")
-    public Response<MeetingResponseDTO.CheckNameDTO> checkName(@RequestParam @Size(min = 1, max = 7) String name) {
+    public Response<MeetingResponseDTO.CheckNameDTO> checkName(@RequestParam(name = "name") @Size(min = 1, max = 8) String name) {
 
         MeetingResponseDTO.CheckNameDTO response = meetingQueryService.checkName(name);
 
         return Response.ok(response);
     }
+
 
     @Operation(summary = "하이 보내기")
     @PostMapping("/hi/send")
@@ -125,5 +126,35 @@ public class MeetingController {
     }
 
 
+    @Operation(summary = "팀원 검색하기")
+    @GetMapping("/search")
+    public Response<MeetingResponseDTO.GetSearchListDTO> getSearch(@RequestParam(name = "nickname", required = false) @Size(min = 1, max = 8) String nickname,
+                                                               @RequestParam(name = "phoneNumber", required = false) @Size(min = 1, max = 11) String phoneNumber) {
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        MeetingResponseDTO.GetSearchListDTO response = meetingQueryService.getSearch(userId, nickname, phoneNumber);
+
+        return Response.ok(response);
+    }
+
+    @Operation(summary = "팀 삭제하기")
+    @DeleteMapping("/myTeam")
+    public Response<Void> delTeam(@RequestParam(name = "teamType") TeamType teamType) {
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        meetingCommandService.delTeam(userId, teamType);
+
+        return Response.ok();
+    }
+
+    @Operation(summary = "팀 삭제 기회")
+    @GetMapping("/myTeam/delete")
+    public Response<MeetingResponseDTO.GetMyDeleteDTO> getMyDelete() {
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        MeetingResponseDTO.GetMyDeleteDTO response = meetingQueryService.getMyDelete(userId);
+
+        return Response.ok(response);
+    }
 
 }

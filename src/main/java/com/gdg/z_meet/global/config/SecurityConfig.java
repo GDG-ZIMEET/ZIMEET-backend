@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico").permitAll() // 정적 파일 허용
                         .requestMatchers("/swagger", "/swagger/", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Swagger 허용
-                        .requestMatchers("/api/**").permitAll()   // /api 이하 경로 접근 허용
+                        .requestMatchers("/api/user/**", "/api/booths/**").permitAll()   // /api 이하 경로 접근 허용
                         .requestMatchers("/","/api/health").permitAll() // 인증 없이 접근 허용
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )

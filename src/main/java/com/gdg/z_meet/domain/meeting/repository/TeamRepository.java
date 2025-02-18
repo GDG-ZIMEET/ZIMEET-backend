@@ -19,7 +19,7 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     @Query("SELECT t FROM Team t WHERE t.id IN (SELECT ut.team.id FROM UserTeam ut WHERE ut.user.id = :userId) " +
             "AND t.teamType = :teamType")
-    Optional<Team> findByTeamType(@Param("userId") Long userId,@Param("teamType") TeamType teamType);
+    Optional<Team> findByTeamType(@Param("userId") Long userId, @Param("teamType") TeamType teamType);
 
     Boolean existsByName(String name);
 

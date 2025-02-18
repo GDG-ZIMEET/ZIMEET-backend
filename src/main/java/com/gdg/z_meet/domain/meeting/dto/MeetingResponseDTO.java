@@ -110,5 +110,29 @@ public class MeetingResponseDTO {
             private String emoji;
             private String music;
         }
+
+    public static class GetSearchDTO {
+        Long userId;
+        String nickname;
+        String major;
+        String grade;
+        String phoneNumber;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetSearchListDTO {
+        List<GetSearchDTO> searchList;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMyDeleteDTO {
+        Integer leftDelete;
+
     }
 }
