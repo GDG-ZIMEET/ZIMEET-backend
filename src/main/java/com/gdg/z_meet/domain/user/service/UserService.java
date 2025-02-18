@@ -87,19 +87,16 @@ public class UserService {
 
     @Transactional
     public void saveRefreshToken(Token token) {
-        Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByKeyId(token.getKey());
+        refreshTokenRepository.findByKeyId(token.getKey())
+                .ifPresent(refreshTokenRepository::delete);
 
-        if (tokenOptional.isEmpty()) {
-            refreshTokenRepository.save(
-                    RefreshToken.builder()
-                            .keyId(token.getKey())
-                            .refreshToken(token.getRefreshToken())
-                            .build());
-        } else {
-            tokenOptional.get().update(token.getRefreshToken());
-        }
+        refreshTokenRepository.save(
+                RefreshToken.builder()
+                        .keyId(token.getKey())
+                        .refreshToken(token.getRefreshToken())
+                        .build()
+        );
     }
-
 
     @Transactional
     public UserRes.ProfileRes getProfile(Long userId) {
@@ -111,7 +108,6 @@ public class UserService {
         return UserRes.ProfileRes.builder()
                 .name(user.getName())
                 .studentNumber(user.getStudentNumber())
-                .phoneNumber(user.getPhoneNumber())
                 .nickname(userProfile.getNickname())
                 .emoji(userProfile.getEmoji())
                 .mbti(userProfile.getMbti())

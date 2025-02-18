@@ -1,5 +1,6 @@
 package com.gdg.z_meet.global.config;
 
+import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
 import com.gdg.z_meet.global.jwt.JwtAuthenticationFilter;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, RefreshTokenRepository refreshTokenRepository) throws Exception {
         http
                 .cors(cors -> cors.configure(http))  // CORS 설정 활성화(nginx 에서 처리)
                 .csrf(csrf -> csrf.disable())        // CSRF 비활성화
@@ -33,7 +34,7 @@ public class SecurityConfig {
                         .requestMatchers("/","/api/health").permitAll() // 인증 없이 접근 허용
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, refreshTokenRepository), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
