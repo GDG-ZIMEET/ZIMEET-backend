@@ -172,7 +172,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         return MeetingConverter.toGetMyDeleteDTO(user);
     }
 
-    private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
+    public Map<Long, List<String>> collectEmoji(List<Team> teamList) {
 
         return collectTeamInfo(teamList,
                 userTeam -> userTeam.getUser().getUserProfile().getEmoji(),

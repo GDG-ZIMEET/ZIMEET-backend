@@ -112,6 +112,10 @@ public class MeetingResponseDTO {
         }
     }
 
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class GetSearchDTO {
         Long userId;
         String nickname;
