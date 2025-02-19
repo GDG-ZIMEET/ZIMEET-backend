@@ -37,3 +37,6 @@ out/
 .vscode/
 .env
 nginx.conf
+
+### Mac OS ###
+.DS_Store

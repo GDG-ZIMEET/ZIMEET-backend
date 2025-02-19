@@ -67,6 +67,10 @@ public class UserProfile {
     @Builder.Default
     private Level level = LIGHT;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private int ticket = 2;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
