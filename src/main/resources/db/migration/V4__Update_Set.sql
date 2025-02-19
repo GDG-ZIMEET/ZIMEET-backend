@@ -28,3 +28,9 @@ ALTER TABLE user_profile
 ALTER TABLE join_chat
 DROP COLUMN joined_at;
 
+
+-- UserProfile 테이블에 ticket 컬럼 추가
+ALTER TABLE user_profile
+    ADD COLUMN ticket INT NOT NULL DEFAULT 2;
+
+
