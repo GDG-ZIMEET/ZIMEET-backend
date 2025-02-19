@@ -80,11 +80,35 @@ public class MeetingConverter {
                 .build();
     }
 
-    public static void toUserTeam(User user, Team team) {
+    public static UserTeam toUserTeam(User user, Team team) {
 
-        UserTeam.builder()
+        return UserTeam.builder()
                 .user(user)
                 .team(team)
+                .build();
+    }
+
+    public static MeetingResponseDTO.GetSearchListDTO GetSearchListDTO(List<User> users){
+
+        List<MeetingResponseDTO.GetSearchDTO> searchDTOS = users.stream()
+                .map(user -> MeetingResponseDTO.GetSearchDTO.builder()
+                        .userId(user.getId())
+                        .nickname(user.getUserProfile().getNickname())
+                        .major(String.valueOf(user.getUserProfile().getMajor().getDisplayName()))
+                        .grade(String.valueOf(user.getUserProfile().getGrade()))
+                        .phoneNumber(user.getPhoneNumber())
+                        .build())
+                .collect(Collectors.toList());
+
+        return MeetingResponseDTO.GetSearchListDTO.builder()
+                 .searchList(searchDTOS)
+                 .build();
+    }
+
+    public static MeetingResponseDTO.GetMyDeleteDTO toGetMyDeleteDTO(User user){
+
+        return MeetingResponseDTO.GetMyDeleteDTO.builder()
+                .leftDelete(user.getUserProfile().getLeftDelete())
                 .build();
     }
 }

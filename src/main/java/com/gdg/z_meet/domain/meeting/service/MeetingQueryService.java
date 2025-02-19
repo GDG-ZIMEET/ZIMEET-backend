@@ -1,7 +1,12 @@
 package com.gdg.z_meet.domain.meeting.service;
 
+import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.TeamType;
+import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 public interface MeetingQueryService {
 
@@ -11,4 +16,6 @@ public interface MeetingQueryService {
     MeetingResponseDTO.GetTeamDTO getMyTeam(Long userId, TeamType teamType);
     MeetingResponseDTO.GetMyTeamHiDTO getMyTeamHi(Long userId, TeamType teamType);
     MeetingResponseDTO.CheckNameDTO checkName(String name);
+    MeetingResponseDTO.GetSearchListDTO getSearch(Long userId, String nickname, String phoneNumber);
+    MeetingResponseDTO.GetMyDeleteDTO getMyDelete(Long userId);
 }

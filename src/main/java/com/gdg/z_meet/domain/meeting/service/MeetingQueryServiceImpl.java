@@ -1,15 +1,21 @@
 package com.gdg.z_meet.domain.meeting.service;
 
+import com.gdg.z_meet.domain.chat.entity.TeamChatRoom;
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
+import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
+import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
+import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
+import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
+import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +23,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,6 +41,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class MeetingQueryServiceImpl implements MeetingQueryService {
 
+    private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
@@ -127,21 +140,53 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .build();
     }
 
-    private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetSearchListDTO getSearch(Long userId, String nickname, String phoneNumber) {
+
+        if (nickname == null && phoneNumber == null) {
+            throw new BusinessException(Code.SEARCH_FILTER_NULL);
+        }
+        if (nickname != null && phoneNumber != null) {
+            throw new BusinessException(Code.SEARCH_FILTER_EXCEEDED);
+        }
+
+        Gender gender = userProfileRepository.findByUserId(userId).get().getGender();
+        List<User> users;
+
+        if (nickname != null) {
+            users = userRepository.findAllByNicknameContainingWithProfile(gender, nickname);
+        } else {
+            users = userRepository.findAllByPhoneNumberContainingWithProfile(gender, phoneNumber);
+        }
+        return MeetingConverter.GetSearchListDTO(users);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetMyDeleteDTO getMyDelete(Long userId) {
+
+        User user = userRepository.findByIdWithProfile(userId);
+
+        return MeetingConverter.toGetMyDeleteDTO(user);
+    }
+
+    public Map<Long, List<String>> collectEmoji(List<Team> teamList) {
 
         return collectTeamInfo(teamList,
                 userTeam -> userTeam.getUser().getUserProfile().getEmoji(),
                 false);
     }
 
-    private Map<Long, List<String>> collectMajor(List<Team> teamList) {
+    public Map<Long, List<String>> collectMajor(List<Team> teamList) {
 
         return collectTeamInfo(teamList,
                 userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor()),
                 true);
     }
 
-    private Map<Long, Double> collectAge(List<Team> teamList) {
+    public Map<Long, Double> collectAge(List<Team> teamList) {
 
         return teamList.stream().collect(Collectors.toMap(
                 Team::getId, team -> userTeamRepository.findByTeamId(team.getId()).stream()
@@ -151,7 +196,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         ));
     }
 
-    private Map<Long, List<String>> collectMusic(List<Team> teamList) {
+    public Map<Long, List<String>> collectMusic(List<Team> teamList) {
 
         return collectTeamInfo(teamList,
                 userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMusic()),
@@ -185,4 +230,6 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
             throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         }
     }
+
+
 }

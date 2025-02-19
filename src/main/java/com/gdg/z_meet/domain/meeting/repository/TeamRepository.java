@@ -19,10 +19,11 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     @Query("SELECT t FROM Team t WHERE t.id IN (SELECT ut.team.id FROM UserTeam ut WHERE ut.user.id = :userId) " +
             "AND t.teamType = :teamType")
-    Optional<Team> findByTeamType(@Param("userId") Long userId,@Param("teamType") TeamType teamType);
+    Optional<Team> findByTeamType(@Param("userId") Long userId, @Param("teamType") TeamType teamType);
 
     Boolean existsByName(String name);
 
+    List<Team> findByIdIn(List<Long> teamIds);
     @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Team t " +
             "JOIN UserTeam ut ON ut.team = t " +
             "WHERE ut.user.id IN :userIds AND t.teamType = :teamType")

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 public class MeetingResponseDTO {
@@ -88,5 +90,54 @@ public class MeetingResponseDTO {
     @AllArgsConstructor
     public static class CheckNameDTO {
         Integer check;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class hiListDto {
+        String teamName;
+        List<UserProfileDto> teamList;
+        Double age;
+        String dateTime;
+
+        @Getter
+        @AllArgsConstructor
+        @Builder
+        public static class UserProfileDto {
+            private String major;
+            private String emoji;
+            private String music;
+        }
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetSearchDTO {
+        Long userId;
+        String nickname;
+        String major;
+        String grade;
+        String phoneNumber;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetSearchListDTO {
+        List<GetSearchDTO> searchList;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMyDeleteDTO {
+        Integer leftDelete;
+
     }
 }
