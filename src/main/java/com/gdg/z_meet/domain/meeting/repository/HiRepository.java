@@ -4,6 +4,7 @@ import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -11,8 +12,9 @@ import java.util.List;
 public interface HiRepository extends JpaRepository<Hi,Long> {
     Boolean existsByFromAndTo(Team from, Team to);
     Hi findByFromAndTo(Team from, Team to);
-    @Query("SELECT h FROM Hi h WHERE h.to.id = :teamId AND h.hiStatus='NONE' ORDER BY h.createdAt DESC")
-    List<Hi> findRecevieHiList(Long teamId);
-    @Query("SELECT h FROM Hi h WHERE h.from.id = :teamId ORDER BY h.createdAt DESC")
-    List<Hi> findSendHiList(Long teamId);
+    @Query("SELECT DISTINCT h FROM Hi h WHERE h.to.id IN (:teamIds) AND h.hiStatus='NONE' ORDER BY h.createdAt DESC")
+    List<Hi> findRecevieHiList(@Param("teamIds") List<Long> teamIds);
+    @Query("SELECT DISTINCT h FROM Hi h WHERE h.from.id IN (:teamIds) ORDER BY h.createdAt DESC")
+    List<Hi> findSendHiList(@Param("teamIds") List<Long> teamIds);
+
 }

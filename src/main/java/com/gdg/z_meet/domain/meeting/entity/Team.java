@@ -52,15 +52,4 @@ public class Team extends BaseEntity {
         }
     }
 
-    @Override
-    public String toString() {
-        return "Team{" +
-                "id=" + id +
-                ", teamType=" + teamType +
-                ", name='" + name + '\'' +
-                ", gender=" + gender +
-                ", hi=" + hi +
-                ", verification=" + verification +
-                '}';
-    }
 }
