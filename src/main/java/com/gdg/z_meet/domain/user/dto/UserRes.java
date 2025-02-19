@@ -23,6 +23,7 @@ public class UserRes {
         //유저 상세정보
         private String nickname;
         private Grade grade;
+        private Gender gender;
         private int age;
         private Major major;
         private String emoji;

@@ -111,6 +111,7 @@ public class UserService {
                 .studentNumber(user.getStudentNumber())
                 .nickname(userProfile.getNickname())
                 .phoneNumber(user.getPhoneNumber())
+                .gender(userProfile.getGender())
                 .emoji(userProfile.getEmoji())
                 .mbti(userProfile.getMbti())
                 .style(userProfile.getStyle())
