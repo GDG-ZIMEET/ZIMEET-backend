@@ -132,7 +132,7 @@ public class UserService {
         User user = userProfile.getUser();
 
         String studentNumber = user.getStudentNumber();
-        String studentYear = studentNumber.substring(2,4) + "학번";
+        String studentYear = studentNumber.substring(2,4);
 
         return UserRes.UserProfileRes.builder()
                 .nickname(userProfile.getNickname())
