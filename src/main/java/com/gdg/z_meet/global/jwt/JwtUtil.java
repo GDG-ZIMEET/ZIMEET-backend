@@ -1,11 +1,14 @@
 package com.gdg.z_meet.global.jwt;
 
 import com.gdg.z_meet.domain.user.dto.Token;
+import com.gdg.z_meet.domain.user.entity.RefreshToken;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,7 +20,6 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-
 
 @Component
 @RequiredArgsConstructor
@@ -43,12 +45,11 @@ public class JwtUtil {
         Date now = new Date();
 
         String accessToken = getToken(studentNumber, id, now, accessTokenValidTime);
-        String refreshToken = getToken(studentNumber, id, now, refreshTokenValidTime);
 
         return Token.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .key(studentNumber)
+                .userId(id)
                 .build();
     }
 
@@ -60,6 +61,31 @@ public class JwtUtil {
                 .setExpiration(new Date(currentTime.getTime() + validTime))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public Cookie createCookie(HttpServletResponse response, String studentNumber, Long id){
+        String cookieName = "refreshToken";
+        String cookieValue = createToken(studentNumber, id).getRefreshToken();
+        Cookie cookie = new Cookie(cookieName, cookieValue);
+
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge((int) refreshTokenValidTime);
+
+        response.addCookie(cookie);
+
+        return cookie;
+    }
+
+    public String getValidRefreshToken(Cookie[] cookies) {
+        if (cookies == null) return null;
+        for (Cookie cookie : cookies) {
+            if ("refreshToken".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 
     // 인증 정보 조회

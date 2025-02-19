@@ -16,12 +16,14 @@ public class UserRes {
     @Getter
     @Builder
     public static class ProfileRes {
+        private Long id;
         private String name;
         private String studentNumber;
         private String phoneNumber;
         //유저 상세정보
         private String nickname;
         private Grade grade;
+        private Gender gender;
         private int age;
         private Major major;
         private String emoji;

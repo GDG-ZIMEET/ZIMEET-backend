@@ -15,6 +15,10 @@ public class RefreshToken {
 
     private String refreshToken;
 
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     private String keyId;
 
     @Builder
