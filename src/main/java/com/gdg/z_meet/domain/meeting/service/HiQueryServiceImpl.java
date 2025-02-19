@@ -70,7 +70,10 @@ public class HiQueryServiceImpl implements HiQueryService{
         // 유효성 검사
         if (from.getTeamType() != to.getTeamType()) throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         if (from.getGender() == to.getGender()) throw new BusinessException(Code.SAME_GENDER);
-        if (hiRepository.existsByFromAndTo(from, to)) throw new BusinessException(Code.HI_DUPLICATION);
+        if (hiRepository.existsByFromAndToAndHiStatusNot(from, to, HiStatus.EXPIRED)) {
+            throw new BusinessException(Code.HI_DUPLICATION);
+        }
+
 
         from.decreaseHi(); // 하이 갯수 차감
 
@@ -106,7 +109,6 @@ public class HiQueryServiceImpl implements HiQueryService{
         List<Long> myTeamIds = myTeams.stream()
                 .map(userTeam -> userTeam.getTeam().getId()) // UserTeam에서 teamId 추출
                 .collect(Collectors.toList());
-        System.out.println(myTeamIds);
 
         List<Hi> hiList;
         List<Long> teamIds;
@@ -126,8 +128,6 @@ public class HiQueryServiceImpl implements HiQueryService{
         }
 
         List<Team> teamList = teamRepository.findByIdIn(teamIds);
-        System.out.println("TeamList: "+teamList);
-        System.out.println("hiList "+ hiList);
 
         Map<Long, List<String>> emojiList = meetingQueryService.collectEmoji(teamList);
         Map<Long, List<String>> majorList = meetingQueryService.collectMajor(teamList);
@@ -168,7 +168,7 @@ public class HiQueryServiceImpl implements HiQueryService{
                 long totalMinutesRemaining = (5 * 60) - totalMinutesElapsed; // 5시간(300분) 기준으로 남은 분 계산
 
                 if (totalMinutesRemaining <= 0) {
-                    hi.changeStatus(HiStatus.REFUSE);
+                    hi.changeStatus(HiStatus.EXPIRED);
                     hiRepository.save(hi);
                     continue;
                 }
@@ -179,7 +179,7 @@ public class HiQueryServiceImpl implements HiQueryService{
                 dateTime = String.format("%d시간 %d분 남음", remainingHours, remainingMinutes);
 
                 if(remainingHours<=0 || remainingMinutes<=0){
-                    hi.changeStatus(HiStatus.REFUSE);
+                    hi.changeStatus(HiStatus.EXPIRED);
                     hiRepository.save(hi);
                     continue;
                 }
