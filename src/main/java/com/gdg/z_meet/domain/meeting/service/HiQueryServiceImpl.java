@@ -4,15 +4,18 @@ import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
+import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
+import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,6 +29,7 @@ public class HiQueryServiceImpl implements HiQueryService{
     private final HiRepository hiRepository;
     private final TeamRepository teamRepository;
     private final MeetingQueryServiceImpl meetingQueryService;
+    private final UserTeamRepository userTeamRepository;
 
     // 공통 메서드로 분리
     public Map<String, Team> assignTeams(List<Long> teamIds, Long fromId) {
@@ -66,7 +70,10 @@ public class HiQueryServiceImpl implements HiQueryService{
         // 유효성 검사
         if (from.getTeamType() != to.getTeamType()) throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         if (from.getGender() == to.getGender()) throw new BusinessException(Code.SAME_GENDER);
-        if (hiRepository.existsByFromAndTo(from, to)) throw new BusinessException(Code.HI_DUPLICATION);
+        if (hiRepository.existsByFromAndToAndHiStatusNot(from, to, HiStatus.EXPIRED)) {
+            throw new BusinessException(Code.HI_DUPLICATION);
+        }
+
 
         from.decreaseHi(); // 하이 갯수 차감
 
@@ -96,24 +103,31 @@ public class HiQueryServiceImpl implements HiQueryService{
 
     @Override
     @Transactional
-    public List<MeetingResponseDTO.hiListDto> checkHiList(Long teamId, String action){
+    public List<MeetingResponseDTO.hiListDto> checkHiList(Long userId, String action){
+        List<UserTeam> myTeams = userTeamRepository.findByUserId(userId);
+        if(myTeams.size()==0) throw new BusinessException(Code.TEAM_NOT_FOUND);
+        List<Long> myTeamIds = myTeams.stream()
+                .map(userTeam -> userTeam.getTeam().getId()) // UserTeam에서 teamId 추출
+                .collect(Collectors.toList());
+
         List<Hi> hiList;
         List<Long> teamIds;
         if(action.equals("Receive")) {
-            hiList = hiRepository.findRecevieHiList(teamId);
+            hiList = hiRepository.findRecevieHiList(myTeamIds);
             teamIds = hiList.stream()
                     .map(hi -> hi.getFrom().getId()) // 보낸 팀의 id
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet()) // 중복 제거
+                    .stream().toList();
         }
         else{
-            hiList = hiRepository.findSendHiList(teamId);
+            hiList = hiRepository.findSendHiList(myTeamIds);
             teamIds = hiList.stream()
                     .map(hi -> hi.getTo().getId())
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet())
+                    .stream().toList();
         }
 
         List<Team> teamList = teamRepository.findByIdIn(teamIds);
-        System.out.println("TeamList: "+teamList);
 
         Map<Long, List<String>> emojiList = meetingQueryService.collectEmoji(teamList);
         Map<Long, List<String>> majorList = meetingQueryService.collectMajor(teamList);
@@ -154,7 +168,7 @@ public class HiQueryServiceImpl implements HiQueryService{
                 long totalMinutesRemaining = (5 * 60) - totalMinutesElapsed; // 5시간(300분) 기준으로 남은 분 계산
 
                 if (totalMinutesRemaining <= 0) {
-                    hi.changeStatus(HiStatus.REFUSE);
+                    hi.changeStatus(HiStatus.EXPIRED);
                     hiRepository.save(hi);
                     continue;
                 }
@@ -165,7 +179,7 @@ public class HiQueryServiceImpl implements HiQueryService{
                 dateTime = String.format("%d시간 %d분 남음", remainingHours, remainingMinutes);
 
                 if(remainingHours<=0 || remainingMinutes<=0){
-                    hi.changeStatus(HiStatus.REFUSE);
+                    hi.changeStatus(HiStatus.EXPIRED);
                     hiRepository.save(hi);
                     continue;
                 }
