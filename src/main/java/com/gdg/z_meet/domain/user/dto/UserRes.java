@@ -32,6 +32,7 @@ public class UserRes {
         private Style style;
         private IdealAge idealAge;
         private IdealType idealType;
+        private Level level;
     }
 
     @Getter
