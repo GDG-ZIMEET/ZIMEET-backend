@@ -115,14 +115,16 @@ public class MeetingController {
 
     @Operation(summary = "받은 하이 목록")
     @GetMapping("/hiList/recevie")
-    public Response<List<MeetingResponseDTO.hiListDto>> receiveHiList(@RequestBody Long teamId) {
-        return Response.ok(hiQueryService.checkHiList(teamId, "Receive"));
+    public Response<List<MeetingResponseDTO.hiListDto>> receiveHiList() {
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        return Response.ok(hiQueryService.checkHiList(userId, "Receive"));
     }
 
     @Operation(summary = "보낸 하이 목록")
     @GetMapping("/hiList/send")
-    public Response<List<MeetingResponseDTO.hiListDto>> sendHiList(@RequestBody Long teamId) {
-        return Response.ok(hiQueryService.checkHiList(teamId, "Send"));
+    public Response<List<MeetingResponseDTO.hiListDto>> sendHiList() {
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        return Response.ok(hiQueryService.checkHiList(userId, "Send"));
     }
 
 
