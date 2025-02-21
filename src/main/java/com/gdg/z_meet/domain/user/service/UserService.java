@@ -121,6 +121,7 @@ public class UserService {
                 .major(userProfile.getMajor())
                 .age(userProfile.getAge())
                 .music(userProfile.getMusic())
+                .level(userProfile.getLevel())
                 .build();
     }
 
