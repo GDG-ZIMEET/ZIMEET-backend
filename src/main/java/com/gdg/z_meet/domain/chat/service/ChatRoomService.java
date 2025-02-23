@@ -3,6 +3,7 @@ package com.gdg.z_meet.domain.chat.service;
 import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.*;
 import com.gdg.z_meet.domain.chat.entity.status.ChatType;
+import com.gdg.z_meet.domain.chat.entity.status.JoinChatStatus;
 import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
 import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
 import com.gdg.z_meet.domain.chat.repository.MessageRepository;
@@ -57,22 +58,6 @@ public class ChatRoomService {
     private static final String CHAT_ROOMS_KEY = "chatrooms";
     private static final String CHAT_ROOM_ACTIVITY_KEY = "chatroom:activity";
     private static final String CHAT_ROOM_LATEST_MESSAGE_KEY = "chatroom:%s:latestMessage";
-
-    // 채팅방 생성
-    @Transactional
-    public ChatRoom createChatRoom() {
-        // 1. 새로운 ChatRoom 생성
-        ChatRoom chatRoom = ChatRoom.builder()
-                .build();
-
-        // 2. DB 저장
-        chatRoom = chatRoomRepository.save(chatRoom);
-
-        // 3. Redis 저장
-        redisTemplate.opsForHash().put(CHAT_ROOMS_KEY, chatRoom.getId().toString(), chatRoom);
-
-        return chatRoom;
-    }
 
     // 채팅방 삭제
     @Transactional
@@ -232,7 +217,8 @@ public class ChatRoomService {
         JoinChat joinChat = joinChatRepository.findByUserAndChatRoom(user, chatRoom)
                 .orElseThrow(() ->  new BusinessException(Code.JOINCHAT_NOT_FOUND));
 
-        joinChatRepository.delete(joinChat);
+        joinChat.leaveChat();
+        joinChatRepository.save(joinChat);
 
 
         String joinChatsKey = "user:" + userId + ":chatrooms";
@@ -278,7 +264,7 @@ public class ChatRoomService {
 
 
         if (joinChatIdsSet == null || joinChatIdsSet.isEmpty()) {
-            List<JoinChat> joinChats = joinChatRepository.findByUserId(userId);
+            List<JoinChat> joinChats = joinChatRepository.findByUserIdAndStatus(userId, JoinChatStatus.ACTIVE);
             joinChatIdsSet = joinChats.stream()
                     .map(joinChat -> joinChat.getChatRoom().getId())
                     .collect(Collectors.toSet());

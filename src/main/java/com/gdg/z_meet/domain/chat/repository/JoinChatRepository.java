@@ -2,6 +2,7 @@ package com.gdg.z_meet.domain.chat.repository;
 
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.entity.JoinChat;
+import com.gdg.z_meet.domain.chat.entity.status.JoinChatStatus;
 import com.gdg.z_meet.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,6 @@ public interface JoinChatRepository extends JpaRepository<JoinChat, Long> {
     Boolean existsByUserIdAndChatRoomId(Long userId, Long chatRoomId);
     @Query("SELECT jc.user.id FROM JoinChat jc WHERE jc.user.id IN :userIds AND jc.chatRoom.id = :chatRoomId")
     List<Long> findUserIdsByUserIdInAndChatRoomId(@Param("userIds") List<Long> userIds, @Param("chatRoomId") Long chatRoomId);
+    @Query("SELECT jc FROM JoinChat jc WHERE jc.user.id = :userId AND jc.status = :status")
+    List<JoinChat> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") JoinChatStatus status);
 }
