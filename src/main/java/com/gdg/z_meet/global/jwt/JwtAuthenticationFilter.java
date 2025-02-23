@@ -21,19 +21,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 헤더에서 액세스 토큰을 받아옴
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         String accessToken = jwtUtil.getAccessToken(request);
 
         if (accessToken != null && jwtUtil.validateToken(request, accessToken)) {
             Authentication authentication = jwtUtil.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
-            // 쿠키에서 리프레쉬 토큰을 가져옴
-            String refreshToken = jwtUtil.getValidRefreshToken(request.getCookies());
+            // 액세스 토큰이 없거나 만료되었을 경우, 리프레시 토큰 확인
+            String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
 
-            if (refreshToken != null) {
+            if (refreshToken != null && jwtUtil.validateToken(request, refreshToken)) {
                 Optional<RefreshToken> storedToken = refreshTokenRepository.findByRefreshToken(refreshToken);
+
                 if (storedToken.isPresent()) {
                     String studentNumber = jwtUtil.getStudentNumberFromToken(refreshToken);
                     Long userId = jwtUtil.getUserIdFromToken(refreshToken);
@@ -48,7 +49,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }

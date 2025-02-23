@@ -9,7 +9,9 @@ import com.gdg.z_meet.domain.user.dto.UserRes;
 import com.gdg.z_meet.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -33,9 +35,16 @@ public class UserController {
     }
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "로그인")
-    public Response<Token> login(@RequestBody UserReq.LoginReq loginReq) {
+    public Response<UserRes.LoginRes> login(@RequestBody UserReq.LoginReq loginReq, HttpServletResponse response) {
         try {
-            return Response.ok(userService.login(loginReq));
+            Token token = userService.login(loginReq);
+            jwtUtil.createCookie(response, token.getRefreshToken());
+            UserRes.LoginRes loginRes = UserRes.LoginRes.builder()
+                    .accessToken(token.getAccessToken())
+                    .key(token.getKey())
+                    .userId(token.getUserId())
+                    .build();
+            return Response.ok(loginRes);
         } catch (GlobalException exception) {
             return Response.fail(exception.getCode());
         }

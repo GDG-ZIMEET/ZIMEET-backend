@@ -45,9 +45,11 @@ public class JwtUtil {
         Date now = new Date();
 
         String accessToken = getToken(studentNumber, id, now, accessTokenValidTime);
+        String refreshToken = getToken(studentNumber, id, now, refreshTokenValidTime);
 
         return Token.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .key(studentNumber)
                 .userId(id)
                 .build();
@@ -63,24 +65,23 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Cookie createCookie(HttpServletResponse response, String studentNumber, Long id){
+    public Cookie createCookie(HttpServletResponse response, String refreshToken){
         String cookieName = "refreshToken";
-        String cookieValue = createToken(studentNumber, id).getRefreshToken();
-        Cookie cookie = new Cookie(cookieName, cookieValue);
-
+        Cookie cookie = new Cookie(cookieName, refreshToken);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setMaxAge((int) refreshTokenValidTime);
 
+        cookie.setMaxAge((int) (refreshTokenValidTime / 1000));
         response.addCookie(cookie);
-
         return cookie;
     }
 
-    public String getValidRefreshToken(Cookie[] cookies) {
-        if (cookies == null) return null;
-        for (Cookie cookie : cookies) {
+
+    public String getRefreshTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null)
+            return null;
+        for (Cookie cookie : request.getCookies()) {
             if ("refreshToken".equals(cookie.getName())) {
                 return cookie.getValue();
             }
