@@ -2,6 +2,7 @@ package com.gdg.z_meet.domain.chat.service;
 
 import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.*;
+import com.gdg.z_meet.domain.chat.entity.status.ChatType;
 import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
 import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
 import com.gdg.z_meet.domain.chat.repository.MessageRepository;
@@ -18,6 +19,7 @@ import com.gdg.z_meet.domain.meeting.service.HiQueryService;
 import com.gdg.z_meet.domain.meeting.service.HiQueryServiceImpl;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
+import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -122,7 +124,9 @@ public class ChatRoomService {
         hiRepository.save(hi);
 
         //채팅방 생성
-        ChatRoom chatRoom = ChatRoom.builder().build();
+        ChatRoom chatRoom = ChatRoom.builder()
+                .chatType(ChatType.TEAM)
+                .build();
         chatRoom = chatRoomRepository.save(chatRoom);
 
         addTeamToChatRoom(chatRoom, from, to.getName());
@@ -134,8 +138,15 @@ public class ChatRoomService {
     }
 
     public ChatRoomDto.resultChatRoomDto addUserJoinChat(List<Long> userIds){
+        // 가장 큰 randomChatId 조회 후 +1
+        Long maxRandomChatId = chatRoomRepository.findMaxRandomChatId().orElse(0L);
+        Long newRandomChatId = maxRandomChatId + 1;
+
         //채팅방 생성
-        ChatRoom chatRoom = ChatRoom.builder().build();
+        ChatRoom chatRoom = ChatRoom.builder()
+                .chatType(ChatType.RANDOM)
+                .randomChatId(newRandomChatId)
+                .build();
         chatRoom = chatRoomRepository.save(chatRoom);
 
         List<User> users = userRepository.findAllById(userIds);
@@ -312,7 +323,7 @@ public class ChatRoomService {
                         latestMessageTime = chatRoom.getUpdatedAt();
                     }
 
-                    List<ChatRoomDto.UserProfileDto> userProfiles = getUserProfilesByChatRoomId(chatRoomId);
+                    List<ChatRoomDto.UserProfileDto> userProfiles = getUserProfilesByChatRoomId(userId, chatRoomId, true);
 
 
                     return new ChatRoomDto.chatRoomListDto(chatRoom.getId(), chatRoomName, latestMessage, latestMessageTime, userProfiles);
@@ -323,6 +334,14 @@ public class ChatRoomService {
     //상대팀 이름 반환
     @Transactional
     public String getChatRoomName(Long userId, Long chatRoomId){
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
+
+        if (chatRoom.getChatType() == ChatType.RANDOM) {
+            // 랜덤 채팅방이면 고유한 ID 기반으로 이름 생성
+            return "랜덤채팅 " + (chatRoom.getRandomChatId() +30) + "번방";
+        }
+
         // 해당 채팅방의 팀 조회
         List<TeamChatRoom> teamChatRooms = teamChatRoomRepository.findByChatRoomId(chatRoomId);
 
@@ -338,8 +357,22 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public List<ChatRoomDto.UserProfileDto> getUserProfilesByChatRoomId(Long chatRoomId) {
+    public List<ChatRoomDto.UserProfileDto> getUserProfilesByChatRoomId(Long userId, Long chatRoomId, boolean filterByGender) {
+        // 현재 사용자의 성별 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
+        Gender userGender = user.getUserProfile().getGender(); // 성별 가져오기
+
+        // 채팅방 전체 사용자 조회
         List<User> users = joinChatRepository.findUsersByChatRoomId(chatRoomId);
+
+        // filterByGender가 true일 경우, 이성만 남김
+        if (filterByGender) {
+            users = users.stream()
+                    .filter(nowUser -> !nowUser.getUserProfile().getGender().equals(userGender)) // 성별이 다를 때만 포함
+                    .collect(Collectors.toList());
+        }
+
         List<UserProfile> userProfiles = userProfileRepository.findByUserIn(users);
 
         return userProfiles.stream()
@@ -359,7 +392,7 @@ public class ChatRoomService {
         }
 
         // 채팅방에 속한 사용자 프로필 가져오기
-        List<ChatRoomDto.UserProfileDto> userProfileDtos = getUserProfilesByChatRoomId(roomId);
+        List<ChatRoomDto.UserProfileDto> userProfileDtos = getUserProfilesByChatRoomId(userId, roomId, false);
 
         // 해당 채팅방의 모든 팀 조회
         List<TeamChatRoom> teamChatRooms = teamChatRoomRepository.findByChatRoomId(roomId);

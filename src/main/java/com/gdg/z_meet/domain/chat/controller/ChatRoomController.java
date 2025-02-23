@@ -42,7 +42,7 @@ public class ChatRoomController {
     }
 
     @Operation(summary = "사용자 채팅방 추가", description = "관리자가 팀을 지정된 채팅방에 추가합니다. 추가할 팀 아이디를 주세요")
-    @PostMapping("/{userId}")
+    @PostMapping("/addUsers")
     public Response<ChatRoomDto.resultChatRoomDto> addUserToChatRoom(
             @RequestBody List<Long> userIds) {
         return Response.ok(chatRoomService.addUserJoinChat(userIds));
