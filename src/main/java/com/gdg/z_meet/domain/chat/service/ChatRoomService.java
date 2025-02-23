@@ -106,7 +106,7 @@ public class ChatRoomService {
 
     }
 
-    // 사용자 추가
+    // 팀으로 채팅방 추가
     @Transactional
     public ChatRoomDto.resultChatRoomDto addTeamJoinChat(MeetingRequestDTO.hiDto hiDto) {
         List<Long> teamIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
@@ -133,23 +133,23 @@ public class ChatRoomService {
                 .build();
     }
 
-    @Transactional
-    public void addTeamToChatRoom(ChatRoom chatRoom, Team team, String teamName){
-        Long chatRoomId = chatRoom.getId();
+    public ChatRoomDto.resultChatRoomDto addUserJoinChat(List<Long> userIds){
+        //채팅방 생성
+        ChatRoom chatRoom = ChatRoom.builder().build();
+        chatRoom = chatRoomRepository.save(chatRoom);
 
-        List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
-        List<User> users = userTeams.stream()
-                .map(UserTeam::getUser)
-                .collect(Collectors.toList());
+        List<User> users = userRepository.findAllById(userIds);
+        addUserToChatRoom(chatRoom, users);
 
-        // 팀정보 DB 저장
-        TeamChatRoom teamChatRoom = TeamChatRoom.builder()
-                .team(team)
-                .chatRoom(chatRoom)
-                .name(teamName)
+        return ChatRoomDto.resultChatRoomDto.builder()
+                .chatRoomid(chatRoom.getId())
                 .build();
+    }
 
-        teamChatRoomRepository.save(teamChatRoom);
+    // 사용자 채팅방 추가
+    @Transactional
+    public void addUserToChatRoom(ChatRoom chatRoom, List<User> users){
+        Long chatRoomId = chatRoom.getId();
 
         //사용자별 참여 채팅방 존재 여부 확인
         List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
@@ -187,6 +187,27 @@ public class ChatRoomService {
         if (!newJoinChats.isEmpty()) {
             joinChatRepository.saveAll(newJoinChats);
         }
+    }
+
+    @Transactional
+    public void addTeamToChatRoom(ChatRoom chatRoom, Team team, String teamName){
+
+        List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+        List<User> users = userTeams.stream()
+                .map(UserTeam::getUser)
+                .collect(Collectors.toList());
+
+        // 팀정보 DB 저장
+        TeamChatRoom teamChatRoom = TeamChatRoom.builder()
+                .team(team)
+                .chatRoom(chatRoom)
+                .name(teamName)
+                .build();
+
+        teamChatRoomRepository.save(teamChatRoom);
+
+        // 사용자 저장
+        addUserToChatRoom(chatRoom, users);
     }
 
     // 사용자 제거
