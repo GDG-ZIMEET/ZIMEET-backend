@@ -9,6 +9,5 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    Page<Message> findByChatRoomId(Long chatRoomId, Pageable pageable);  // Pageable 사용
-    List<Message> findByChatRoomId(Long chatRoomId);  // 전체 조회
+    List<Message> findByChatRoomId(Long chatRoomId, Pageable pageable);
 }

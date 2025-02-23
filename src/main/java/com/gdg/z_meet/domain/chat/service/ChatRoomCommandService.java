@@ -26,6 +26,8 @@ import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -58,10 +60,15 @@ public class ChatRoomCommandService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
 
-        // 연관된 메시지 삭제
-        List<Message> messages = messageRepository.findByChatRoomId(chatRoomId);
-        if (!messages.isEmpty()) {
-            messageRepository.deleteAll(messages);
+        int batchSize = 500;
+        Pageable pageable = PageRequest.of(0, batchSize);
+
+        while (true) {
+            List<Message> messages = messageRepository.findByChatRoomId(chatRoomId, pageable);
+            if (messages.isEmpty()) {
+                break; // 더 이상 삭제할 메시지가 없으면 종료
+            }
+            messageRepository.deleteAllInBatch(messages);
         }
 
         // 연관된 JoinChat 삭제

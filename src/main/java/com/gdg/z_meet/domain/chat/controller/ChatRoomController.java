@@ -2,9 +2,7 @@ package com.gdg.z_meet.domain.chat.controller;
 
 import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
-import com.gdg.z_meet.domain.chat.service.ChatRoomCommandService;
-import com.gdg.z_meet.domain.chat.service.ChatRoomQueryService;
-import com.gdg.z_meet.domain.chat.service.MessageService;
+import com.gdg.z_meet.domain.chat.service.*;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.global.common.AuthenticatedUserUtils;
 import com.gdg.z_meet.global.jwt.JwtUtil;
@@ -25,7 +23,7 @@ public class ChatRoomController {
 
     private final ChatRoomQueryService chatRoomQueryService;
     private final ChatRoomCommandService chatRoomCommandService;
-    private final MessageService messageService;
+    private final MessageQueryService messageQueryService;
     private final JwtUtil jwtUtil;
 
     @Operation(summary = "채팅방 삭제", description = "기존 채팅방을 삭제합니다.")
@@ -87,7 +85,7 @@ public class ChatRoomController {
             @RequestParam(defaultValue = "15") int size // 페이지 크기 (기본값: 20)
     ) {
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
-        List<ChatMessage> messages = messageService.getMessagesByChatRoom(roomId,userId, page, size);
+        List<ChatMessage> messages = messageQueryService.getMessagesByChatRoom(roomId,userId, page, size);
         return ResponseEntity.ok(messages);
     }
 

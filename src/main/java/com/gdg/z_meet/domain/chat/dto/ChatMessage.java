@@ -1,24 +1,41 @@
 package com.gdg.z_meet.domain.chat.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gdg.z_meet.domain.chat.entity.status.MessageType;
 import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class ChatMessage implements Serializable {
-    private String id;
+    @Builder.Default
+    private String id = UUID.randomUUID().toString();
     private MessageType type;
     private Long roomId;
+    private Long senderId;
     private String senderName;
     private String content;
-    private LocalDateTime sendAt;
+    @Builder.Default
+    private LocalDateTime sendAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+
     private String emoji;
 
+    @Override
+    public String toString() {
+        return "ChatMessage{" +
+                "id='" + id + '\'' +
+                ", type=" + type +
+                ", roomId=" + roomId +
+                ", senderId=" + senderId +
+                ", senderName='" + senderName + '\'' +
+                ", content='" + content + '\'' +
+                ", sendAt=" + sendAt +
+                ", emoji='" + emoji + '\'' +
+                '}';
+    }
 }
