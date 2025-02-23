@@ -2,8 +2,8 @@ package com.gdg.z_meet.domain.chat.controller;
 
 import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
-import com.gdg.z_meet.domain.chat.entity.ChatRoom;
-import com.gdg.z_meet.domain.chat.service.ChatRoomService;
+import com.gdg.z_meet.domain.chat.service.ChatRoomCommandService;
+import com.gdg.z_meet.domain.chat.service.ChatRoomQueryService;
 import com.gdg.z_meet.domain.chat.service.MessageService;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.global.jwt.JwtUtil;
@@ -22,7 +22,8 @@ import java.util.List;
 @Tag(name = "ChatAPI",description = "채팅방 관련 기능 API 입니다.")
 public class ChatRoomController {
 
-    private final ChatRoomService chatRoomService;
+    private final ChatRoomQueryService chatRoomQueryService;
+    private final ChatRoomCommandService chatRoomCommandService;
     private final MessageService messageService;
     private final JwtUtil jwtUtil;
 
@@ -30,7 +31,7 @@ public class ChatRoomController {
     @DeleteMapping("/{roomId}")
     public Response<String> deleteChatRoom(
             @PathVariable Long roomId) {
-        chatRoomService.deleteChatRoom(roomId); // 채팅방 삭제
+        chatRoomCommandService.deleteChatRoom(roomId); // 채팅방 삭제
         return Response.ok(roomId+" 삭제 완료되었습니다.");
     }
 
@@ -38,14 +39,14 @@ public class ChatRoomController {
     @PostMapping("/teams")
     public Response<ChatRoomDto.resultChatRoomDto> addUserToChatRoom(
             @RequestBody MeetingRequestDTO.hiDto hiDto) {
-        return Response.ok(chatRoomService.addTeamJoinChat(hiDto));
+        return Response.ok(chatRoomCommandService.addTeamJoinChat(hiDto));
     }
 
     @Operation(summary = "사용자 채팅방 추가", description = "관리자가 팀을 지정된 채팅방에 추가합니다. 추가할 팀 아이디를 주세요")
     @PostMapping("/addUsers")
     public Response<ChatRoomDto.resultChatRoomDto> addUserToChatRoom(
             @RequestBody List<Long> userIds) {
-        return Response.ok(chatRoomService.addUserJoinChat(userIds));
+        return Response.ok(chatRoomCommandService.addUserJoinChat(userIds));
     }
 
     @Operation(summary = "사용자 채팅방 제거", description = "사용자를 지정된 채팅방에서 제거합니다. 채팅방 나가기와 동일한 기능 입니다. ")
@@ -58,7 +59,7 @@ public class ChatRoomController {
         Long userId = jwtUtil.extractUserIdFromToken(token);
 
         // 채팅방에서 사용자 제거
-        chatRoomService.removeUserFromChatRoom(roomId, userId);
+        chatRoomCommandService.removeUserFromChatRoom(roomId, userId);
 
         return Response.ok(roomId+" 삭제 완료되었습니다.");
     }
@@ -68,7 +69,7 @@ public class ChatRoomController {
     public Response<List<ChatRoomDto.chatRoomListDto>> getUserChatRooms(
             @RequestHeader("Authorization") String token) {
         Long userId = jwtUtil.extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
-        List<ChatRoomDto.chatRoomListDto> chatRooms = chatRoomService.getChatRoomsByUser(userId); // 참여 중인 채팅방 조회
+        List<ChatRoomDto.chatRoomListDto> chatRooms = chatRoomQueryService.getChatRoomsByUser(userId); // 참여 중인 채팅방 조회
         return Response.ok(chatRooms); // 채팅방 목록 반환
     }
 
@@ -79,7 +80,7 @@ public class ChatRoomController {
             @PathVariable Long roomId) {
         Long userId = jwtUtil.extractUserIdFromToken(token); // JWT 토큰에서 사용자 ID 추출
 
-        return Response.ok(chatRoomService.getUserByRoomId(userId, roomId)); // 성공 응답 반환
+        return Response.ok(chatRoomQueryService.getUserByRoomId(userId, roomId)); // 성공 응답 반환
     }
 
     @Operation(summary = "메시지 조회", description = "지정된 채팅방의 메시지를 페이지네이션을 사용하여 조회합니다.")
