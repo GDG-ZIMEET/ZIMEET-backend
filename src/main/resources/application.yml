@@ -17,7 +17,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update # 스키마 자동 업데이트
+      ddl-auto: create # 스키마 자동 업데이트
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect

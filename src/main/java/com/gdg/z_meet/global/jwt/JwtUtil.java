@@ -1,7 +1,7 @@
 package com.gdg.z_meet.global.jwt;
 
 import com.gdg.z_meet.domain.user.dto.Token;
-import com.gdg.z_meet.domain.user.entity.RefreshToken;
+//import com.gdg.z_meet.domain.user.entity.RefreshToken;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -77,6 +77,17 @@ public class JwtUtil {
         return cookie;
     }
 
+    public String extractKeyIdFromAccessToken(String accessToken) {
+        validationAuthorizationHeader(accessToken);
+        String availableToken = extractToken(accessToken);
+
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(availableToken)
+                .getBody()
+                .getSubject();
+    }
 
     public String getRefreshTokenFromCookie(HttpServletRequest request) {
         if (request.getCookies() == null)
@@ -117,6 +128,15 @@ public class JwtUtil {
     private void validationAuthorizationHeader(String header){
         if(header == null || !header.startsWith("Bearer ")){
             throw new IllegalArgumentException();
+        }
+    }
+
+    public boolean validateRefreshToken(String refreshToken) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(refreshToken);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -161,5 +181,13 @@ public class JwtUtil {
             throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
         }
         return extractUserIdFromToken(token);
+    }
+
+    public long getAccessTokenValidTime() {
+        return accessTokenValidTime;
+    }
+
+    public long getRefreshTokenValidTime() {
+        return refreshTokenValidTime;
     }
 }

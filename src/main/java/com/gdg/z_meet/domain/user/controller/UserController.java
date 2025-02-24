@@ -37,14 +37,26 @@ public class UserController {
     @Operation(summary = "로그인", description = "로그인")
     public Response<UserRes.LoginRes> login(@RequestBody UserReq.LoginReq loginReq, HttpServletResponse response) {
         try {
-            Token token = userService.login(loginReq);
-            jwtUtil.createCookie(response, token.getRefreshToken());
+            Token token = userService.login(loginReq, response);
             UserRes.LoginRes loginRes = UserRes.LoginRes.builder()
                     .accessToken(token.getAccessToken())
                     .key(token.getKey())
                     .userId(token.getUserId())
                     .build();
             return Response.ok(loginRes);
+        } catch (GlobalException exception) {
+            return Response.fail(exception.getCode());
+        }
+    }
+
+    @DeleteMapping("/logout")
+    @Operation(summary = "로그아웃", description = "로그아웃")
+    public Response<Void> logout(HttpServletResponse response, @RequestHeader("Authorization") String authorizationHeader) {
+        try {
+            String accessToken = authorizationHeader.substring(7);
+
+            userService.logout(response, accessToken);
+            return Response.ok(null);
         } catch (GlobalException exception) {
             return Response.fail(exception.getCode());
         }
