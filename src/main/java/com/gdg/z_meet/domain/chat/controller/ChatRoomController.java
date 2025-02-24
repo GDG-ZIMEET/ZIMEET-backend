@@ -34,14 +34,14 @@ public class ChatRoomController {
         return Response.ok(roomId+" 삭제 완료되었습니다.");
     }
 
-    @Operation(summary = "팀 채팅방 추가", description = "관리자가 팀을 지정된 채팅방에 추가합니다. 추가할 팀 아이디를 주세요")
+    @Operation(summary = "팀 채팅방 추가/하이 수락하기", description = "관리자가 팀을 채팅방에 추가합니다. 추가할 팀 아이디를 주세요")
     @PostMapping("/teams")
     public Response<ChatRoomDto.resultChatRoomDto> addUserToChatRoom(
             @RequestBody MeetingRequestDTO.hiDto hiDto) {
         return Response.ok(chatRoomCommandService.addTeamJoinChat(hiDto));
     }
 
-    @Operation(summary = "사용자 채팅방 추가", description = "관리자가 팀을 지정된 채팅방에 추가합니다. 추가할 팀 아이디를 주세요")
+    @Operation(summary = "사용자 채팅방 추가", description = "관리자가 사용자를 채팅방에 추가합니다. 추가할 사용자 아이디들을 주세요")
     @PostMapping("/addUsers")
     public Response<ChatRoomDto.resultChatRoomDto> addUserToChatRoom(
             @RequestBody List<Long> userIds) {
