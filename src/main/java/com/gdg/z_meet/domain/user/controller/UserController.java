@@ -108,4 +108,16 @@ public class UserController {
             return Response.fail(exception.getCode());
         }
     }
+
+    @DeleteMapping("/withdraw")
+    @Operation(summary = "회원탈퇴", description = "회원탈퇴")
+    public Response<Void> withdraw(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Long userId = jwtUtil.extractUserIdFromRequest(request);
+            userService.withdraw(userId, response);
+            return Response.ok(null);
+        } catch (GlobalException exception) {
+            return Response.fail(exception.getCode());
+        }
+    }
 }

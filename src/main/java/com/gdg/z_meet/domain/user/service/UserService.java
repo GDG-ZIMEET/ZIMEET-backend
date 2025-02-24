@@ -97,19 +97,6 @@ public class UserService {
         response.addCookie(cookie);
     }
 
-//    @Transactional
-//    public void saveRefreshToken(Token token) {
-//        refreshTokenRepository.findByKeyId(token.getKey())
-//                .ifPresent(refreshTokenRepository::delete);
-//
-//        refreshTokenRepository.save(
-//                RefreshToken.builder()
-//                        .keyId(token.getKey())
-//                        .refreshToken(token.getRefreshToken())
-//                        .build()
-//        );
-//    }
-
     @Transactional
     public UserRes.ProfileRes getProfile(Long userId) {
         UserProfile userProfile = userProfileRepository.findByUserId(userId)
@@ -186,5 +173,21 @@ public class UserService {
         return UserRes.EmojiUpdateRes.builder()
                 .emoji(userProfile.getEmoji())
                 .build();
+    }
+
+    @Transactional
+    public void withdraw(Long userId, HttpServletResponse response) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        userProfileRepository.deleteByUserId(userId);
+        userRepository.deleteById(userId);
+
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
     }
 }
