@@ -35,15 +35,6 @@ public class ChatRoomDto {
         private String emoji;
         private Gender gender;
 
-        @Override
-        public String toString() {
-            return "UserProfileDto{" +
-                    "userId=" + userId +
-                    ", name='" + name + '\'' +
-                    ", emoji='" + emoji + '\'' +
-                    ", gender=" + gender +
-                    '}';
-        }
     }
 
     @Getter
