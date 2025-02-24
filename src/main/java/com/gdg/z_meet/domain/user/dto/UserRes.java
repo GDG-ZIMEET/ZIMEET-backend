@@ -13,6 +13,17 @@ public class UserRes {
         private String message;
     }
 
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class LoginRes {
+        private String accessToken;
+        private String key;
+        private Long userId;
+    }
+
     @Getter
     @Builder
     public static class ProfileRes {

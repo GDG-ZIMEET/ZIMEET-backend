@@ -7,23 +7,20 @@ import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.domain.user.dto.Token;
 import com.gdg.z_meet.domain.user.dto.UserReq;
 import com.gdg.z_meet.domain.user.dto.UserRes;
-import com.gdg.z_meet.domain.user.entity.RefreshToken;
 import com.gdg.z_meet.domain.user.entity.User;
-import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
 
@@ -70,7 +67,7 @@ public class UserService {
     }
 
     @Transactional
-    public Token login(UserReq.LoginReq loginReq) {
+    public Token login(UserReq.LoginReq loginReq, HttpServletResponse response) {
         User user = userRepository.findByStudentNumber(loginReq.getStudentNumber())
                 .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 학번입니다."));
 
@@ -79,23 +76,19 @@ public class UserService {
         }
 
         Token token = jwtUtil.createToken(loginReq.getStudentNumber(), user.getId());
-
-        saveRefreshToken(token);  // 트랜잭션 적용된 메서드 호출
+        jwtUtil.createCookie(response, token.getRefreshToken());
 
         return token;
     }
 
     @Transactional
-    public void saveRefreshToken(Token token) {
-        refreshTokenRepository.findByKeyId(token.getKey())
-                .ifPresent(refreshTokenRepository::delete);
-
-        refreshTokenRepository.save(
-                RefreshToken.builder()
-                        .keyId(token.getKey())
-                        .refreshToken(token.getRefreshToken())
-                        .build()
-        );
+    public void logout(HttpServletResponse response, String accessToken) {
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
     }
 
     @Transactional
@@ -174,5 +167,21 @@ public class UserService {
         return UserRes.EmojiUpdateRes.builder()
                 .emoji(userProfile.getEmoji())
                 .build();
+    }
+
+    @Transactional
+    public void withdraw(Long userId, HttpServletResponse response) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        userProfileRepository.deleteByUserId(userId);
+        userRepository.deleteById(userId);
+
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
     }
 }

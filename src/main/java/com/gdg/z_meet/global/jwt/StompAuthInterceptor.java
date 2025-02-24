@@ -7,8 +7,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
 
-import java.security.Principal;
-
 @Component
 public class StompAuthInterceptor implements ChannelInterceptor {
 
