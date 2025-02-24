@@ -139,33 +139,19 @@ public class JwtUtil {
             return false;
         }
     }
-
+    
     // 토큰 유효성 검사
-    public boolean validateToken(ServletRequest request, String jwtToken){
+    public boolean validateToken(ServletRequest request, String jwtToken) {
         try {
             validationAuthorizationHeader(jwtToken);
             String token = extractToken(jwtToken);
             userDetailsService.loadUserByUsername(this.getStudentNumberFromToken(token));
             Jws<Claims> claims = Jwts.parser().setSigningKey(key).parseClaimsJws(token);
             return !claims.getBody().getExpiration().before(new Date());
-        } catch (SignatureException e) {
-            e.printStackTrace();
-            request.setAttribute("exception", "ForbidddenException");
-        } catch (MalformedJwtException e) {
-            e.printStackTrace();
-            request.setAttribute("exception", "MalformedJwtException");
-        } catch (ExpiredJwtException e) {
-            //토큰 만료시
-            e.printStackTrace();
-            request.setAttribute("exception", "ExpiredJwtException");
-        } catch (UnsupportedJwtException e) {
-            e.printStackTrace();
-            request.setAttribute("exception", "UnsupportedJwtException");
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            request.setAttribute("exception", "IllegalArgumentException");
+        } catch (Exception e) {
+            request.setAttribute("exception", e.getClass().getSimpleName());
+            return false;
         }
-        return false;
     }
 
     //토큰 추출

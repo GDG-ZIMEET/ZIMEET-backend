@@ -29,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         else {
             String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
 
-            if (refreshToken != null && jwtUtil.validateToken(request, refreshToken)) {
+            if (refreshToken != null && jwtUtil.validateRefreshToken(refreshToken)) {
                 // 리프레시 토큰에서 정보 추출
                 String studentNumber = jwtUtil.getStudentNumberFromToken(refreshToken);
                 Long userId = jwtUtil.getUserIdFromToken(refreshToken);
