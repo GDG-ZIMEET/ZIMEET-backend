@@ -7,9 +7,7 @@ import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.domain.user.dto.Token;
 import com.gdg.z_meet.domain.user.dto.UserReq;
 import com.gdg.z_meet.domain.user.dto.UserRes;
-//import com.gdg.z_meet.domain.user.entity.RefreshToken;
 import com.gdg.z_meet.domain.user.entity.User;
-//import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,14 +16,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
-//    private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
 
@@ -82,7 +77,6 @@ public class UserService {
 
         Token token = jwtUtil.createToken(loginReq.getStudentNumber(), user.getId());
         jwtUtil.createCookie(response, token.getRefreshToken());
-//        saveRefreshToken(token);
 
         return token;
     }

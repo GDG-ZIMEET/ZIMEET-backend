@@ -1,7 +1,6 @@
 package com.gdg.z_meet.global.jwt;
 
 import com.gdg.z_meet.domain.user.dto.Token;
-//import com.gdg.z_meet.domain.user.entity.RefreshToken;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -157,8 +156,8 @@ public class JwtUtil {
     //토큰 추출
     public Long extractUserIdFromToken(String token) {
         validationAuthorizationHeader(token);
-        String availableToken = extractToken(token); // "Bearer " 제거 후 순수 토큰 추출
-        return getUserIdFromToken(availableToken); // 올바른 토큰으로 유저 ID 추출
+        String availableToken = extractToken(token);
+        return getUserIdFromToken(availableToken);
     }
 
     public Long extractUserIdFromRequest(HttpServletRequest request) {

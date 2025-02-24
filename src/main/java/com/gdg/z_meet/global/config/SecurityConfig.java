@@ -1,6 +1,5 @@
 package com.gdg.z_meet.global.config;
 
-//import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
 import com.gdg.z_meet.global.jwt.JwtAuthenticationFilter;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
