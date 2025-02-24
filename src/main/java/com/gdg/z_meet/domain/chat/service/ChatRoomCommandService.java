@@ -8,7 +8,7 @@ import com.gdg.z_meet.domain.chat.entity.TeamChatRoom;
 import com.gdg.z_meet.domain.chat.entity.status.ChatType;
 import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
 import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
-import com.gdg.z_meet.domain.chat.repository.MessageRepository;
+import com.gdg.z_meet.domain.chat.repository.mongo.MongoMessageRepository;
 import com.gdg.z_meet.domain.chat.repository.TeamChatRoomRepository;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.entity.Hi;
@@ -16,11 +16,9 @@ import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
-import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.meeting.service.HiQueryServiceImpl;
 import com.gdg.z_meet.domain.user.entity.User;
-import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
@@ -40,7 +38,7 @@ public class ChatRoomCommandService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatRoomRepository chatRoomRepository;
-    private final MessageRepository messageRepository;
+    private final MongoMessageRepository mongoMessageRepository;
     private final JoinChatRepository joinChatRepository;
     private final UserRepository userRepository;
     private final UserTeamRepository userTeamRepository;
@@ -64,11 +62,11 @@ public class ChatRoomCommandService {
         Pageable pageable = PageRequest.of(0, batchSize);
 
         while (true) {
-            List<Message> messages = messageRepository.findByChatRoomId(chatRoomId, pageable);
+            List<Message> messages = mongoMessageRepository.findByChatRoomId(String.valueOf(chatRoomId), pageable);
             if (messages.isEmpty()) {
                 break; // 더 이상 삭제할 메시지가 없으면 종료
             }
-            messageRepository.deleteAllInBatch(messages);
+            mongoMessageRepository.deleteAll(messages);
         }
 
         // 연관된 JoinChat 삭제

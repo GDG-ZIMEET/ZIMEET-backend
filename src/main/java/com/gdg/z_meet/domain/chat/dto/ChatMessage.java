@@ -25,17 +25,4 @@ public class ChatMessage implements Serializable {
 
     private String emoji;
 
-    @Override
-    public String toString() {
-        return "ChatMessage{" +
-                "id='" + id + '\'' +
-                ", type=" + type +
-                ", roomId=" + roomId +
-                ", senderId=" + senderId +
-                ", senderName='" + senderName + '\'' +
-                ", content='" + content + '\'' +
-                ", sendAt=" + sendAt +
-                ", emoji='" + emoji + '\'' +
-                '}';
-    }
 }

@@ -4,7 +4,9 @@ import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.entity.Message;
 import com.gdg.z_meet.domain.chat.entity.status.MessageType;
 import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
-import com.gdg.z_meet.domain.chat.repository.MessageRepository;
+import com.gdg.z_meet.domain.chat.repository.mongo.MongoMessageRepository;
+import com.gdg.z_meet.domain.user.entity.User;
+import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,8 +28,9 @@ import java.util.stream.Collectors;
 public class MessageQueryService {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final MessageRepository messageRepository;
+    private final MongoMessageRepository mongoMessageRepository;
     private final JoinChatRepository joinChatRepository;
+    private final UserRepository userRepository;
 
     private static final String CHAT_ROOM_MESSAGES_KEY = "chatroom:%s:messages";
 
@@ -35,7 +41,6 @@ public class MessageQueryService {
 
         String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
         Long totalMessages = redisTemplate.opsForList().size(chatRoomMessagesKey);
-
         List<ChatMessage> chatMessages = new ArrayList<>();
 
         // Redis에서 메시지 가져오기
@@ -48,6 +53,7 @@ public class MessageQueryService {
                 if (redisMessages != null) {
                     chatMessages = redisMessages.stream()
                             .map(obj -> (ChatMessage) obj)
+                            .sorted(Comparator.comparing(ChatMessage::getSendAt)) //오름차순 정렬
                             .collect(Collectors.toList());
                 }
             }
@@ -56,22 +62,34 @@ public class MessageQueryService {
         // Redis에서 가져온 메시지가 부족하면 DB에서 추가로 가져오기
         if (chatMessages.size() < size) {
             Pageable pageable = PageRequest.of(page, size - chatMessages.size(), Sort.by("createdAt").descending());
-            List<Message> dbMessages = messageRepository.findByChatRoomId(chatRoomId, pageable);
-            List<ChatMessage> dbChatMessages = dbMessages.stream()
-                    .map(message ->  ChatMessage.builder()
-                            .type(MessageType.CHAT)
-                            .roomId(message.getChatRoom().getId())
-                            .senderId(message.getUser().getId())
-                            .senderName(message.getUser().getName())
-                            .content(message.getContent())
-                            .sendAt(message.getCreatedAt())
-                            .emoji(message.getUser().getUserProfile().getEmoji())
-                            .build())
-                    .collect(Collectors.toList());
+            List<Message> dbMessages = mongoMessageRepository.findByChatRoomId(String.valueOf(chatRoomId), pageable);
 
+            List<ChatMessage> dbChatMessages = dbMessages.stream()
+                    .map(message -> {
+                        // MySQL에서 userId를 기반으로 User 객체를 조회
+                        User user = userRepository.findById(Long.parseLong(message.getUserId()))
+                                .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
+
+
+                        return ChatMessage.builder()
+                                .type(MessageType.CHAT)
+                                .roomId(Long.parseLong(message.getChatRoomId()))  // MongoDB의 chatRoomId는 String이므로 Long으로 변환
+                                .senderId(Long.parseLong(message.getUserId()))  // MongoDB의 userId는 String이므로 Long으로 변환
+                                .senderName(user.getName())  // MySQL에서 가져온 user의 name 사용
+                                .content(message.getContent())
+                                .sendAt(message.getCreatedAt())
+                                .emoji(user.getUserProfile().getEmoji())  // MySQL에서 가져온 user의 emoji 사용
+                                .build();
+                    })
+                    .sorted(Comparator.comparing(ChatMessage::getSendAt))
+                    .collect(Collectors.toList());
 
             chatMessages.addAll(dbChatMessages);
         }
+
+        chatMessages = chatMessages.stream()
+                .sorted(Comparator.comparing(ChatMessage::getSendAt)) //오름차순 정렬
+                .collect(Collectors.toList());
 
         return chatMessages;
     }

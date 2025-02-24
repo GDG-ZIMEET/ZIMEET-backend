@@ -22,13 +22,16 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
-    show_sql: false
+    show_sql: true
   flyway:
     enabled: false     # dev 환경에서는 flyway 사용 x
   data:
     redis:
       host: localhost
       port: 6379
+    mongodb:
+      uri: mongodb://${DEFAULT_URL}:27017/${DEFAULT_SCHEMA}
+      database: zmeet
   h2:
     console:
       enabled: true
