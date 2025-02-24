@@ -120,6 +120,9 @@ public class ChatRoomCommandService {
     }
 
     public ChatRoomDto.resultChatRoomDto addUserJoinChat(List<Long> userIds){
+        if(userIds.size() != 6)
+            throw new BusinessException(Code.RANDOM_MEETING_USER_COUNT);
+
         // 가장 큰 randomChatId 조회 후 +1
         Long maxRandomChatId = chatRoomRepository.findMaxRandomChatId().orElse(0L);
         Long newRandomChatId = maxRandomChatId + 1;

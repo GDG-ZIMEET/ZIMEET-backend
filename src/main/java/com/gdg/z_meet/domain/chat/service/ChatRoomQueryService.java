@@ -70,7 +70,7 @@ public class ChatRoomQueryService {
 
 
         if (joinChatIdsSet == null || joinChatIdsSet.isEmpty()) {
-            List<JoinChat> joinChats = joinChatRepository.findByUserIdAndStatus(userId, JoinChatStatus.ACTIVE);
+            List<JoinChat> joinChats = joinChatRepository.findByUserIdAndStatus(userId);
             joinChatIdsSet = joinChats.stream()
                     .map(joinChat -> joinChat.getChatRoom().getId())
                     .collect(Collectors.toSet());
@@ -120,6 +120,7 @@ public class ChatRoomQueryService {
 
                     return new ChatRoomDto.chatRoomListDto(chatRoom.getId(), chatRoomName, latestMessage, latestMessageTime, userProfiles);
                 })
+                .sorted(Comparator.comparing(ChatRoomDto.chatRoomListDto::getLastestTime).reversed()) // 최신 시간 기준으로 정렬
                 .collect(Collectors.toList());
     }
 
@@ -169,10 +170,19 @@ public class ChatRoomQueryService {
         List<UserProfile> userProfiles = userProfileRepository.findByUserIn(users);
 
         return userProfiles.stream()
-                .map(userProfile -> new ChatRoomDto.UserProfileDto(
-                        userProfile.getUser().getName(),
-                        userProfile.getEmoji() //이모지
-                ))
+                .map(userProfile -> {
+                    // 사용자 ID가 동일한 경우 이름에 "(나)" 추가
+                    String userName = userProfile.getUser().getId().equals(userId)
+                            ? userProfile.getUser().getName() + "(나)"
+                            : userProfile.getUser().getName();
+
+                    return new ChatRoomDto.UserProfileDto(
+                            userProfile.getUser().getId(),
+                            userName,
+                            userProfile.getEmoji(),
+                            userProfile.getGender()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -180,50 +190,54 @@ public class ChatRoomQueryService {
     @Transactional
     public List<ChatRoomDto.chatRoomUserList> getUserByRoomId(Long userId, Long roomId) {
         // 사용자가 해당 채팅방에 존재하는지 확인
-        if (!joinChatRepository.existsByUserIdAndChatRoomId(userId, roomId)) {
+        if (!joinChatRepository.existsByUserIdAndChatRoomIdAndStatusActive(userId, roomId)) {
             throw new BusinessException(Code.JOINCHAT_NOT_FOUND);
         }
 
-        // 채팅방에 속한 사용자 프로필 가져오기
+        // 채팅방 정보 조회
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
+
+        // 채팅방이 RANDOM 타입인 경우 성별로 사용자 구분
+        if (chatRoom.getChatType() == ChatType.RANDOM) {
+            return getRandomChatRoomUserList(userId, roomId);
+        }
+
+        return getTeamChatRoomUserList(userId, roomId);
+
+
+    }
+
+    private List<ChatRoomDto.chatRoomUserList> getTeamChatRoomUserList(Long userId, Long roomId) {
         List<ChatRoomDto.UserProfileDto> userProfileDtos = getUserProfilesByChatRoomId(userId, roomId, false);
 
-        // 해당 채팅방의 모든 팀 조회
         List<TeamChatRoom> teamChatRooms = teamChatRoomRepository.findByChatRoomId(roomId);
         List<Long> teamIds = teamChatRooms.stream()
                 .map(teamChatRoom -> teamChatRoom.getTeam().getId())
                 .collect(Collectors.toList());
 
-        // 한 번의 쿼리로 해당 채팅방의 모든 팀 사용자 관계 조회 (DB 조회 1회)
         List<UserTeam> userTeams = userTeamRepository.findByTeamIdIn(teamIds);
 
-        // 사용자 목록을 Map으로 변환 (name을 key로 사용)
-        Map<String, ChatRoomDto.UserProfileDto> userProfileMap = userProfileDtos.stream()
-                .collect(Collectors.toMap(ChatRoomDto.UserProfileDto::getName, Function.identity()));
+        Map<Long, ChatRoomDto.UserProfileDto> userProfileMap = userProfileDtos.stream()
+                .collect(Collectors.toMap(ChatRoomDto.UserProfileDto::getUserId, Function.identity()));
 
-        // 팀별 사용자 매핑을 위한 Map 생성 (name 기반)
-        Map<Long, List<String>> teamUserMap = userTeams.stream()
+        Map<Long, List<Long>> teamUserMap = userTeams.stream()
                 .collect(Collectors.groupingBy(
                         userTeam -> userTeam.getTeam().getId(),
-                        Collectors.mapping(userTeam -> userTeam.getUser().getName(), Collectors.toList())
+                        Collectors.mapping(userTeam -> userTeam.getUser().getId(), Collectors.toList())
                 ));
 
-        // 팀별 사용자 매핑
         List<ChatRoomDto.chatRoomUserList> teamUserLists = new ArrayList<>();
-
         for (TeamChatRoom teamChatRoom : teamChatRooms) {
             Long teamId = teamChatRoom.getTeam().getId();
             String teamName = teamChatRoom.getName();
 
-            // 현재 팀에 속한 사용자 name 목록 가져오기
-            List<String> teamUserNames = teamUserMap.getOrDefault(teamId, Collections.emptyList());
-
-            // 사용자 목록을 name 기준으로 필터링
-            List<ChatRoomDto.UserProfileDto> teamUsers = teamUserNames.stream()
+            List<Long> teamUserIds = teamUserMap.getOrDefault(teamId, Collections.emptyList());
+            List<ChatRoomDto.UserProfileDto> teamUsers = teamUserIds.stream()
                     .map(userProfileMap::get)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
-            // 팀별 사용자 목록 추가
             teamUserLists.add(ChatRoomDto.chatRoomUserList.builder()
                     .teamId(teamId)
                     .teamName(teamName)
@@ -232,5 +246,36 @@ public class ChatRoomQueryService {
         }
 
         return teamUserLists;
+    }
+
+    private List<ChatRoomDto.chatRoomUserList> getRandomChatRoomUserList(Long userId, Long roomId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
+
+        // 채팅방에 속한 사용자 프로필 가져오기
+        List<ChatRoomDto.UserProfileDto> userProfileDtos = getUserProfilesByChatRoomId(userId, roomId, false);
+
+        // 성별에 따른 이성팀과 내팀 분리
+        List<ChatRoomDto.UserProfileDto> myTeamUsers = userProfileDtos.stream()
+                .filter(profile -> profile.getGender() == user.getUserProfile().getGender()) // 내 성별 팀
+                .collect(Collectors.toList());
+
+        List<ChatRoomDto.UserProfileDto> anotherTeamUsers = userProfileDtos.stream()
+                .filter(profile -> profile.getGender() != user.getUserProfile().getGender()) // 이성 팀
+                .collect(Collectors.toList());
+
+        // 사용자 목록을 성별에 따라 나눠서 반환
+        return Arrays.asList(
+                ChatRoomDto.chatRoomUserList.builder()
+                        .teamId(null)
+                        .teamName("이성팀")
+                        .userProfiles(anotherTeamUsers)
+                        .build(),
+                ChatRoomDto.chatRoomUserList.builder()
+                        .teamId(null)
+                        .teamName("내 팀")
+                        .userProfiles(myTeamUsers)
+                        .build()
+        );
     }
 }

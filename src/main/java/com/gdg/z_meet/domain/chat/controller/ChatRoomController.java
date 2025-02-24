@@ -24,7 +24,6 @@ public class ChatRoomController {
     private final ChatRoomQueryService chatRoomQueryService;
     private final ChatRoomCommandService chatRoomCommandService;
     private final MessageQueryService messageQueryService;
-    private final JwtUtil jwtUtil;
 
     @Operation(summary = "채팅방 삭제", description = "기존 채팅방을 삭제합니다.")
     @DeleteMapping("/{roomId}")

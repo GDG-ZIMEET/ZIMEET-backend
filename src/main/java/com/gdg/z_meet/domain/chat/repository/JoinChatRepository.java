@@ -16,11 +16,12 @@ public interface JoinChatRepository extends JpaRepository<JoinChat, Long> {
     List<JoinChat> findByChatRoomId(Long chatRoomId);
     List<JoinChat> findByUserId(Long userId);
     Optional<JoinChat> findByUserAndChatRoom(User user, ChatRoom chatRoom);
-    @Query("SELECT uc.user FROM JoinChat uc WHERE uc.chatRoom.id = :chatRoomId")
+    @Query("SELECT uc.user FROM JoinChat uc WHERE uc.chatRoom.id = :chatRoomId AND uc.status = 'ACTIVE'")
     List<User>findUsersByChatRoomId(@Param("chatRoomId") Long chatRoomId);
-    Boolean existsByUserIdAndChatRoomId(Long userId, Long chatRoomId);
+    @Query("SELECT COUNT(jc) > 0 FROM JoinChat jc WHERE jc.user.id = :userId AND jc.chatRoom.id = :chatRoomId AND jc.status = 'ACTIVE'")
+    Boolean existsByUserIdAndChatRoomIdAndStatusActive(@Param("userId") Long userId, @Param("chatRoomId") Long chatRoomId);
     @Query("SELECT jc.user.id FROM JoinChat jc WHERE jc.user.id IN :userIds AND jc.chatRoom.id = :chatRoomId")
     List<Long> findUserIdsByUserIdInAndChatRoomId(@Param("userIds") List<Long> userIds, @Param("chatRoomId") Long chatRoomId);
-    @Query("SELECT jc FROM JoinChat jc WHERE jc.user.id = :userId AND jc.status = :status")
-    List<JoinChat> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") JoinChatStatus status);
+    @Query("SELECT jc FROM JoinChat jc WHERE jc.user.id = :userId AND jc.status = 'ACTIVE'")
+    List<JoinChat> findByUserIdAndStatus(@Param("userId") Long userId);
 }

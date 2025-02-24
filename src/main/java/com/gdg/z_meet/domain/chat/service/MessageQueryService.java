@@ -16,8 +16,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -35,7 +33,7 @@ public class MessageQueryService {
     private static final String CHAT_ROOM_MESSAGES_KEY = "chatroom:%s:messages";
 
     public List<ChatMessage> getMessagesByChatRoom(Long chatRoomId, Long userId, int page, int size) {
-        if (!joinChatRepository.existsByUserIdAndChatRoomId(userId, chatRoomId)) {
+        if (!joinChatRepository.existsByUserIdAndChatRoomIdAndStatusActive(userId, chatRoomId)) {
             throw new BusinessException(Code.JOINCHAT_NOT_FOUND);
         }
 

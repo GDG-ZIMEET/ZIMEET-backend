@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.chat.dto;
 
+import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -29,8 +30,20 @@ public class ChatRoomDto {
     @AllArgsConstructor
     @Builder
     public static class UserProfileDto {
+        private Long userId;
         private String name;
         private String emoji;
+        private Gender gender;
+
+        @Override
+        public String toString() {
+            return "UserProfileDto{" +
+                    "userId=" + userId +
+                    ", name='" + name + '\'' +
+                    ", emoji='" + emoji + '\'' +
+                    ", gender=" + gender +
+                    '}';
+        }
     }
 
     @Getter
