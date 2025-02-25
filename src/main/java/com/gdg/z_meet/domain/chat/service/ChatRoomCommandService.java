@@ -6,6 +6,7 @@ import com.gdg.z_meet.domain.chat.entity.JoinChat;
 import com.gdg.z_meet.domain.chat.entity.Message;
 import com.gdg.z_meet.domain.chat.entity.TeamChatRoom;
 import com.gdg.z_meet.domain.chat.entity.status.ChatType;
+import com.gdg.z_meet.domain.chat.entity.status.JoinChatStatus;
 import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
 import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
 import com.gdg.z_meet.domain.chat.repository.mongo.MongoMessageRepository;
@@ -135,6 +136,8 @@ public class ChatRoomCommandService {
         chatRoom = chatRoomRepository.save(chatRoom);
 
         List<User> users = userRepository.findAllById(userIds);
+        if(users.size() < userIds.size())//저장 안된 경우 에러처리
+            throw new BusinessException(Code.RANDOM_MEETING_USER_COUNT);
         addUserToChatRoom(chatRoom, users);
 
         return ChatRoomDto.resultChatRoomDto.builder()
@@ -147,12 +150,6 @@ public class ChatRoomCommandService {
     public void addUserToChatRoom(ChatRoom chatRoom, List<User> users){
         Long chatRoomId = chatRoom.getId();
 
-        //사용자별 참여 채팅방 존재 여부 확인
-        List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
-
-        // 모든 사용자에 대한 참여 여부 확인
-        Set<Long> existingUserIds = new HashSet<>(joinChatRepository.findUserIdsByUserIdInAndChatRoomId(userIds, chatRoomId));
-
         // 새로운 사용자만 필터링하여 추가
         List<JoinChat> newJoinChats = new ArrayList<>();
         for (User user : users) {
@@ -160,14 +157,11 @@ public class ChatRoomCommandService {
 
             // Redis에 참여 여부가 있는지 먼저 체크
             String joinChatsKey = "user:" + userId + ":chatrooms";
-            Boolean isMember = redisTemplate.opsForSet().isMember(joinChatsKey, chatRoomId);
-
-            // Redis에 없고, DB에도 존재하지 않는 경우에만 추가
-            if (Boolean.FALSE.equals(isMember) && !existingUserIds.contains(userId)) {
-                // 새로운 User 정보 DB 저장 (배치 인서트로 한 번에 저장)
+              // 새로운 User 정보 DB 저장 (배치 인서트로 한 번에 저장)
                 newJoinChats.add(JoinChat.builder()
                         .user(user)
                         .chatRoom(chatRoom)
+                        .status(JoinChatStatus.ACTIVE)
                         .build());
 
                 // 사용자 -> 참여 채팅방 매핑 데이터 Redis 저장
@@ -176,7 +170,7 @@ public class ChatRoomCommandService {
                 // 채팅방 -> 참여 사용자 매핑 데이터 Redis 저장
                 String chatRoomUsersKey = "chatroom:" + chatRoomId + ":users";
                 redisTemplate.opsForSet().add(chatRoomUsersKey, String.valueOf(userId));
-            }
+
         }
 
         // 한번에 저장
