@@ -11,8 +11,9 @@ import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,42 +27,39 @@ public class UserService {
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
-        userRepository.findByStudentNumber(signUpReq.getStudentNumber())
-                .ifPresent(user -> {
-                    throw new IllegalArgumentException("이미 가입된 학번입니다.");
-                });
+        try {
+            if (signUpReq.getPassword() == null || signUpReq.getPassword().length() < 4 || signUpReq.getPassword().length() > 6) {
+                throw new IllegalArgumentException("비밀번호는 4자 이상, 6자 이하여야 합니다.");
+            }
+            String encodedPassword = encoder.encode(signUpReq.getPassword());
 
-        userProfileRepository.findByNickname(signUpReq.getNickname())
-                .ifPresent(user -> {
-                    throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
-                });
+            User user = User.builder()
+                    .studentNumber(signUpReq.getStudentNumber())
+                    .password(encodedPassword)
+                    .name(signUpReq.getName())
+                    .phoneNumber(signUpReq.getPhoneNumber())
+                    .build();
+            User newUser = userRepository.save(user);
 
-        String encodedPassword = encoder.encode(signUpReq.getPassword());
-
-        User user = User.builder()
-                .studentNumber(signUpReq.getStudentNumber())
-                .password(encodedPassword)
-                .name(signUpReq.getName())
-                .phoneNumber(signUpReq.getPhoneNumber())
-                .build();
-        User newUser = userRepository.save(user);
-
-        UserProfile userProfile = UserProfile.builder()
-                .nickname(signUpReq.getNickname())
-                .emoji(signUpReq.getEmoji())
-                .music(signUpReq.getMusic())
-                .mbti(signUpReq.getMbti())
-                .style(signUpReq.getStyle())
-                .idealType(signUpReq.getIdealType())
-                .idealAge(signUpReq.getIdealAge())
-                .gender(signUpReq.getGender())
-                .grade(signUpReq.getGrade())
-                .major(signUpReq.getMajor())
-                .age(signUpReq.getAge())
-                .level(Level.LIGHT)
-                .user(user)
-                .build();
-        userProfileRepository.save(userProfile);
+            UserProfile userProfile = UserProfile.builder()
+                    .nickname(signUpReq.getNickname())
+                    .emoji(signUpReq.getEmoji())
+                    .music(signUpReq.getMusic())
+                    .mbti(signUpReq.getMbti())
+                    .style(signUpReq.getStyle())
+                    .idealType(signUpReq.getIdealType())
+                    .idealAge(signUpReq.getIdealAge())
+                    .gender(signUpReq.getGender())
+                    .grade(signUpReq.getGrade())
+                    .major(signUpReq.getMajor())
+                    .age(signUpReq.getAge())
+                    .level(Level.LIGHT)
+                    .user(user)
+                    .build();
+            userProfileRepository.save(userProfile);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("이미 가입된 학번 또는 닉네임입니다.");
+        }
 
         return UserRes.SignUpRes.builder().message("회원가입 성공!").build();
     }
@@ -83,15 +81,10 @@ public class UserService {
 
     @Transactional
     public void logout(HttpServletResponse response, String accessToken) {
-        Cookie cookie = new Cookie("refreshToken", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        clearRefreshTokenCookie(response);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public UserRes.ProfileRes getProfile(Long userId) {
         UserProfile userProfile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
@@ -118,19 +111,16 @@ public class UserService {
                 .build();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public UserRes.UserProfileRes getUserProfile(String nickname) {
         UserProfile userProfile = userProfileRepository.findByNickname(nickname)
                 .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
 
         User user = userProfile.getUser();
 
-        String studentNumber = user.getStudentNumber();
-        String studentYear = studentNumber.substring(2,4);
-
         return UserRes.UserProfileRes.builder()
                 .nickname(userProfile.getNickname())
-                .studentNumber(studentYear)
+                .studentNumber(user.getStudentNumber().substring(2,4))
                 .gender(userProfile.getGender())
                 .emoji(userProfile.getEmoji())
                 .mbti(userProfile.getMbti())
@@ -177,6 +167,10 @@ public class UserService {
         userProfileRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
 
+        clearRefreshTokenCookie(response);
+    }
+
+    private void clearRefreshTokenCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie("refreshToken", null);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
