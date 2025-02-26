@@ -97,6 +97,8 @@ public class MeetingResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class hiListDto {
+        Long myTeamId;
+        Long teamId;
         String teamName;
         List<UserProfileDto> teamList;
         Double age;
