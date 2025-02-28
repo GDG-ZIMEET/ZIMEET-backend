@@ -141,6 +141,7 @@ public class HiQueryServiceImpl implements HiQueryService{
             if(hi.getHiStatus()!=HiStatus.NONE && action.equals("Receive")) continue;
 
             Team team = action.equals("Receive") ? hi.getFrom() : hi.getTo();
+            Team myteam = action.equals("Receive") ? hi.getTo() : hi.getFrom();
 
             // UserProfileDto 생성 (null 방지)
             String major = String.join(", ", majorList.getOrDefault(team.getId(), Collections.emptyList()));
@@ -178,7 +179,7 @@ public class HiQueryServiceImpl implements HiQueryService{
 
                 dateTime = String.format("%d시간 %d분 남음", remainingHours, remainingMinutes);
 
-                if(remainingHours<=0 || remainingMinutes<=0){
+                if(remainingHours<=0 || remainingMinutes<0){
                     hi.changeStatus(HiStatus.EXPIRED);
                     hiRepository.save(hi);
                     continue;
@@ -187,6 +188,8 @@ public class HiQueryServiceImpl implements HiQueryService{
 
             // 하나의 hiListDto 생성
             MeetingResponseDTO.hiListDto hiDto = MeetingResponseDTO.hiListDto.builder()
+                    .myTeamId(myteam.getId())
+                    .teamId(team.getId())
                     .teamName(team.getName())
                     .teamList(userProfileDtos)
                     .age(Math.round(age.get(team.getId()) * 10.0) / 10.0)

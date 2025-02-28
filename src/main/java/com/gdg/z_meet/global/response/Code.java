@@ -23,6 +23,9 @@ public enum Code implements BaseCode {
     MEMBER_PASSWORD_UNAVAILABLE(HttpStatus.BAD_REQUEST, "MEM-004", "Password cannot used."),
     MEMBER_ALREADY_ON_PROCESS(HttpStatus.BAD_REQUEST, "MEM-999", "Member is already on process."),
 
+    SESSION_EXPIRED(HttpStatus.INTERNAL_SERVER_ERROR, "PAY-000", "Session expired."),
+    SESSION_STORAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PAY-001", "Session storage failed."),
+    INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, "PAY-002", "Invalid payment amount."),
 
     // Booth Error
     CLUB_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "BOOTH4001", "동아리가 이미 존재합니다."),
@@ -51,19 +54,8 @@ public enum Code implements BaseCode {
     // Chat Error
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4001","채팅방을 찾을 수 없습니다."),
     JOINCHAT_ALREADY_EXIST(HttpStatus.BAD_REQUEST,"CHAT4002","이미 채팅방에 추가된 사용자입니다."),
-    JOINCHAT_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4003","해당 채팅방의 사용자를 찾을 수 없습니다."),
-
-
-    // KaKaoPay Error
-    KAKAO_API_RESPONSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "KAKAOPAY500", "카카오페이 API 호출 중 오류가 발생하였습니다."),
-    INVALID_PRODUCT_TYPE(HttpStatus.BAD_REQUEST, "KAKAOPAY404", "존재하지 않는 상품 타입입니다."),
-    INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "KAKAOPAY404", "유효하지 않은 수량입니다."),
-    INVALID_KAKAO_API_RESPONSE(HttpStatus.BAD_REQUEST, "KAKAOPAY404", "유효하지 않은 카카오 서버의 응답입니다."),
-    INVALID_TOTAL_PRICE(HttpStatus.BAD_REQUEST, "KAKAOPAY404", "유효하지 않은 결제 금액 입니다."),
-    INVALID_PAY_PRODUCT(HttpStatus.BAD_REQUEST, "KAKAOPAY404", "유효하지 않은 구매 내역 입니다."),
-    PAYMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "KAKAOPAY404","해당 주문에 대한 결제 정보가 존재하지 않습니다."),
-    USER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON404", "구매 내역에 해당하는 유저의 프로필을 찾을 수 없습니다."),
-    KAKAO_API_INVALID_BUYER(HttpStatus.BAD_REQUEST, "KAKAOPAY404", "유효하지 않은 구매자 정보입니다.");
+    JOINCHAT_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4003","해당 채팅방의 사용자를 찾을 수 없습니다.")
+    ;
 
 //    NOT_ACADEMY_EMAIL("EEM-001", "Email is not a university email."),
 //    AUTH_CODE_NOT_MATCH("ATH-001", "Auth code not match."),

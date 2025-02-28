@@ -1,7 +1,6 @@
 package com.gdg.z_meet.global.jwt;
 
 import com.gdg.z_meet.domain.user.dto.Token;
-import com.gdg.z_meet.domain.user.entity.RefreshToken;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -45,9 +44,11 @@ public class JwtUtil {
         Date now = new Date();
 
         String accessToken = getToken(studentNumber, id, now, accessTokenValidTime);
+        String refreshToken = getToken(studentNumber, id, now, refreshTokenValidTime);
 
         return Token.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .key(studentNumber)
                 .userId(id)
                 .build();
@@ -63,24 +64,34 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Cookie createCookie(HttpServletResponse response, String studentNumber, Long id){
+    public Cookie createCookie(HttpServletResponse response, String refreshToken){
         String cookieName = "refreshToken";
-        String cookieValue = createToken(studentNumber, id).getRefreshToken();
-        Cookie cookie = new Cookie(cookieName, cookieValue);
-
+        Cookie cookie = new Cookie(cookieName, refreshToken);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setMaxAge((int) refreshTokenValidTime);
 
+        cookie.setMaxAge((int) (refreshTokenValidTime / 1000));
         response.addCookie(cookie);
-
         return cookie;
     }
 
-    public String getValidRefreshToken(Cookie[] cookies) {
-        if (cookies == null) return null;
-        for (Cookie cookie : cookies) {
+    public String extractKeyIdFromAccessToken(String accessToken) {
+        validationAuthorizationHeader(accessToken);
+        String availableToken = extractToken(accessToken);
+
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(availableToken)
+                .getBody()
+                .getSubject();
+    }
+
+    public String getRefreshTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null)
+            return null;
+        for (Cookie cookie : request.getCookies()) {
             if ("refreshToken".equals(cookie.getName())) {
                 return cookie.getValue();
             }
@@ -119,39 +130,34 @@ public class JwtUtil {
         }
     }
 
+    public boolean validateRefreshToken(String refreshToken) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(refreshToken);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
     // 토큰 유효성 검사
-    public boolean validateToken(ServletRequest request, String jwtToken){
+    public boolean validateToken(ServletRequest request, String jwtToken) {
         try {
             validationAuthorizationHeader(jwtToken);
             String token = extractToken(jwtToken);
             userDetailsService.loadUserByUsername(this.getStudentNumberFromToken(token));
             Jws<Claims> claims = Jwts.parser().setSigningKey(key).parseClaimsJws(token);
             return !claims.getBody().getExpiration().before(new Date());
-        } catch (SignatureException e) {
-            e.printStackTrace();
-            request.setAttribute("exception", "ForbidddenException");
-        } catch (MalformedJwtException e) {
-            e.printStackTrace();
-            request.setAttribute("exception", "MalformedJwtException");
-        } catch (ExpiredJwtException e) {
-            //토큰 만료시
-            e.printStackTrace();
-            request.setAttribute("exception", "ExpiredJwtException");
-        } catch (UnsupportedJwtException e) {
-            e.printStackTrace();
-            request.setAttribute("exception", "UnsupportedJwtException");
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            request.setAttribute("exception", "IllegalArgumentException");
+        } catch (Exception e) {
+            request.setAttribute("exception", e.getClass().getSimpleName());
+            return false;
         }
-        return false;
     }
 
     //토큰 추출
     public Long extractUserIdFromToken(String token) {
         validationAuthorizationHeader(token);
-        String availableToken = extractToken(token); // "Bearer " 제거 후 순수 토큰 추출
-        return getUserIdFromToken(availableToken); // 올바른 토큰으로 유저 ID 추출
+        String availableToken = extractToken(token);
+        return getUserIdFromToken(availableToken);
     }
 
     public Long extractUserIdFromRequest(HttpServletRequest request) {
@@ -160,5 +166,13 @@ public class JwtUtil {
             throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
         }
         return extractUserIdFromToken(token);
+    }
+
+    public long getAccessTokenValidTime() {
+        return accessTokenValidTime;
+    }
+
+    public long getRefreshTokenValidTime() {
+        return refreshTokenValidTime;
     }
 }
