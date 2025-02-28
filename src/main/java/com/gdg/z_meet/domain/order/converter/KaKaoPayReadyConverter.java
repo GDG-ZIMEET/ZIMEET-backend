@@ -2,7 +2,7 @@ package com.gdg.z_meet.domain.order.converter;
 
 import com.gdg.z_meet.domain.order.dto.KaKaoPayReadyDTO;
 import com.gdg.z_meet.domain.order.entity.KaKaoPayData;
-import com.gdg.z_meet.domain.order.entity.Order;
+import com.gdg.z_meet.domain.order.entity.ProductType;
 import com.gdg.z_meet.domain.user.entity.User;
 
 public class KaKaoPayReadyConverter {
@@ -21,15 +21,16 @@ public class KaKaoPayReadyConverter {
 
 
     // 결제 정보 변환
-    // tid, next_redirect_pc_url;
     public static KaKaoPayData toKakaoPayData(KaKaoPayReadyDTO.KakaoApiResponse kakaoApiResponse,
-                                                  String orderId, User buyer, Order order) {
+                                              KaKaoPayReadyDTO.Parameter parameter,  String orderId, User buyer) {
 
+        // productType, totalPrice 추가
         return KaKaoPayData.builder()
-                .tid(kakaoApiResponse.getTid())
                 .orderId(orderId)
+                .tid(kakaoApiResponse.getTid())
+                .productType(ProductType.valueOf(parameter.getProductType()))
+                .totalPrice(parameter.getTotalPrice())
                 .buyer(buyer)
-                .order(order)     // 주문 정보 (수량, 상품)
                 .build();
     }
 

@@ -1,13 +1,13 @@
 package com.gdg.z_meet.domain.order.repository;
 
-import com.gdg.z_meet.domain.order.entity.Order;
+import com.gdg.z_meet.domain.order.entity.ItemPurchase;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface NamedLockRepository extends JpaRepository<Order, Long> {
+public interface NamedLockRepository extends JpaRepository<ItemPurchase, Long> {
 
-    // 네임드 락 획득
+    // 네임드 락 할당
     @Query(value = "SELECT GET_LOCK(:lockName, 10)", nativeQuery = true)
     Integer getLock(@Param("lockName") String lockName);
 

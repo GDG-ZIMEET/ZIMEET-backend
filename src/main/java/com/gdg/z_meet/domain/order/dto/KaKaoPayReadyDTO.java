@@ -1,21 +1,26 @@
 package com.gdg.z_meet.domain.order.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Schema(name = "KaKaoPayReadyDTO.Request")
 public class KaKaoPayReadyDTO {
 
     @NoArgsConstructor
     @Getter
+    @Schema(description = "카카오페이 결제 준비 요청 DTO")
     public static class Request {
-        @NotNull
+        @Schema(description = "팀 ID")
         private Long teamId;
         @NotNull
-        private String productType;    // 상품 종류 (TWO_TO_TWO, THREE_TO_THREE , TICKET)
+        @Schema(description = "상품 종류 (TWO_TO_TWO, THREE_TO_THREE, TICKET)")
+        private String productType;
         @NotNull
-        private Long totalPrice;     // 총 결제금액
+        @Schema(description = "총 결제 금액")
+        private Long totalPrice;
     }
 
     @Getter

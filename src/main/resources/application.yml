@@ -33,14 +33,23 @@ spring:
     console:
       enabled: true
       path: /h2-console
-  springdoc:
-    api-docs:
-      enabled: true
-    swagger-ui:
-      enabled: true
-      cache:
-        disabled: true
+
+springdoc:
+  use-fqn: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+  cache:
+    disabled: true
 
 jwt:
     secret: ${JWT_SECRET_KEY}
     expiration: 86400000
+
+kakao:
+  pay:
+    secret-key: DEV67E80F0AE00ADB148D9D81F39875B9CEDFE1B
+    cid: TC0ONETIME
+    ready-url: https://open-api.kakaopay.com/online/v1/payment/ready
+    approve-url: https://open-api.kakaopay.com/online/v1/payment/approve
