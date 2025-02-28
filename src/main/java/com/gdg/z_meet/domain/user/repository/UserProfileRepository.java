@@ -21,4 +21,6 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     @Modifying
     @Query("UPDATE UserProfile up SET up.leftDelete = up.leftDelete - 1 WHERE up.user.id IN :userIds")
     void subtractDelete(@Param("userIds") List<Long> userIds);
+
+    Optional<UserProfile> findByUser(User user);
 }
