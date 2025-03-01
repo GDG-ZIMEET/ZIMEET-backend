@@ -23,4 +23,7 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     void subtractDelete(@Param("userIds") List<Long> userIds);
 
     void deleteByUserId(Long userId);
+
+    @Query("SELECT up FROM UserProfile up JOIN up.user u JOIN UserTeam ut ON u.id = ut.user.id WHERE ut.team.id = :teamId")
+    List<UserProfile> findByTeamId(Long teamId);
 }
