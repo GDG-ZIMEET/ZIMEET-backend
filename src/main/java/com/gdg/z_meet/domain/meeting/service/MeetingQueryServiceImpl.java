@@ -172,21 +172,21 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         return MeetingConverter.toGetMyDeleteDTO(user);
     }
 
-    public Map<Long, List<String>> collectEmoji(List<Team> teamList) {
+    private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
 
         return collectTeamInfo(teamList,
                 userTeam -> userTeam.getUser().getUserProfile().getEmoji(),
                 false);
     }
 
-    public Map<Long, List<String>> collectMajor(List<Team> teamList) {
+    private Map<Long, List<String>> collectMajor(List<Team> teamList) {
 
         return collectTeamInfo(teamList,
                 userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor()),
                 true);
     }
 
-    public Map<Long, Double> collectAge(List<Team> teamList) {
+    private Map<Long, Double> collectAge(List<Team> teamList) {
 
         return teamList.stream().collect(Collectors.toMap(
                 Team::getId, team -> userTeamRepository.findByTeamId(team.getId()).stream()
@@ -196,7 +196,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         ));
     }
 
-    public Map<Long, List<String>> collectMusic(List<Team> teamList) {
+    private Map<Long, List<String>> collectMusic(List<Team> teamList) {
 
         return collectTeamInfo(teamList,
                 userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMusic()),
