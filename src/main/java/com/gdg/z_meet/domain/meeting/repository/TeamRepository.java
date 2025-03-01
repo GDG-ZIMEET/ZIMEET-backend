@@ -1,7 +1,7 @@
 package com.gdg.z_meet.domain.meeting.repository;
 
 import com.gdg.z_meet.domain.meeting.entity.Team;
-import com.gdg.z_meet.domain.meeting.entity.TeamType;
+import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

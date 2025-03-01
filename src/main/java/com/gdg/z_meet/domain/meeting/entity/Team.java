@@ -1,5 +1,7 @@
 package com.gdg.z_meet.domain.meeting.entity;
 
+import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
+import com.gdg.z_meet.domain.meeting.entity.enums.Verification;
 import com.gdg.z_meet.global.common.BaseEntity;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -7,8 +9,6 @@ import com.gdg.z_meet.global.response.Code;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-
-
 
 @Entity
 @Getter

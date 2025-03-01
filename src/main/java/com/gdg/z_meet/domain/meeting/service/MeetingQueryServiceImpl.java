@@ -1,15 +1,10 @@
 package com.gdg.z_meet.domain.meeting.service;
 
-import com.gdg.z_meet.domain.chat.entity.TeamChatRoom;
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
-import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
-import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
-import com.gdg.z_meet.domain.meeting.entity.TeamType;
+import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
-import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
-import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
@@ -23,15 +18,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.*;
 import java.util.function.Function;
 
 import java.util.stream.Collectors;
