@@ -23,8 +23,12 @@ spring:
     baseline-on-migrate: false    # V4 마이그레이션
   data:
     redis:
-      host: redis
+      host: redis1
       port: 6379
+    mongodb:
+      host: mongodb1
+      port: 27017
+      database: zimeet
   mvc:
     static-path-pattern: /static/**
   web:
