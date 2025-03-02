@@ -12,6 +12,8 @@ import com.gdg.z_meet.domain.meeting.repository.UserMatchingRepository;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
+import com.gdg.z_meet.global.exception.BusinessException;
+import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
@@ -39,11 +41,15 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     @Transactional
     public void createMatching(Long userId) {
 
-        // 1. 대기 중인 매칭룸 찾기
-        Matching matching = matchingRepository.findWaitingMatching()
+        // 진행중인 매칭 확인
+        if (matchingRepository.existsByWaitingMatching(userId)) {
+            throw new BusinessException(Code.MATCHING_ALREADY_EXIST);
+        }
+
+        Matching matching = matchingRepository.findWaitingMatching(userId)
                 .orElseGet(() -> matchingRepository.save(Matching.builder().build()));
 
-        // 2. 유저를 매칭룸에 추가
+
         UserMatching userMatching = UserMatching.builder()
                 .user(userRepository.findByIdWithProfile(userId))
                 .matching(matching)
