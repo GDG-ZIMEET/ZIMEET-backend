@@ -16,4 +16,23 @@ public class RandomResponseDTO {
     public static class GetTicketDTO {
         Integer ticket;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserMatchingDTO {
+        Long userId;
+        String emoji;
+        String gender;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MatchingDTO {
+        Long matchingId;
+        List<UserMatchingDTO> userList;
+    }
 }
