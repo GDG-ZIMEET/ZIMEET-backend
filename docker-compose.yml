@@ -6,7 +6,6 @@ services:
       - "6379:6379"
     networks:
       - gdg_network
-      -
 
   mongodb:
     image: mongo:latest
