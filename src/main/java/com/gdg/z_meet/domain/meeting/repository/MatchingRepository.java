@@ -14,4 +14,7 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
 
     @Query("SELECT m FROM Matching m WHERE m.matchingStatus = 'WAITING' AND m.id NOT IN (SELECT um.matching.id FROM UserMatching um WHERE um.user.id = :userId)")
     Optional<Matching> findWaitingMatching(@Param("userId")Long userId);
+
+    @Query("SELECT m FROM Matching m WHERE m.matchingStatus = 'WAITING' AND m.id IN (SELECT um.matching.id FROM UserMatching um WHERE um.user.id = :userId)")
+    Optional<Matching> findWaitingMatchingByUserId(@Param("userId")Long userId);
 }

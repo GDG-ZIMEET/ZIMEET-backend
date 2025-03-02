@@ -45,11 +45,28 @@ public class RandomController {
 
     @Operation(summary = "랜덤 매칭")
     @MessageMapping("/matching/join")
-    public void messageMatching(@Header("Authorization") String token) {
+    public void joinMatching(@Header("Authorization") String token) {
 
         Long userId = jwtUtil.extractUserIdFromToken(token);
         try {
-            randomCommandService.createMatching(userId);
+            randomCommandService.joinMatching(userId);
+        } catch (BusinessException ex) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", ex.getReason().getStatus());
+            errorResponse.put("code", ex.getCode());
+            errorResponse.put("message", ex.getMessage());
+
+            log.info("errorResponse: {}", errorResponse);
+        }
+    }
+
+    @Operation(summary = "랜덤 매칭")
+    @MessageMapping("/matching/cancle")
+    public void cancleMatching(@Header("Authorization") String token) {
+
+        Long userId = jwtUtil.extractUserIdFromToken(token);
+        try {
+            randomCommandService.cancleMatching(userId);
         } catch (BusinessException ex) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", ex.getReason().getStatus());

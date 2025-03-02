@@ -6,9 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserMatchingRepository extends JpaRepository<UserMatching, Long> {
 
     @Query("SELECT um FROM UserMatching um JOIN FETCH um.user u JOIN FETCH u.userProfile WHERE um.matching.id = :matchingId")
     List<UserMatching> findAllByMatchingIdWithUserProfile(@Param("matchingId") Long matchingId);
+
+    UserMatching findByUserIdAndMatchingId(Long userId, Long matchingId);
 }

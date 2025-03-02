@@ -39,7 +39,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
     @Override
     @Transactional
-    public void createMatching(Long userId) {
+    public void joinMatching(Long userId) {
 
         // 진행중인 매칭 확인
         if (matchingRepository.existsByWaitingMatching(userId)) {
@@ -59,6 +59,20 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
         messageMatching(matching, userMatchings);
         validateMatching(matching, userMatchings);
+    }
+
+    @Override
+    @Transactional
+    public void cancleMatching(Long userId) {
+
+        Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
+                .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
+
+        UserMatching userMatching = userMatchingRepository.findByUserIdAndMatchingId(userId, matching.getId());
+        userMatchingRepository.delete(userMatching);
+
+        List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
+        messageMatching(matching, userMatchings);
     }
 
     private void messageMatching(Matching matching, List<UserMatching> userMatchings) {
