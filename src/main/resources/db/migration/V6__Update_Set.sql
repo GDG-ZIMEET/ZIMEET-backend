@@ -1,8 +1,3 @@
--- chat_room 테이블 변경: chat_type 및 random_chat_id 컬럼 추가
-ALTER TABLE chat_room
-    ADD COLUMN chat_type ENUM('TEAM', 'RANDOM') NULL AFTER updated_at;
-ALTER TABLE chat_room
-    ADD COLUMN random_chat_id BIGINT NULL AFTER chat_type;
 
 
 -- join_chat 테이블 변경: status 컬럼 추가
