@@ -52,4 +52,7 @@ public class Team extends BaseEntity {
         }
     }
 
+    public void increaseHi(int amount) {
+        this.hi += amount;
+    }
 }

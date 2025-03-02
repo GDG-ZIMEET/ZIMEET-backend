@@ -22,6 +22,7 @@ public enum Code implements BaseCode {
     MEMBER_NICKNAME_UNAVAILABLE(HttpStatus.BAD_REQUEST, "MEM-003", "Nickname cannot used."),
     MEMBER_PASSWORD_UNAVAILABLE(HttpStatus.BAD_REQUEST, "MEM-004", "Password cannot used."),
     MEMBER_ALREADY_ON_PROCESS(HttpStatus.BAD_REQUEST, "MEM-999", "Member is already on process."),
+    USER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "PROF-001", "Profile not found."),
 
     SESSION_EXPIRED(HttpStatus.INTERNAL_SERVER_ERROR, "PAY-000", "Session expired."),
     SESSION_STORAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PAY-001", "Session storage failed."),
@@ -44,6 +45,8 @@ public enum Code implements BaseCode {
     TEAM_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MEETING4010", "팀 삭제가 실패하였습니다."),
     SEARCH_FILTER_NULL(HttpStatus.BAD_REQUEST, "MEETING4011", "검색 조건이 없습니다."),
     SEARCH_FILTER_EXCEEDED(HttpStatus.BAD_REQUEST, "MEETING4012", "검색 조건은 한 가지만 가능합니다."),
+    RANDOM_MEETING_USER_COUNT(HttpStatus.BAD_REQUEST, "CHAT4005",  "랜덤 미팅에 참여하는 사용자 수는 반드시 6명이어야 합니다."),
+
 
     //Hi Error
     HI_COUNT_ZERO(HttpStatus.BAD_REQUEST, "Hi4001","하이의 갯수가 0개 일 경우 하이를 보낼 수 없습니다."),
@@ -55,8 +58,14 @@ public enum Code implements BaseCode {
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4001","채팅방을 찾을 수 없습니다."),
     JOINCHAT_ALREADY_EXIST(HttpStatus.BAD_REQUEST,"CHAT4002","이미 채팅방에 추가된 사용자입니다."),
     JOINCHAT_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4003","해당 채팅방의 사용자를 찾을 수 없습니다."),
-    RANDOM_MEETING_USER_COUNT(HttpStatus.BAD_REQUEST, "CHAT4005",  "랜덤 미팅에 참여하는 사용자 수는 반드시 6명이어야 합니다.")
-    ;
+
+
+    INVALID_PRODUCT_TYPE(HttpStatus.BAD_REQUEST, "PRODUCT_4000", "잘못된 상품 유형입니다."),
+    KAKAO_API_RESPONSE_ERROR(HttpStatus.BAD_GATEWAY, "KAKAO_5001", "카카오 API 응답 오류가 발생했습니다."),
+    INVALID_KAKAO_API_RESPONSE(HttpStatus.BAD_GATEWAY, "KAKAO_5002", "잘못된 카카오 API 응답입니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "PAYMENT_4004", "결제 정보를 찾을 수 없습니다."),
+    KAKAO_API_INVALID_BUYER(HttpStatus.BAD_REQUEST, "KAKAO_4001", "결제자 정보가 일치하지 않습니다."),
+    INVALID_TOTAL_PRICE(HttpStatus.BAD_REQUEST, "PRICE_4000", "잘못된 결제 금액입니다.");
 
 //    NOT_ACADEMY_EMAIL("EEM-001", "Email is not a university email."),
 //    AUTH_CODE_NOT_MATCH("ATH-001", "Auth code not match."),
