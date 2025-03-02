@@ -49,34 +49,20 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         Matching matching = matchingRepository.findWaitingMatching(userId)
                 .orElseGet(() -> matchingRepository.save(Matching.builder().build()));
 
-
         UserMatching userMatching = UserMatching.builder()
                 .user(userRepository.findByIdWithProfile(userId))
                 .matching(matching)
                 .build();
         userMatchingRepository.save(userMatching);
 
-        validateMatching(matching);
+        List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
+
+        messageMatching(matching, userMatchings);
+        validateMatching(matching, userMatchings);
     }
 
-    private void validateMatching(Matching matching) {
+    private void messageMatching(Matching matching, List<UserMatching> userMatchings) {
 
-        List<UserMatching> matchedUsers = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
-
-        long male = matchedUsers.stream()
-                .filter(user -> user.getUser().getUserProfile().getGender() == Gender.MALE)
-                .count();
-        long female = matchedUsers.stream()
-                .filter(user -> user.getUser().getUserProfile().getGender() == Gender.FEMALE)
-                .count();
-
-        // 3. 매칭 조건 확인
-        if (male == 3 && female == 3) {
-            // 매칭 완료 처리
-            matching.setMatchingStatus(MatchingStatus.COMPLETE);
-        }
-
-        List<UserMatching> userMatchings = userMatchingRepository.findByMatchingId(matching.getId());
         List<User> users = userMatchings.stream()
                 .map(UserMatching::getUser)
                 .collect(Collectors.toList());
@@ -108,6 +94,20 @@ public class RandomCommandServiceImpl implements RandomCommandService {
             messagingTemplate.convertAndSend("/topic/matching", dto);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void validateMatching(Matching matching, List<UserMatching> userMatchings) {
+
+        long male = userMatchings.stream()
+                .filter(user -> user.getUser().getUserProfile().getGender() == Gender.MALE)
+                .count();
+        long female = userMatchings.stream()
+                .filter(user -> user.getUser().getUserProfile().getGender() == Gender.FEMALE)
+                .count();
+
+        if (male == 3 && female == 3) {
+            matching.setMatchingStatus(MatchingStatus.COMPLETE);
         }
     }
 }

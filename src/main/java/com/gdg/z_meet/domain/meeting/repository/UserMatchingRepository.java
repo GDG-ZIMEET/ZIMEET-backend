@@ -11,6 +11,4 @@ public interface UserMatchingRepository extends JpaRepository<UserMatching, Long
 
     @Query("SELECT um FROM UserMatching um JOIN FETCH um.user u JOIN FETCH u.userProfile WHERE um.matching.id = :matchingId")
     List<UserMatching> findAllByMatchingIdWithUserProfile(@Param("matchingId") Long matchingId);
-
-    List<UserMatching> findByMatchingId(Long matchingId);
 }
