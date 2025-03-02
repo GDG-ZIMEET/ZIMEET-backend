@@ -1,34 +1,5 @@
 
 
-# -- join_chat 테이블 변경: status 컬럼 추가
-# ALTER TABLE join_chat
-#     ADD COLUMN status ENUM('ACTIVE', 'INACTIVE') NULL;
-#
-#
-# -- 외래 키 제약 조건 제거
-# ALTER TABLE message DROP FOREIGN KEY FK5i8ac68n051032d9ga7gg6i85;
-# ALTER TABLE message DROP FOREIGN KEY FKb3y6etti1cfougkdr0qiiemgv;
-#
-# DROP TABLE IF EXISTS message;
-#
-#
-# -- refresh_token 테이블 삭제
-# ALTER TABLE refresh_token DROP FOREIGN KEY FK_refresh_token_user;
-#
-# DROP TABLE IF EXISTS refresh_token;
-#
-#
-# -- `orders` 테이블에서 `toss_payments_id` 외래 키 삭제
-# ALTER TABLE orders DROP FOREIGN KEY FKmxrhje0pnraft89bdpvi1dbki;
-#
-# DROP TABLE IF EXISTS toss_payments;
-#
-# -- `orders` 테이블의 외래 키 삭제
-# ALTER TABLE orders DROP FOREIGN KEY FKel9kyl84ego2otj2accfd8mr7;
-#
-# DROP TABLE IF EXISTS orders;
-
-
 -- 구매 기록 테이블
 create table item_purchase
 (
