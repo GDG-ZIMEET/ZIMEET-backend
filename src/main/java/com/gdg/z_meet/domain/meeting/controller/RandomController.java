@@ -4,23 +4,31 @@ import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
 import com.gdg.z_meet.domain.meeting.service.RandomCommandService;
 import com.gdg.z_meet.domain.meeting.service.RandomQueryService;
 import com.gdg.z_meet.global.common.AuthenticatedUserUtils;
+import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/random")
 @Tag(name = "RandomMeeting")
 @Validated
+@Slf4j
 public class RandomController {
 
     private final RandomCommandService randomCommandService;
     private final RandomQueryService randomQueryService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Operation(summary = "남은 티켓 개수")
     @GetMapping("/ticket")
@@ -35,9 +43,17 @@ public class RandomController {
     @Operation(summary = "랜덤 매칭")
     @MessageMapping("/matching/join")
     public void messageMatching() {
+        try {
+            //Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+            Long userId = 2L;
+            randomCommandService.createMatching(userId);
+        } catch (BusinessException ex) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", ex.getReason().getStatus());
+            errorResponse.put("code", ex.getCode());
+            errorResponse.put("message", ex.getMessage());
 
-        //Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
-        Long userId = 2L;
-        randomCommandService.createMatching(userId);
+            log.info("errorResponse: {}", errorResponse);
+        }
     }
 }
