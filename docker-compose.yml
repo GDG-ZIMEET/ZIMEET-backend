@@ -59,3 +59,6 @@ services:
 networks:
   gdg_network:
     driver: bridge
+
+volumes:
+  mongodb_data:
