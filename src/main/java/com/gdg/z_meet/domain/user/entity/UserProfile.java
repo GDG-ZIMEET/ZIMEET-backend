@@ -74,4 +74,12 @@ public class UserProfile {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public void increaseTicket(int amount) {
+        this.ticket += amount;
+    }
+
+    public void upgradeToPlus() {
+        this.level = Level.PLUS;
+    }
 }

@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.chat.entity;
 
+import com.gdg.z_meet.domain.chat.entity.status.JoinChatStatus;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.global.common.BaseEntity;
@@ -29,4 +30,12 @@ public class JoinChat extends BaseEntity {
     @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private JoinChatStatus status;
+
+    // 상태 변경 메서드
+    public void leaveChat() {
+        this.status = JoinChatStatus.INACTIVE;
+    }
 }
