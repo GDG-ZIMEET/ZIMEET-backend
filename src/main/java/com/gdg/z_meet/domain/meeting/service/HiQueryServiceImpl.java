@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.service;
 
+import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Hi;
@@ -9,6 +10,10 @@ import com.gdg.z_meet.domain.meeting.entity.enums.HiStatus;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
+import com.gdg.z_meet.domain.user.entity.User;
+import com.gdg.z_meet.domain.user.entity.UserProfile;
+import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
+import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.AllArgsConstructor;
@@ -29,6 +34,8 @@ public class HiQueryServiceImpl implements HiQueryService{
     private final TeamRepository teamRepository;
     private final MeetingQueryServiceImpl meetingQueryService;
     private final UserTeamRepository userTeamRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final UserRepository userRepository;
 
     // 공통 메서드로 분리
     public Map<String, Team> assignTeams(List<Long> teamIds, Long fromId) {
@@ -128,32 +135,32 @@ public class HiQueryServiceImpl implements HiQueryService{
 
         List<Team> teamList = teamRepository.findByIdIn(teamIds);
 
-        Map<Long, List<String>> emojiList = meetingQueryService.collectEmoji(teamList);
-        Map<Long, List<String>> majorList = meetingQueryService.collectMajor(teamList);
-        Map<Long, Double> age = meetingQueryService.collectAge(teamList);
-        Map<Long, List<String>> musicList = meetingQueryService.collectMusic(teamList);
-
-
         // 여러 개의 hiListDto 생성
         List<MeetingResponseDTO.hiListDto> hiListDtos = new ArrayList<>();
         for (Hi hi : hiList) {
             if(hi.getHiStatus()!=HiStatus.NONE && action.equals("Receive")) continue;
 
             Team team = action.equals("Receive") ? hi.getFrom() : hi.getTo();
-
-            // UserProfileDto 생성 (null 방지)
-            String major = String.join(", ", majorList.getOrDefault(team.getId(), Collections.emptyList()));
-            String emoji = String.join(", ", emojiList.getOrDefault(team.getId(), Collections.emptyList()));
-            String music = String.join(", ", musicList.getOrDefault(team.getId(), Collections.emptyList()));
+            Team myteam = action.equals("Receive") ? hi.getTo() : hi.getFrom();
 
             // 각 팀에 대해 UserProfileDto 만들기
+            List<UserProfile> userProfiles = userProfileRepository.findByTeamId(team.getId());
+
+            // UserProfileDto 리스트 생성
             List<MeetingResponseDTO.hiListDto.UserProfileDto> userProfileDtos = new ArrayList<>();
-            MeetingResponseDTO.hiListDto.UserProfileDto userProfileDto = MeetingResponseDTO.hiListDto.UserProfileDto.builder()
-                    .major(major)
-                    .emoji(emoji)
-                    .music(music)
-                    .build();
-            userProfileDtos.add(userProfileDto);
+            int sum = 0;
+            // 반복문 돌면서 DTO 객체를 리스트에 추가
+            for (UserProfile userProfile : userProfiles) {
+                sum += userProfile.getAge();
+                userProfileDtos.add(new MeetingResponseDTO.hiListDto.UserProfileDto(
+                        userProfile.getMajor(),
+                        userProfile.getEmoji(),
+                        userProfile.getMusic()
+                ));
+            }
+
+            double averageAge = userProfiles.isEmpty() ? 0 : Math.round((sum / (double) userProfiles.size()) * 10.0) / 10.0;
+
 
             LocalDateTime sentTime = hi.getCreatedAt(); // Hi 생성 시간
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd HH:mm");
@@ -177,7 +184,7 @@ public class HiQueryServiceImpl implements HiQueryService{
 
                 dateTime = String.format("%d시간 %d분 남음", remainingHours, remainingMinutes);
 
-                if(remainingHours<=0 || remainingMinutes<=0){
+                if(remainingHours<=0 || remainingMinutes<0){
                     hi.changeStatus(HiStatus.EXPIRED);
                     hiRepository.save(hi);
                     continue;
@@ -186,9 +193,11 @@ public class HiQueryServiceImpl implements HiQueryService{
 
             // 하나의 hiListDto 생성
             MeetingResponseDTO.hiListDto hiDto = MeetingResponseDTO.hiListDto.builder()
+                    .myTeamId(myteam.getId())
+                    .teamId(team.getId())
                     .teamName(team.getName())
-                    .teamList(userProfileDtos)
-                    .age(Math.round(age.get(team.getId()) * 10.0) / 10.0)
+                    .userProfileDtos(userProfileDtos)
+                    .age(averageAge)
                     .dateTime(dateTime)
                     .build();
 

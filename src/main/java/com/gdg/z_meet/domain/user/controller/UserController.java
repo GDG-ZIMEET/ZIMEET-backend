@@ -10,6 +10,7 @@ import com.gdg.z_meet.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -33,9 +34,28 @@ public class UserController {
     }
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "로그인")
-    public Response<Token> login(@RequestBody UserReq.LoginReq loginReq) {
+    public Response<UserRes.LoginRes> login(@RequestBody UserReq.LoginReq loginReq, HttpServletResponse response) {
         try {
-            return Response.ok(userService.login(loginReq));
+            Token token = userService.login(loginReq, response);
+            UserRes.LoginRes loginRes = UserRes.LoginRes.builder()
+                    .accessToken(token.getAccessToken())
+                    .key(token.getKey())
+                    .userId(token.getUserId())
+                    .build();
+            return Response.ok(loginRes);
+        } catch (GlobalException exception) {
+            return Response.fail(exception.getCode());
+        }
+    }
+
+    @DeleteMapping("/logout")
+    @Operation(summary = "로그아웃", description = "로그아웃")
+    public Response<Void> logout(HttpServletResponse response, @RequestHeader("Authorization") String authorizationHeader) {
+        try {
+            String accessToken = authorizationHeader.substring(7);
+
+            userService.logout(response, accessToken);
+            return Response.ok(null);
         } catch (GlobalException exception) {
             return Response.fail(exception.getCode());
         }
@@ -83,6 +103,18 @@ public class UserController {
         try {
             Long userId = jwtUtil.extractUserIdFromRequest(request);
             return Response.ok(userService.updateEmoji(userId, emojiUpdateReq));
+        } catch (GlobalException exception) {
+            return Response.fail(exception.getCode());
+        }
+    }
+
+    @DeleteMapping("/withdraw")
+    @Operation(summary = "회원탈퇴", description = "회원탈퇴")
+    public Response<Void> withdraw(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Long userId = jwtUtil.extractUserIdFromRequest(request);
+            userService.withdraw(userId, response);
+            return Response.ok(null);
         } catch (GlobalException exception) {
             return Response.fail(exception.getCode());
         }

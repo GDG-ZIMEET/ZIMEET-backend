@@ -114,7 +114,7 @@ public class MeetingController {
     }
 
     @Operation(summary = "받은 하이 목록")
-    @GetMapping("/hiList/recevie")
+    @GetMapping("/hiList/receive")
     public Response<List<MeetingResponseDTO.hiListDto>> receiveHiList() {
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         return Response.ok(hiQueryService.checkHiList(userId, "Receive"));

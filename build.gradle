@@ -53,6 +53,8 @@ dependencies {
 	implementation 'org.flywaydb:flyway-core'
 	implementation "org.flywaydb:flyway-mysql"
 
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 }
 
 // plain jar 생성 X 설정

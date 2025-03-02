@@ -1,5 +1,7 @@
 package com.gdg.z_meet.domain.meeting.dto;
 
+import com.gdg.z_meet.domain.user.entity.enums.Major;
+import com.gdg.z_meet.domain.user.entity.enums.Music;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -97,8 +99,10 @@ public class MeetingResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class hiListDto {
+        Long myTeamId;
+        Long teamId;
         String teamName;
-        List<UserProfileDto> teamList;
+        List<UserProfileDto> userProfileDtos;
         Double age;
         String dateTime;
 
@@ -106,9 +110,9 @@ public class MeetingResponseDTO {
         @AllArgsConstructor
         @Builder
         public static class UserProfileDto {
-            private String major;
+            private Major major;
             private String emoji;
-            private String music;
+            private Music music;
         }
     }
 
