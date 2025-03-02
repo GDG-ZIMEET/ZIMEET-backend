@@ -29,6 +29,7 @@ public class RandomConverter {
         return RandomResponseDTO.MatchingDTO.builder()
                 .matchingId(matching.getId())
                 .userList(userMatchingDTOS)
+                .matchingStatus(String.valueOf(matching.getMatchingStatus()))
                 .build();
     }
 }

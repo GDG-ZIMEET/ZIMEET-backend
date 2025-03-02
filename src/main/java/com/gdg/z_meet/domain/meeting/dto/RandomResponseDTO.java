@@ -34,5 +34,6 @@ public class RandomResponseDTO {
     public static class MatchingDTO {
         Long matchingId;
         List<UserMatchingDTO> userList;
+        String matchingStatus;
     }
 }
