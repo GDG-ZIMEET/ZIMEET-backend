@@ -5,9 +5,15 @@ ADD COLUMN random_chat_id BIGINT NULL AFTER chat_type;
 
 -- join_chat 테이블 변경: status 컬럼 추가
 ALTER TABLE join_chat
-    ADD COLUMN status ENUM('ACTIVE', 'INACTIVE') NULL AFTER joined_at;
+    ADD COLUMN status ENUM('ACTIVE', 'INACTIVE') NULL;
 
-DROP TABLE messages;
+
+-- 외래 키 제약 조건 제거
+ALTER TABLE message DROP FOREIGN KEY FK5i8ac68n051032d9ga7gg6i85;
+ALTER TABLE message DROP FOREIGN KEY FKb3y6etti1cfougkdr0qiiemgv;
+
+-- 테이블 삭제
+DROP TABLE IF EXISTS message;
 
 
 -- refresh_token 테이블 삭제
