@@ -22,6 +22,10 @@ public class UserRes {
         private String accessToken;
         private String key;
         private Long userId;
+
+        public static LoginRes fromToken(Token token) {
+            return new LoginRes(token.getAccessToken(), token.getKey(), token.getUserId());
+        }
     }
 
     @Getter

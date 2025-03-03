@@ -9,6 +9,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,35 +19,37 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
+    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String REFRESH_TOKEN_COOKIE = "refreshToken";
+    private static final long ACCESS_TOKEN_VALID_TIME = 7 * 24 * 60 * 60 * 1000L;  // 7일
+    private static final long REFRESH_TOKEN_VALID_TIME = 31 * 24 * 60 * 60 * 1000L; // 31일
+
     private final UserDetailsService userDetailsService;
-    // 유효기간 7일
-    private long accessTokenValidTime = 31 * 24 * 60 * 60 * 1000L;
-    // 유효기간 31일
-    private long refreshTokenValidTime = 31 * 24 * 60 * 60 * 1000L;
 
     @Value("${jwt.secret}")
-    private String secretKey ;
+    private String secretKey;
     private Key key;
+    private JwtParser jwtParser;
 
-    // 객체 초기화, secretKey를 Base64로 인코딩
     @PostConstruct
-    protected void init(){
+    protected void init() {
         byte[] bytes = Base64.getDecoder().decode(secretKey);
         key = Keys.hmacShaKeyFor(bytes);
+        jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
     }
 
     public Token createToken(String studentNumber, Long id) {
         Date now = new Date();
-
-        String accessToken = getToken(studentNumber, id, now, accessTokenValidTime);
-        String refreshToken = getToken(studentNumber, id, now, refreshTokenValidTime);
-
+        String accessToken = getToken(studentNumber, id, now, ACCESS_TOKEN_VALID_TIME);
+        String refreshToken = getToken(studentNumber, id, now, REFRESH_TOKEN_VALID_TIME);
         return Token.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -64,115 +68,99 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Cookie createCookie(HttpServletResponse response, String refreshToken){
-        String cookieName = "refreshToken";
-        Cookie cookie = new Cookie(cookieName, refreshToken);
+    public Cookie createCookie(HttpServletResponse response, String refreshToken) {
+        Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE, refreshToken);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
-
-        cookie.setMaxAge((int) (refreshTokenValidTime / 1000));
+        cookie.setMaxAge((int) (REFRESH_TOKEN_VALID_TIME / 1000));
         response.addCookie(cookie);
+        log.info("Refresh token set in cookie: name={}, value={}, maxAge={}",
+                REFRESH_TOKEN_COOKIE, refreshToken, cookie.getMaxAge());
         return cookie;
     }
 
     public String extractKeyIdFromAccessToken(String accessToken) {
-        validationAuthorizationHeader(accessToken);
-        String availableToken = extractToken(accessToken);
-
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(availableToken)
-                .getBody()
-                .getSubject();
+        String availableToken = extractTokenFromHeader(accessToken);
+        return jwtParser.parseClaimsJws(availableToken).getBody().getSubject();
     }
 
     public String getRefreshTokenFromCookie(HttpServletRequest request) {
-        if (request.getCookies() == null)
+        if (request.getCookies() == null) {
+            log.warn("No cookies found in request");
             return null;
-        for (Cookie cookie : request.getCookies()) {
-            if ("refreshToken".equals(cookie.getName())) {
-                return cookie.getValue();
-            }
         }
-        return null;
+        String refreshToken = Arrays.stream(request.getCookies())
+                .filter(cookie -> REFRESH_TOKEN_COOKIE.equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+        log.info("Refresh token from cookie: {}", refreshToken != null ? refreshToken : "Not found");
+        return refreshToken;
     }
 
-    // 인증 정보 조회
-    public Authentication getAuthentication(String token){
-        validationAuthorizationHeader(token);
-        String available_token = extractToken(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getStudentNumberFromToken(available_token));
+    public Authentication getAuthentication(String token) {
+        String availableToken = extractTokenFromHeader(token);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(getStudentNumberFromToken(availableToken));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-    // 토큰에서 회원 정보 추출
     public String getStudentNumberFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+        return jwtParser.parseClaimsJws(token).getBody().getSubject();
     }
 
-    // 토큰에서 유저 아이디 값 추출
     public Long getUserIdFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().get("user_id", Long.class);
+        return jwtParser.parseClaimsJws(token).getBody().get("user_id", Long.class);
     }
 
-    // Request Header에서 token 값 가져오기
-    public String getAccessToken(HttpServletRequest request) { return request.getHeader("Authorization");}
-
-    private String extractToken(String authorizationHeader){
-        return authorizationHeader.substring("Bearer ".length()).trim();
+    public String getAccessToken(HttpServletRequest request) {
+        return request.getHeader("Authorization");
     }
 
-    private void validationAuthorizationHeader(String header){
-        if(header == null || !header.startsWith("Bearer ")){
-            throw new IllegalArgumentException();
+    public String extractTokenFromHeader(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
+            throw new JwtValidationException("유효하지 않은 토큰 형식입니다.");
         }
+        return authorizationHeader.substring(BEARER_PREFIX.length()).trim();
     }
 
     public boolean validateRefreshToken(String refreshToken) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(refreshToken);
+            jwtParser.parseClaimsJws(refreshToken);
             return true;
-        } catch (Exception e) {
+        } catch (JwtException e) {
+            log.warn("Invalid refresh token: {}", e.getMessage());
             return false;
         }
     }
-    
-    // 토큰 유효성 검사
+
     public boolean validateToken(ServletRequest request, String jwtToken) {
         try {
-            validationAuthorizationHeader(jwtToken);
-            String token = extractToken(jwtToken);
-            userDetailsService.loadUserByUsername(this.getStudentNumberFromToken(token));
-            Jws<Claims> claims = Jwts.parser().setSigningKey(key).parseClaimsJws(token);
-            return !claims.getBody().getExpiration().before(new Date());
-        } catch (Exception e) {
+            String token = extractTokenFromHeader(jwtToken);
+            userDetailsService.loadUserByUsername(getStudentNumberFromToken(token));
+            Claims claims = jwtParser.parseClaimsJws(token).getBody();
+            return !claims.getExpiration().before(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
             request.setAttribute("exception", e.getClass().getSimpleName());
             return false;
         }
     }
 
-    //토큰 추출
     public Long extractUserIdFromToken(String token) {
-        validationAuthorizationHeader(token);
-        String availableToken = extractToken(token);
+        String availableToken = extractTokenFromHeader(token);
         return getUserIdFromToken(availableToken);
     }
 
     public Long extractUserIdFromRequest(HttpServletRequest request) {
         String token = getAccessToken(request);
-        if (token == null || !token.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
-        }
-        return extractUserIdFromToken(token);
+        return extractUserIdFromToken(token); // extractTokenFromHeader에서 예외 처리
     }
 
     public long getAccessTokenValidTime() {
-        return accessTokenValidTime;
+        return ACCESS_TOKEN_VALID_TIME;
     }
 
     public long getRefreshTokenValidTime() {
-        return refreshTokenValidTime;
+        return REFRESH_TOKEN_VALID_TIME;
     }
 }
