@@ -7,7 +7,7 @@ on:
       - dev
   push:
     branches:
-      - main   # main 머지 이후 운영 서버 배포
+      - main
 
 permissions:
   contents: read
@@ -30,7 +30,6 @@ jobs:
         run: chmod +x ./gradlew
         shell: bash
 
-      # Gradle 빌드 (테스트 제외)
       - name: Build with Gradle without tests
         run: ./gradlew clean bootJar -x test
         shell: bash
@@ -54,9 +53,9 @@ jobs:
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest
 
   CD:
-    needs: CI      #  CI가 완료된 후 실행
+    needs: CI
     runs-on: ubuntu-latest
-
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -71,6 +70,6 @@ jobs:
               sudo docker ps -qa | xargs -r sudo docker rm -f
             fi
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest
-            sudo docker-compose build --no-cache  # 캐시 없이 새로 빌드
+            sudo docker-compose build --no-cache
             sudo docker-compose up -d
             sudo docker image prune -f

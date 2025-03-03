@@ -23,11 +23,21 @@ spring:
     baseline-on-migrate: false    # V4 마이그레이션
   data:
     redis:
-      host: redis
+      host: redis1
       port: 6379
+    mongodb:
+      host: mongodb1
+      port: 27017
+      database: zimeet
   mvc:
     static-path-pattern: /static/**
   web:
     resources:
       static-locations: classpath:/static/, file:/static/
 
+kakao:
+  pay:
+    secret-key: ${KAKAO_PAY_SECRET_KEY}     # 실 결제 시크릿 키
+    cid:          # 실제 가맹점 ID 받아야
+    ready-url: https://open-api.kakaopay.com/online/v1/payment/ready
+    approve-url: https://open-api.kakaopay.com/online/v1/payment/approve
