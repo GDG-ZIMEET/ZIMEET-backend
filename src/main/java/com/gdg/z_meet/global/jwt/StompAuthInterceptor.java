@@ -34,10 +34,6 @@ public class StompAuthInterceptor implements ChannelInterceptor {
 //
 //            System.out.println("token:" + token);
 
-            if (!jwtUtil.validateToken(null, token)) {
-                throw new IllegalArgumentException("Invalid Token");
-            }
-
             // 사용자 정보 추출 후 Principal 설정
             String studentNumber = jwtUtil.getStudentNumberFromToken(token);
 //

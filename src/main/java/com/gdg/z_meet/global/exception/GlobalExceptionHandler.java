@@ -12,6 +12,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConversionException;
+import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -56,6 +58,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     }
 
+    @ExceptionHandler(ClassCastException.class)
+    public ResponseEntity<Object> handleClassCastException(ClassCastException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Response.fail(Code.INTERNAL_SERVER_ERROR, ex.getMessage()));
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex) {
 
@@ -70,6 +80,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
+    }
+
+    @ExceptionHandler(HttpMessageConversionException.class)
+    public ResponseEntity<Object> handleHttpMessageConversionException(HttpMessageConversionException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Response.fail(Code.INTERNAL_SERVER_ERROR, ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -98,6 +116,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(JpaSystemException.class)
     public ResponseEntity<Object> handleJpaSystemException(JpaSystemException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Response.fail(Code.INTERNAL_SERVER_ERROR, ex.getMessage()));
+    }
+
+    @ExceptionHandler(MessageConversionException.class)
+    public ResponseEntity<Object> handleMessageConversionException(MessageConversionException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

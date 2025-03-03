@@ -15,7 +15,7 @@ import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
-import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
+import com.gdg.z_meet.domain.meeting.entity.enums.HiStatus;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.meeting.service.HiQueryServiceImpl;
