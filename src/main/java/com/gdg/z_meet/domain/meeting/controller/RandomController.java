@@ -62,11 +62,11 @@ public class RandomController {
 
     @Operation(summary = "랜덤 매칭")
     @MessageMapping("/matching/cancle")
-    public void cancleMatching(@Header("Authorization") String token) {
+    public void cancelMatching(@Header("Authorization") String token) {
 
         Long userId = jwtUtil.extractUserIdFromToken(token);
         try {
-            randomCommandService.cancleMatching(userId);
+            randomCommandService.cancelMatching(userId);
         } catch (BusinessException ex) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", ex.getReason().getStatus());

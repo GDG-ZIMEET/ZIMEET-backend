@@ -41,6 +41,12 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     @Transactional
     public void joinMatching(Long userId) {
 
+        User user = userRepository.findByIdWithProfile(userId);
+        if (user.getUserProfile().getTicket() == 0) {
+            throw new BusinessException(Code.TICKET_LIMIT_EXCEEDED);
+        }
+        user.getUserProfile().decreaseTicket(1);
+
         // 진행중인 매칭 확인
         if (matchingRepository.existsByWaitingMatching(userId)) {
             throw new BusinessException(Code.MATCHING_ALREADY_EXIST);
@@ -50,7 +56,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
                 .orElseGet(() -> matchingRepository.save(Matching.builder().build()));
 
         UserMatching userMatching = UserMatching.builder()
-                .user(userRepository.findByIdWithProfile(userId))
+                .user(user)
                 .matching(matching)
                 .build();
         userMatchingRepository.save(userMatching);
@@ -63,13 +69,17 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
     @Override
     @Transactional
-    public void cancleMatching(Long userId) {
+    public void cancelMatching(Long userId) {
 
+        // 완료된 매칭은 취소 불가
         Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
                 .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
 
         UserMatching userMatching = userMatchingRepository.findByUserIdAndMatchingId(userId, matching.getId());
         userMatchingRepository.delete(userMatching);
+
+        User user = userRepository.findByIdWithProfile(userId);
+        user.getUserProfile().increaseTicket(1);
 
         List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
         messageMatching(matching, userMatchings);
