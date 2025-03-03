@@ -61,7 +61,7 @@ public class RandomController {
     }
 
     @Operation(summary = "랜덤 매칭")
-    @MessageMapping("/matching/cancle")
+    @MessageMapping("/matching/cancel")
     public void cancelMatching(@Header("Authorization") String token) {
 
         Long userId = jwtUtil.extractUserIdFromToken(token);

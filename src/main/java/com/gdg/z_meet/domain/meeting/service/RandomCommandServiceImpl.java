@@ -52,7 +52,15 @@ public class RandomCommandServiceImpl implements RandomCommandService {
             throw new BusinessException(Code.MATCHING_ALREADY_EXIST);
         }
 
-        Matching matching = matchingRepository.findWaitingMatching(userId)
+        Gender gender = user.getUserProfile().getGender();
+        Matching matching = matchingRepository.findFirstWaitingMatching(userId)
+                .filter(m -> {
+                    List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(m.getId());
+                    long genderCount = userMatchings.stream()
+                            .filter(userMatching -> userMatching.getUser().getUserProfile().getGender() == gender)
+                            .count();
+                    return genderCount < 3;
+                })
                 .orElseGet(() -> matchingRepository.save(Matching.builder().build()));
 
         UserMatching userMatching = UserMatching.builder()
