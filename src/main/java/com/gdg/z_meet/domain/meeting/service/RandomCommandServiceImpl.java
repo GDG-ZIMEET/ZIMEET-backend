@@ -39,7 +39,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
     @Override
     @Transactional
-    public void joinMatching(Long userId) {
+    public RandomResponseDTO.MatchingDTO joinMatching(Long userId) {
 
         User user = userRepository.findByIdWithProfile(userId);
         if (user.getUserProfile().getTicket() == 0) {
@@ -71,8 +71,10 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
         List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
 
-        messageMatching(matching, userMatchings);
+        RandomResponseDTO.MatchingDTO matchingDTO = messageMatching(matching, userMatchings);
         validateMatching(matching, userMatchings);
+
+        return matchingDTO;
     }
 
     @Override
@@ -93,40 +95,25 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         messageMatching(matching, userMatchings);
     }
 
-    private void messageMatching(Matching matching, List<UserMatching> userMatchings) {
+    private RandomResponseDTO.MatchingDTO messageMatching(Matching matching, List<UserMatching> userMatchings) {
 
         List<User> users = userMatchings.stream()
                 .map(UserMatching::getUser)
                 .collect(Collectors.toList());
 
+        RandomResponseDTO.MatchingDTO matchingDTO = RandomConverter.toMatchingDTO(matching, users);
+
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            String jsonMessage = objectMapper.writeValueAsString(
-                    RandomConverter.toMatchingDTO(matching, users)
-            );
-            matchingRedisTemplate.convertAndSend("matching", jsonMessage);
+            String jsonMessage = objectMapper.writeValueAsString(matchingDTO);
+
+            String channel = "matching." + matchingDTO.getMatchingId();
+            matchingRedisTemplate.convertAndSend(channel, jsonMessage);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-    }
 
-    @EventListener
-    public void handleMessage(String message) {
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            if (message.startsWith("\"") && message.endsWith("\"")) {
-                message = message.substring(1, message.length() - 1);
-                message = message.replace("\\\"", "\"");
-            }
-
-            RandomResponseDTO.MatchingDTO dto = objectMapper.readValue(message,
-                    RandomResponseDTO.MatchingDTO.class);
-            messagingTemplate.convertAndSend("/topic/matching", dto);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        return matchingDTO;
     }
 
     private void validateMatching(Matching matching, List<UserMatching> userMatchings) {

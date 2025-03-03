@@ -1,4 +1,4 @@
-package com.gdg.z_meet.domain.meeting.service;
+package com.gdg.z_meet.domain.meeting;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class RedisMessageSubscriber {
+public class MatchingMessageSubscriber {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper;
@@ -16,9 +16,15 @@ public class RedisMessageSubscriber {
     public void handleMessage(String message) {
 
         try {
-            RandomResponseDTO.MatchingDTO updateMessage =
+            if (message.startsWith("\"") && message.endsWith("\"")) {
+                message = message.substring(1, message.length() - 1);
+                message = message.replace("\\\"", "\"");
+            }
+            RandomResponseDTO.MatchingDTO matchingDTO =
                     objectMapper.readValue(message, RandomResponseDTO.MatchingDTO.class);
-            messagingTemplate.convertAndSend("/topic/matching", updateMessage);
+
+            String destination = "/topic/matching/" + matchingDTO.getMatchingId();
+            messagingTemplate.convertAndSend(destination, matchingDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }

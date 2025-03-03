@@ -45,11 +45,12 @@ public class RandomController {
 
     @Operation(summary = "랜덤 매칭")
     @MessageMapping("/matching/join")
-    public void joinMatching(@Header("Authorization") String token) {
+    public Response<RandomResponseDTO.MatchingDTO> joinMatching(@Header("Authorization") String token) {
 
         Long userId = jwtUtil.extractUserIdFromToken(token);
         try {
-            randomCommandService.joinMatching(userId);
+            RandomResponseDTO.MatchingDTO response = randomCommandService.joinMatching(userId);
+            return Response.ok(response);
         } catch (BusinessException ex) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", ex.getReason().getStatus());
@@ -57,6 +58,7 @@ public class RandomController {
             errorResponse.put("message", ex.getMessage());
 
             log.info("errorResponse: {}", errorResponse);
+            return Response.fail(ex.getCode());
         }
     }
 

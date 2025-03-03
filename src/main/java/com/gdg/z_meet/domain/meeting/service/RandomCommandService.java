@@ -1,7 +1,9 @@
 package com.gdg.z_meet.domain.meeting.service;
 
+import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
+
 public interface RandomCommandService {
 
-    void joinMatching(Long userId);
+    RandomResponseDTO.MatchingDTO joinMatching(Long userId);
     void cancelMatching(Long userId);
 }
