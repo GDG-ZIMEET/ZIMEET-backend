@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Major {
     // 인문
-// 인문계열
+    // 인문계열
     HUMANITIES("인문계열", "인문계열"),
     KOREAN("국어국문학과", "국문"), PHILOSOPHY("철학과", "철학"), KOREANHISTORY("국사학과", "국사"), CHILDREN("아동학과", "아동"),
     // 어문계열
@@ -14,7 +14,6 @@ public enum Major {
     MUSIC("음악과", "음악"),
     // 신학과
     THEOLOGY("신학과", "신학"),
-
     //사회
     SOCIAL_SCIENCE("사회과학계열", "사과계열"),
     SOCIALWELFARE("사회복지학과", "사복"), PSYCHOLOGY("심리학과", "심리"), SOCIOLOGY("사회학과", "사회"), SPECIAL_EDUCATION("특수교육과", "특교"),
@@ -56,7 +55,7 @@ public enum Major {
     // 자연공학
     NATURAL_ENGINEERING("자연공학계열", "자연공학"),
     // 인문사회
-    HUMAN_SOCIAL("인문사회과학계열", "인문사회");
+    HUMAN_SOCIAL("인문사회계열", "인문사회");
 
     private final String displayName;
     private final String shortName;

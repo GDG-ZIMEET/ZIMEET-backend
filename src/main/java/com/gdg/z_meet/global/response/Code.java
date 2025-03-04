@@ -65,7 +65,12 @@ public enum Code implements BaseCode {
     INVALID_KAKAO_API_RESPONSE(HttpStatus.BAD_GATEWAY, "KAKAO_5002", "잘못된 카카오 API 응답입니다."),
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "PAYMENT_4004", "결제 정보를 찾을 수 없습니다."),
     KAKAO_API_INVALID_BUYER(HttpStatus.BAD_REQUEST, "KAKAO_4001", "결제자 정보가 일치하지 않습니다."),
-    INVALID_TOTAL_PRICE(HttpStatus.BAD_REQUEST, "PRICE_4000", "잘못된 결제 금액입니다.");
+    INVALID_TOTAL_PRICE(HttpStatus.BAD_REQUEST, "PRICE_4000", "잘못된 결제 금액입니다."),
+
+    USER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "U001", "이미 가입된 학번 또는 닉네임입니다."),
+    INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "U002", "비밀번호가 유효하지 않습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U003", "가입되지 않은 학번입니다."),
+    PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "U004", "프로필이 존재하지 않습니다.");
 
 //    NOT_ACADEMY_EMAIL("EEM-001", "Email is not a university email."),
 //    AUTH_CODE_NOT_MATCH("ATH-001", "Auth code not match."),
