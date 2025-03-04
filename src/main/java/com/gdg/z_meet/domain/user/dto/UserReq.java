@@ -4,6 +4,7 @@ import com.gdg.z_meet.domain.user.entity.enums.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.validator.constraints.Range;
 
 public class UserReq {
     @Builder
@@ -38,7 +39,7 @@ public class UserReq {
         @Size(min = 2, max = 7, message = "닉네임은 2자 이상 7자 이하로 입력해주세요.")
         private String nickname;
         private Grade grade;
-        @Size(min = 20, max = 28, message = "20세에서 28세까지 이용 가능합니다.")
+        @Range(min = 19, max = 28, message = "나이는 19세 이상 28세 이하로 입력해주세요.")
         private int age;
         private Gender gender;
         private Major major;
