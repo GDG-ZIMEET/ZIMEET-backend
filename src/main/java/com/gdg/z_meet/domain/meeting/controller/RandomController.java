@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +30,6 @@ public class RandomController {
     private final JwtUtil jwtUtil;
     private final RandomCommandService randomCommandService;
     private final RandomQueryService randomQueryService;
-    private final SimpMessagingTemplate messagingTemplate;
 
     @Operation(summary = "남은 티켓 개수")
     @GetMapping("/ticket")
@@ -43,7 +41,7 @@ public class RandomController {
         return Response.ok(response);
     }
 
-    @Operation(summary = "랜덤 매칭")
+    @Operation(summary = "랜덤 매칭 참여하기")
     @MessageMapping("/matching/join")
     public Response<RandomResponseDTO.MatchingDTO> joinMatching(@Header("Authorization") String token) {
 
@@ -62,7 +60,7 @@ public class RandomController {
         }
     }
 
-    @Operation(summary = "랜덤 매칭")
+    @Operation(summary = "랜덤 매칭 취소하기")
     @MessageMapping("/matching/cancel")
     public void cancelMatching(@Header("Authorization") String token) {
 
@@ -77,5 +75,15 @@ public class RandomController {
 
             log.info("errorResponse: {}", errorResponse);
         }
+    }
+
+    @Operation(summary = "매칭 참여 후 현황 조회")
+    @GetMapping("/matching")
+    public Response<RandomResponseDTO.MatchingDTO> getMatching() {
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        RandomResponseDTO.MatchingDTO response = randomQueryService.getMatching(userId);
+
+        return Response.ok(response);
     }
 }

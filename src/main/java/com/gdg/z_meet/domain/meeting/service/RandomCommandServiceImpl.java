@@ -16,9 +16,7 @@ import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +26,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class RandomCommandServiceImpl implements RandomCommandService {
-
-    private final SimpMessagingTemplate messagingTemplate;
 
     @Qualifier("matchingRedisTemplate")
     private final RedisTemplate<String, String> matchingRedisTemplate;
