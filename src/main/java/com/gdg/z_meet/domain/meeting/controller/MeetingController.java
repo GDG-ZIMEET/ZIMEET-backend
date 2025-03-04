@@ -2,7 +2,7 @@ package com.gdg.z_meet.domain.meeting.controller;
 
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
-import com.gdg.z_meet.domain.meeting.entity.TeamType;
+import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.service.HiQueryService;
 import com.gdg.z_meet.domain.meeting.service.MeetingCommandService;
 import com.gdg.z_meet.domain.meeting.service.MeetingQueryService;

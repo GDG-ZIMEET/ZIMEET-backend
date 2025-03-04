@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.gdg.z_meet.domain.meeting.entity.Verification.COMPLETE;
+import static com.gdg.z_meet.domain.meeting.entity.enums.Verification.COMPLETE;
 
 public class MeetingConverter {
 

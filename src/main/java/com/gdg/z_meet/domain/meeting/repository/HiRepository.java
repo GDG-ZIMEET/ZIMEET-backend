@@ -2,7 +2,7 @@ package com.gdg.z_meet.domain.meeting.repository;
 
 import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
-import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
+import com.gdg.z_meet.domain.meeting.entity.enums.HiStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
