@@ -35,6 +35,7 @@ public class RandomQueryServiceImpl implements RandomQueryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RandomResponseDTO.MatchingDTO getMatching(Long userId) {
 
         Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
