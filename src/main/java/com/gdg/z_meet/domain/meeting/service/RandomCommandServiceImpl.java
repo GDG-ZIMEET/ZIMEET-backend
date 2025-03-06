@@ -67,8 +67,8 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
         List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
 
-        RandomResponseDTO.MatchingDTO matchingDTO = messageMatching(matching, userMatchings);
         validateMatching(matching, userMatchings);
+        RandomResponseDTO.MatchingDTO matchingDTO = messageMatching(matching, userMatchings);
 
         return matchingDTO;
     }
