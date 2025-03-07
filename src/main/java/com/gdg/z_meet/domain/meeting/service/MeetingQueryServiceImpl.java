@@ -5,6 +5,7 @@ import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
+import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
@@ -31,6 +32,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class MeetingQueryServiceImpl implements MeetingQueryService {
 
+    private final HiRepository hiRepository;
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
@@ -67,12 +69,15 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
 
-        return MeetingConverter.toGetTeamDTO(team, users);
+        Team myTeam = teamRepository.findByTeamType(userId, team.getTeamType()).get();
+        Boolean hi = hiRepository.existsByFromAndTo(myTeam, team);
+
+        return MeetingConverter.toGetTeamDTO(team, users, hi);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public MeetingResponseDTO.GetMyTeamDTO getPreMyTeam(Long userId, TeamType teamType) {
+    public MeetingResponseDTO.GetPreMyTeamDTO getPreMyTeam(Long userId, TeamType teamType) {
 
         Optional<Team> teamOptional = teamRepository.findByTeamType(userId, teamType);
         if (teamOptional.isEmpty()) {
@@ -87,12 +92,12 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                             .map(userTeam -> userTeam.getUser().getUserProfile().getEmoji())
                             .collect(Collectors.toList());
 
-        return MeetingConverter.toGetMyTeamDTO(team, emojiList);
+        return MeetingConverter.toGetPreMyTeamDTO(team, emojiList);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public MeetingResponseDTO.GetTeamDTO getMyTeam(Long userId, TeamType teamType) {
+    public MeetingResponseDTO.GetMyTeamDTO getMyTeam(Long userId, TeamType teamType) {
 
         Team team = teamRepository.findByTeamType(userId, teamType)
                 .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
@@ -104,7 +109,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
 
-        return MeetingConverter.toGetTeamDTO(team, users);
+        return MeetingConverter.toGetMyTeamDTO(team, users);
     }
 
     @Override
