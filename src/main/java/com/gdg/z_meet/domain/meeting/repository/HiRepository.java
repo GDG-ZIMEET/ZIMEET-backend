@@ -18,4 +18,5 @@ public interface HiRepository extends JpaRepository<Hi,Long> {
     @Query("SELECT DISTINCT h FROM Hi h WHERE h.from.id IN (:teamIds) ORDER BY h.createdAt DESC")
     List<Hi> findSendHiList(@Param("teamIds") List<Long> teamIds);
 
+    Boolean existsByFromAndTo(Team from, Team to);
 }
