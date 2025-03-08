@@ -173,8 +173,8 @@ public class ChatRoomQueryService {
                 .map(userProfile -> {
                     // 사용자 ID가 동일한 경우 이름에 "(나)" 추가
                     String userName = userProfile.getUser().getId().equals(userId)
-                            ? userProfile.getUser().getName() + "(나)"
-                            : userProfile.getUser().getName();
+                            ? userProfile.getUser().getUserProfile().getNickname() + "(나)"
+                            : userProfile.getUser().getUserProfile().getNickname();
 
                     return new ChatRoomDto.UserProfileDto(
                             userProfile.getUser().getId(),
