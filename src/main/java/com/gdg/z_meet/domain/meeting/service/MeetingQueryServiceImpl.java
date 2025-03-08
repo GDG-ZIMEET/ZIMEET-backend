@@ -177,7 +177,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private Map<Long, List<String>> collectMajor(List<Team> teamList) {
 
         return collectTeamInfo(teamList,
-                userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor()),
+                userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor().getShortName()),
                 true);
     }
 
