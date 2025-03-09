@@ -85,4 +85,31 @@ public class UserController {
         userService.withdraw(userId, response);
         return Response.ok(null);
     }
+
+    @GetMapping("/check-login")
+    public Response<UserRes.CheckLoginRes> checkLogin(HttpServletRequest request, HttpServletResponse response) {
+        String accessToken = jwtUtil.getAccessToken(request);
+        if (accessToken != null && jwtUtil.validateToken(request, accessToken)) {
+            return Response.ok(UserRes.CheckLoginRes.builder()
+                    .isLoggedIn(true)
+                    .accessToken(accessToken)
+                    .build());
+        } else {
+            String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
+            if (refreshToken != null && jwtUtil.validateRefreshToken(refreshToken)) {
+                String studentNumber = jwtUtil.getStudentNumberFromToken(refreshToken);
+                Long userId = jwtUtil.getUserIdFromToken(refreshToken);
+                String newAccessToken = jwtUtil.getToken(studentNumber, userId, new java.util.Date(), jwtUtil.getAccessTokenValidTime());
+                response.setHeader("Authorization", "Bearer " + newAccessToken);
+                return Response.ok(UserRes.CheckLoginRes.builder()
+                        .isLoggedIn(true)
+                        .accessToken(newAccessToken)
+                        .build());
+            }
+        }
+        return Response.ok(UserRes.CheckLoginRes.builder()
+                .isLoggedIn(false)
+                .accessToken(null)
+                .build());
+    }
 }
