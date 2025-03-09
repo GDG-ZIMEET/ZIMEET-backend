@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -15,9 +17,16 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
+    @Value("${spring.data.redis.host}")
+    private String host;
+
+    @Value("${spring.data.redis.port}")
+    private int port;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory("localhost", 6379);
+        System.out.println("Configured Redis Host: " + host + ", Port: " + port);
+        return new LettuceConnectionFactory(host, port);
     }
 
     @Bean
@@ -48,4 +57,23 @@ public class RedisConfig {
         return redisTemplate;
     }
 
+    @Bean
+    @Qualifier("matchingRedisTemplate")
+    public RedisTemplate<String, String> matchingRedisTemplate(RedisConnectionFactory connectionFactory) {
+
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(connectionFactory);
+
+        ObjectMapper matchingobjectMapper = new ObjectMapper();
+        matchingobjectMapper.registerModule(new JavaTimeModule());
+        matchingobjectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new StringRedisSerializer());
+
+        return redisTemplate;
+    }
 }

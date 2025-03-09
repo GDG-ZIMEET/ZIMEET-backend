@@ -1,7 +1,7 @@
 package com.gdg.z_meet.domain.meeting.service;
 
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
-import com.gdg.z_meet.domain.meeting.entity.TeamType;
+import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 
 public interface MeetingCommandService {
 

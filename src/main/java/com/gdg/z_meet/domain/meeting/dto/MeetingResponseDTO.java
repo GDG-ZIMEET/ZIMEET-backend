@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 public class MeetingResponseDTO {
@@ -65,6 +63,18 @@ public class MeetingResponseDTO {
         Integer verification;
         String gender;
         List<GetTeamUserDTO> userList;
+        Boolean hi;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetPreMyTeamDTO {
+        Long teamId;
+        List<String> emoji;
+        String name;
+        Integer verification;
     }
 
     @Builder
@@ -73,9 +83,10 @@ public class MeetingResponseDTO {
     @AllArgsConstructor
     public static class GetMyTeamDTO {
         Long teamId;
-        List<String> emoji;
         String name;
         Integer verification;
+        String gender;
+        List<GetTeamUserDTO> userList;
     }
 
     @Builder
