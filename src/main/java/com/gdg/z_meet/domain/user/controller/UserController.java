@@ -89,11 +89,10 @@ public class UserController {
     @GetMapping("/check-login")
     public Response<UserRes.CheckLoginRes> checkLogin(HttpServletRequest request, HttpServletResponse response) {
         String accessToken = jwtUtil.getAccessToken(request);
+
         if (accessToken != null && jwtUtil.validateToken(request, accessToken)) {
-            return Response.ok(UserRes.CheckLoginRes.builder()
-                    .isLoggedIn(true)
-                    .accessToken(accessToken)
-                    .build());
+            Long userId = jwtUtil.extractUserIdFromRequest(request);
+            return Response.ok(UserRes.CheckLoginRes.loggedIn(userId, accessToken));
         } else {
             String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
             if (refreshToken != null && jwtUtil.validateRefreshToken(refreshToken)) {
@@ -101,15 +100,9 @@ public class UserController {
                 Long userId = jwtUtil.getUserIdFromToken(refreshToken);
                 String newAccessToken = jwtUtil.getToken(studentNumber, userId, new java.util.Date(), jwtUtil.getAccessTokenValidTime());
                 response.setHeader("Authorization", "Bearer " + newAccessToken);
-                return Response.ok(UserRes.CheckLoginRes.builder()
-                        .isLoggedIn(true)
-                        .accessToken(newAccessToken)
-                        .build());
+                return Response.ok(UserRes.CheckLoginRes.refreshed(userId, newAccessToken));
             }
         }
-        return Response.ok(UserRes.CheckLoginRes.builder()
-                .isLoggedIn(false)
-                .accessToken(null)
-                .build());
+        return Response.ok(UserRes.CheckLoginRes.loggedOut());
     }
 }
