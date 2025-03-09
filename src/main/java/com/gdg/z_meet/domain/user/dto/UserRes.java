@@ -22,6 +22,10 @@ public class UserRes {
         private String accessToken;
         private String key;
         private Long userId;
+
+        public static LoginRes fromToken(Token token) {
+            return new LoginRes(token.getAccessToken(), token.getKey(), token.getUserId());
+        }
     }
 
     @Getter
@@ -72,5 +76,37 @@ public class UserRes {
     @Builder
     public static class EmojiUpdateRes {
         private String emoji;
+    }
+
+    @Getter
+    @Builder
+    public static class CheckLoginRes {
+        private Long id;
+        private boolean isLoggedIn;
+        private String accessToken;
+
+        public static CheckLoginRes loggedIn(Long id, String accessToken) {
+            return CheckLoginRes.builder()
+                    .id(id)
+                    .isLoggedIn(true)
+                    .accessToken(accessToken)
+                    .build();
+        }
+
+        public static CheckLoginRes loggedOut() {
+            return CheckLoginRes.builder()
+                    .id(null)
+                    .isLoggedIn(false)
+                    .accessToken(null)
+                    .build();
+        }
+
+        public static CheckLoginRes refreshed(Long id, String newAccessToken) {
+            return CheckLoginRes.builder()
+                    .id(id)
+                    .isLoggedIn(true)
+                    .accessToken(newAccessToken)
+                    .build();
+        }
     }
 }

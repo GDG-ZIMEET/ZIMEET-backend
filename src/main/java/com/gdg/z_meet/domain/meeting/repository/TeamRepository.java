@@ -1,7 +1,7 @@
 package com.gdg.z_meet.domain.meeting.repository;
 
 import com.gdg.z_meet.domain.meeting.entity.Team;
-import com.gdg.z_meet.domain.meeting.entity.TeamType;
+import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,6 +24,7 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     Boolean existsByName(String name);
 
     List<Team> findByIdIn(List<Long> teamIds);
+
     @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Team t " +
             "JOIN UserTeam ut ON ut.team = t " +
             "WHERE ut.user.id IN :userIds AND t.teamType = :teamType")

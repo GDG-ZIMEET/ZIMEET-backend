@@ -2,7 +2,7 @@ package com.gdg.z_meet.domain.meeting.repository;
 
 import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
-import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
+import com.gdg.z_meet.domain.meeting.entity.enums.HiStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +18,5 @@ public interface HiRepository extends JpaRepository<Hi,Long> {
     @Query("SELECT DISTINCT h FROM Hi h WHERE h.from.id IN (:teamIds) ORDER BY h.createdAt DESC")
     List<Hi> findSendHiList(@Param("teamIds") List<Long> teamIds);
 
+    Boolean existsByFromAndTo(Team from, Team to);
 }

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.gdg.z_meet.domain.meeting.entity.Verification.COMPLETE;
+import static com.gdg.z_meet.domain.meeting.entity.enums.Verification.COMPLETE;
 
 public class MeetingConverter {
 
@@ -36,7 +36,7 @@ public class MeetingConverter {
                 .build();
     }
 
-    public static MeetingResponseDTO.GetTeamDTO toGetTeamDTO(Team team, List<User> users){
+    public static MeetingResponseDTO.GetTeamDTO toGetTeamDTO(Team team, List<User> users, Boolean hi){
 
         List<MeetingResponseDTO.GetTeamUserDTO> teamUserDTOS = users.stream()
                 .map(user -> MeetingResponseDTO.GetTeamUserDTO.builder()
@@ -45,7 +45,7 @@ public class MeetingConverter {
                         .nickname(user.getUserProfile().getNickname())
                         .age(user.getUserProfile().getAge())
                         .studentNumber(user.getStudentNumber().substring(2, 4))
-                        .major(String.valueOf(user.getUserProfile().getMajor()))
+                        .major(String.valueOf(user.getUserProfile().getMajor().getDisplayName()))
                         .music(String.valueOf(user.getUserProfile().getMusic()))
                         .mbti(String.valueOf(user.getUserProfile().getMbti()))
                         .style(String.valueOf(user.getUserProfile().getStyle()))
@@ -60,16 +60,44 @@ public class MeetingConverter {
                 .verification(team.getVerification() == COMPLETE ? 1 : 0)
                 .gender(String.valueOf(team.getGender()))
                 .userList(teamUserDTOS)
+                .hi(hi)
                 .build();
     }
 
-    public static MeetingResponseDTO.GetMyTeamDTO toGetMyTeamDTO(Team team, List<String> emojiList){
+    public static MeetingResponseDTO.GetPreMyTeamDTO toGetPreMyTeamDTO(Team team, List<String> emojiList){
 
-        return MeetingResponseDTO.GetMyTeamDTO.builder()
+        return MeetingResponseDTO.GetPreMyTeamDTO.builder()
                 .teamId(team.getId())
                 .emoji(emojiList)
                 .name(team.getName())
                 .verification(team.getVerification() == COMPLETE ? 1 : 0)
+                .build();
+    }
+
+    public static MeetingResponseDTO.GetMyTeamDTO toGetMyTeamDTO(Team team, List<User> users){
+
+        List<MeetingResponseDTO.GetTeamUserDTO> teamUserDTOS = users.stream()
+                .map(user -> MeetingResponseDTO.GetTeamUserDTO.builder()
+                        .userId(user.getId())
+                        .emoji(user.getUserProfile().getEmoji())
+                        .nickname(user.getUserProfile().getNickname())
+                        .age(user.getUserProfile().getAge())
+                        .studentNumber(user.getStudentNumber().substring(2, 4))
+                        .major(String.valueOf(user.getUserProfile().getMajor().getDisplayName()))
+                        .music(String.valueOf(user.getUserProfile().getMusic()))
+                        .mbti(String.valueOf(user.getUserProfile().getMbti()))
+                        .style(String.valueOf(user.getUserProfile().getStyle()))
+                        .idealType(String.valueOf(user.getUserProfile().getIdealType()))
+                        .idealAge(String.valueOf(user.getUserProfile().getIdealAge()))
+                        .build())
+                .collect(Collectors.toList());
+
+        return MeetingResponseDTO.GetMyTeamDTO.builder()
+                .teamId(team.getId())
+                .name(team.getName())
+                .verification(team.getVerification() == COMPLETE ? 1 : 0)
+                .gender(String.valueOf(team.getGender()))
+                .userList(teamUserDTOS)
                 .build();
     }
 

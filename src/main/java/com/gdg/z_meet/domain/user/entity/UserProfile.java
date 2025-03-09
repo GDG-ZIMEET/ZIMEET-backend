@@ -79,6 +79,10 @@ public class UserProfile {
         this.ticket += amount;
     }
 
+    public void decreaseTicket(int amount) {
+        this.ticket -= amount;
+    }
+
     public void upgradeToPlus() {
         this.level = Level.PLUS;
     }
