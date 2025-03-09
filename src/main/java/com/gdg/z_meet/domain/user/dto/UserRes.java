@@ -77,4 +77,11 @@ public class UserRes {
     public static class EmojiUpdateRes {
         private String emoji;
     }
+
+    @Getter
+    @Builder
+    public static class CheckLoginRes {
+        private boolean isLoggedIn;
+        private String accessToken;
+    }
 }
