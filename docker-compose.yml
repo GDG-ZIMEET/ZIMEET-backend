@@ -6,7 +6,6 @@ services:
       - "6379:6379"
     networks:
       - gdg_network
-      -
 
   mongodb:
     image: mongo:latest
@@ -60,3 +59,6 @@ services:
 networks:
   gdg_network:
     driver: bridge
+
+volumes:
+  mongodb_data:
