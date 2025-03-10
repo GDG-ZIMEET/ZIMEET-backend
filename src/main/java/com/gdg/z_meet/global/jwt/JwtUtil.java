@@ -70,7 +70,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Cookie createCookie(HttpServletResponse response, String refreshToken) {
+    public void createCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE, refreshToken)
                 .httpOnly(true)
                 .secure(true)
@@ -81,7 +81,6 @@ public class JwtUtil {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         log.info("Refresh token set in cookie: name={}, value={}, maxAge={}",
                 REFRESH_TOKEN_COOKIE, refreshToken, cookie.getMaxAge());
-        return new Cookie(REFRESH_TOKEN_COOKIE, refreshToken);
     }
 
     public String extractKeyIdFromAccessToken(String accessToken) {
