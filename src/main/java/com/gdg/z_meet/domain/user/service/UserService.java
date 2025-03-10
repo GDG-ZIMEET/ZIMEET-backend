@@ -28,7 +28,9 @@ public class UserService {
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
-        if (signUpReq.getPassword() == null || signUpReq.getPassword().length() < 4 || signUpReq.getPassword().length() > 6) {
+        String password = signUpReq.getPassword();
+        if (password == null || !password.matches("\\d{4,6}")
+                || password.length() < 4 || password.length() > 6) {
             throw new BusinessException(Code.INVALID_PASSWORD);
         }
         String encodedPassword = encoder.encode(signUpReq.getPassword());
