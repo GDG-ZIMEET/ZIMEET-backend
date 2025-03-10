@@ -151,7 +151,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<User> users;
 
         if (nickname != null) {
-            users = userRepository.findAllByNicknameContainingWithProfile(gender, nickname);
+            users = userRepository.findAllByNicknameContainingWithProfile(gender, nickname, userId);
         } else {
             users = userRepository.findAllByPhoneNumberContainingWithProfile(gender, phoneNumber);
         }

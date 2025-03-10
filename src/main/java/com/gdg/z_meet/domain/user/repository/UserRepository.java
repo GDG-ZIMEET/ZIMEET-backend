@@ -24,8 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile WHERE u.id IN :userIds")
     List<User> findAllByIdWithProfile(@Param("userIds") List<Long> userIds);
 
-    @Query("SELECT u FROM User u JOIN FETCH u.userProfile up WHERE up.gender = :gender AND up.nickname LIKE %:nickname%")
-    List<User> findAllByNicknameContainingWithProfile(@Param("gender") Gender gender, @Param("nickname") String nickname);
+    @Query("SELECT u FROM User u JOIN FETCH u.userProfile up WHERE up.gender = :gender AND up.nickname LIKE :nickname% AND u.id != :userId")
+    List<User> findAllByNicknameContainingWithProfile(@Param("gender") Gender gender, @Param("nickname") String nickname, @Param("userId") Long userId);
 
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile up WHERE up.gender = :gender AND u.phoneNumber LIKE %:phoneNumber%")
     List<User> findAllByPhoneNumberContainingWithProfile(@Param("gender") Gender gender, @Param("phoneNumber") String phoneNumber);
