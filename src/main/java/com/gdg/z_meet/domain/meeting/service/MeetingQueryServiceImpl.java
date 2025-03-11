@@ -138,7 +138,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public MeetingResponseDTO.GetSearchListDTO getSearch(Long userId, String nickname, String phoneNumber) {
+    public MeetingResponseDTO.GetSearchListDTO getSearch(Long userId, TeamType teamType, String nickname, String phoneNumber) {
 
         if (nickname == null && phoneNumber == null) {
             throw new BusinessException(Code.SEARCH_FILTER_NULL);
@@ -151,9 +151,9 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<User> users;
 
         if (nickname != null) {
-            users = userRepository.findAllByNicknameContainingWithProfile(gender, nickname, userId);
+            users = userRepository.findAllByNicknameWithProfile(gender, nickname, userId, teamType);
         } else if (phoneNumber.length() >= 7) {
-            users = userRepository.findAllByPhoneNumberContainingWithProfile(gender, phoneNumber, userId);
+            users = userRepository.findAllByPhoneNumberWithProfile(gender, phoneNumber, userId);
         } else {
             users = Collections.emptyList();
         }
