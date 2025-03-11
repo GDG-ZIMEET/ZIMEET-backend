@@ -32,7 +32,10 @@ spring:
     mongodb:
       uri: mongodb://${DEFAULT_URL}:27017/${DEFAULT_SCHEMA}
       database: ${DEFAULT_SCHEMA}
-
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=3600s
   h2:
     console:
       enabled: true

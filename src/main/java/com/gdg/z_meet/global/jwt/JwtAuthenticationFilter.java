@@ -24,6 +24,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        String uri = request.getRequestURI();
+        if (uri.equals("/api/user/signup") || uri.equals("/api/user/login")) {
+            filterChain.doFilter(request, response); // 토큰 검증 생략
+            return;
+        }
+
         String accessToken = jwtUtil.getAccessToken(request);
         log.debug("Access token from request: {}", accessToken);
 
@@ -69,6 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
             log.warn("Failed to create authentication from token");
+            throw new JwtValidationException("Invalid token for authentication");
         }
     }
 
