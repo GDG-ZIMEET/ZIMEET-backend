@@ -32,6 +32,10 @@ services:
       - MYSQL_URL=jdbc:mysql://${PROD_DB_ENDPOINT}:3306/${PROD_DB_NAME}?serverTimezone=UTC
     networks:
       - gdg_network
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/api/health" ]
       interval: 10s
