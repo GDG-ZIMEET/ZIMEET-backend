@@ -32,6 +32,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAllByNicknameWithProfile(@Param("gender") Gender gender, @Param("nickname") String nickname, @Param("userId") Long userId, @Param("teamType") TeamType teamType);
 
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile up WHERE up.gender = :gender " +
-            "AND u.phoneNumber LIKE :phoneNumber% AND u.id != :userId")
-    List<User> findAllByPhoneNumberWithProfile(@Param("gender") Gender gender, @Param("phoneNumber") String phoneNumber, @Param("userId") Long userId);
+            "AND u.phoneNumber LIKE :phoneNumber% AND u.id != :userId " +
+            "AND NOT EXISTS (SELECT 1 FROM Team t JOIN UserTeam ut ON ut.team = t " +
+            "WHERE ut.user = u AND t.teamType = :teamType)")
+    List<User> findAllByPhoneNumberWithProfile(@Param("gender") Gender gender, @Param("phoneNumber") String phoneNumber, @Param("userId") Long userId, @Param("teamType") TeamType teamType);
 }

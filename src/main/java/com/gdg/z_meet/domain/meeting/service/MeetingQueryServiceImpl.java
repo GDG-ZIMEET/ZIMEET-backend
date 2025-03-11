@@ -153,7 +153,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         if (nickname != null) {
             users = userRepository.findAllByNicknameWithProfile(gender, nickname, userId, teamType);
         } else if (phoneNumber.length() >= 7) {
-            users = userRepository.findAllByPhoneNumberWithProfile(gender, phoneNumber, userId);
+            users = userRepository.findAllByPhoneNumberWithProfile(gender, phoneNumber, userId, teamType);
         } else {
             users = Collections.emptyList();
         }
