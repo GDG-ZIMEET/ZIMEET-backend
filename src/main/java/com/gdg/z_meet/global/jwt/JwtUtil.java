@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -68,16 +70,17 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Cookie createCookie(HttpServletResponse response, String refreshToken) {
-        Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE, refreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge((int) (REFRESH_TOKEN_VALID_TIME / 1000));
-        response.addCookie(cookie);
+    public void createCookie(HttpServletResponse response, String refreshToken) {
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE, refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(REFRESH_TOKEN_VALID_TIME / 1000)
+                .sameSite("None")  // SameSite 속성을 None으로 설정
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         log.info("Refresh token set in cookie: name={}, value={}, maxAge={}",
                 REFRESH_TOKEN_COOKIE, refreshToken, cookie.getMaxAge());
-        return cookie;
     }
 
     public String extractKeyIdFromAccessToken(String accessToken) {
