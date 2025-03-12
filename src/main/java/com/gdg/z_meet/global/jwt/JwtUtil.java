@@ -140,11 +140,11 @@ public class JwtUtil {
     public boolean validateToken(ServletRequest request, String jwtToken) {
         try {
             String token = extractTokenFromHeader(jwtToken);
-            userDetailsService.loadUserByUsername(getStudentNumberFromToken(token));
             Claims claims = jwtParser.parseClaimsJws(token).getBody();
             return !claims.getExpiration().before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
             request.setAttribute("exception", e.getClass().getSimpleName());
+            log.warn("Invalid token: {}", e.getMessage());
             return false;
         }
     }

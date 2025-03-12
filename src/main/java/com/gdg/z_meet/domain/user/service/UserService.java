@@ -13,6 +13,7 @@ import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.response.Code;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -132,6 +133,7 @@ public class UserService {
                 .build();
     }
 
+    @CacheEvict(value = "userDetails", key = "#studentNumber")
     @Transactional
     public UserRes.NicknameUpdateRes updateNickname(Long userId, UserReq.NicknameUpdateReq request) {
         UserProfile userProfile = userProfileRepository.findByUserId(userId)
@@ -145,6 +147,7 @@ public class UserService {
                 .build();
     }
 
+    @CacheEvict(value = "userDetails", key = "#studentNumber")
     @Transactional
     public UserRes.EmojiUpdateRes updateEmoji(Long userId, UserReq.EmojiUpdateReq request) {
         UserProfile userProfile = userProfileRepository.findByUserId(userId)
