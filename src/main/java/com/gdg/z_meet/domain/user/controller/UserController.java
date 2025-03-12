@@ -41,9 +41,8 @@ public class UserController {
 
     @DeleteMapping("/logout")
     @Operation(summary = "로그아웃", description = "로그아웃")
-    public Response<Void> logout(HttpServletResponse response, HttpServletRequest request) {
-        String accessToken = jwtUtil.extractTokenFromHeader(request.getHeader("Authorization"));
-        userService.logout(response, accessToken);
+    public Response<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        userService.logout(request, response);
         return Response.ok(null);
     }
 

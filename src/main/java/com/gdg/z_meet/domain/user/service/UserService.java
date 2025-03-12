@@ -2,7 +2,9 @@ package com.gdg.z_meet.domain.user.service;
 
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Level;
+import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
+import com.gdg.z_meet.global.config.RedisConfig;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.domain.user.dto.Token;
@@ -12,6 +14,7 @@ import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.response.Code;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +26,10 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
+    private final RedisConfig redisConfig;
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
@@ -61,7 +66,6 @@ public class UserService {
         return UserRes.SignUpRes.builder().message("회원가입 성공!").build();
     }
 
-    @Transactional
     public Token login(UserReq.LoginReq loginReq, HttpServletResponse response) {
         User user = userRepository.findByStudentNumber(loginReq.getStudentNumber())
                 .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
@@ -73,11 +77,15 @@ public class UserService {
         Token token = jwtUtil.createToken(loginReq.getStudentNumber(), user.getId());
         jwtUtil.createCookie(response, token.getRefreshToken());
 
+        refreshTokenRepository.save(token.getRefreshToken(), user.getId(), jwtUtil.getRefreshTokenValidTime() / 1000);
         return token;
     }
 
-    @Transactional
-    public void logout(HttpServletResponse response, String accessToken) {
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
+        if (refreshToken != null) {
+            refreshTokenRepository.delete(refreshToken);
+        }
         clearRefreshTokenCookie(response);
     }
 
