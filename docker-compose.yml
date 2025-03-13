@@ -21,14 +21,13 @@ services:
       - mongodb_data:/data/db
 
   backend:
-#    container_name: backend
     build:
       context: ./
       dockerfile: Dockerfile
     env_file:
       - .env
-    ports:
-      - "8081:8080"
+    expose:
+      - "8080"
     environment:
       - MYSQL_USER=${PROD_DB_USERNAME}
       - MYSQL_PASSWORD=${PROD_DB_PASSWORD}
