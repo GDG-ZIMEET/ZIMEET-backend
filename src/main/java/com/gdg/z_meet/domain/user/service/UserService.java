@@ -13,15 +13,18 @@ import com.gdg.z_meet.domain.user.dto.UserRes;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.response.Code;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -170,22 +173,28 @@ public class UserService {
     }
 
     @Transactional
-    public void withdraw(Long userId, HttpServletResponse response) {
+    public void withdraw(Long userId, HttpServletRequest request, HttpServletResponse response) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
         userProfileRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
 
+        String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
+        refreshTokenRepository.delete(refreshToken);
+
         clearRefreshTokenCookie(response);
     }
 
     private void clearRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("refreshToken", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        log.info("Refresh token cookie cleared");
     }
 }
