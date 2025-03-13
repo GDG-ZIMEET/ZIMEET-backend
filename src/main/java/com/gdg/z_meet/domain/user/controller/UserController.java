@@ -1,6 +1,5 @@
 package com.gdg.z_meet.domain.user.controller;
 
-import com.gdg.z_meet.global.exception.GlobalException;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;
 import com.gdg.z_meet.domain.user.dto.Token;
@@ -41,9 +40,8 @@ public class UserController {
 
     @DeleteMapping("/logout")
     @Operation(summary = "로그아웃", description = "로그아웃")
-    public Response<Void> logout(HttpServletResponse response, HttpServletRequest request) {
-        String accessToken = jwtUtil.extractTokenFromHeader(request.getHeader("Authorization"));
-        userService.logout(response, accessToken);
+    public Response<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        userService.logout(request, response);
         return Response.ok(null);
     }
 
@@ -82,26 +80,16 @@ public class UserController {
     @Operation(summary = "회원탈퇴", description = "회원탈퇴")
     public Response<Void> withdraw(HttpServletRequest request, HttpServletResponse response) {
         Long userId = jwtUtil.extractUserIdFromRequest(request);
-        userService.withdraw(userId, response);
+        userService.withdraw(userId, request, response);
         return Response.ok(null);
     }
 
     @GetMapping("/check-login")
-    public Response<UserRes.CheckLoginRes> checkLogin(HttpServletRequest request, HttpServletResponse response) {
+    public Response<UserRes.CheckLoginRes> checkLogin(HttpServletRequest request) {
         String accessToken = jwtUtil.getAccessToken(request);
-
         if (accessToken != null && jwtUtil.validateToken(request, accessToken)) {
             Long userId = jwtUtil.extractUserIdFromRequest(request);
             return Response.ok(UserRes.CheckLoginRes.loggedIn(userId, accessToken));
-        } else {
-            String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
-            if (refreshToken != null && jwtUtil.validateRefreshToken(refreshToken)) {
-                String studentNumber = jwtUtil.getStudentNumberFromToken(refreshToken);
-                Long userId = jwtUtil.getUserIdFromToken(refreshToken);
-                String newAccessToken = jwtUtil.getToken(studentNumber, userId, new java.util.Date(), jwtUtil.getAccessTokenValidTime());
-                response.setHeader("Authorization", "Bearer " + newAccessToken);
-                return Response.ok(UserRes.CheckLoginRes.refreshed(userId, newAccessToken));
-            }
         }
         return Response.ok(UserRes.CheckLoginRes.loggedOut());
     }

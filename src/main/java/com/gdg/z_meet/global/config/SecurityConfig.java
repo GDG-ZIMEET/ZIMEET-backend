@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtUtil jwtUtil;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -40,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/ws", "/ws/**", "/ws/info/**").permitAll()  // WebSocket 엔드포인트 허용
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
