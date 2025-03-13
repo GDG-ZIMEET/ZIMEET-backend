@@ -40,9 +40,9 @@ services:
         condition: on-failure
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/api/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 20s
+      timeout: 10s
+      retries: 10
 
   nginx:
     container_name: nginx
