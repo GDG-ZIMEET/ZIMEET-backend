@@ -13,73 +13,51 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "User", description = "User API")
 @RequestMapping("/api/user")
+@Slf4j
 public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
 
     @PostMapping("/signup")
     @Operation(summary = "회원가입", description = "회원가입")
-    public Response<UserRes.SignUpRes> signup(@RequestBody UserReq.SignUpReq signUpReq) {
-        try {
-            return Response.ok(userService.signup(signUpReq));
-        } catch (GlobalException exception) {
-            return Response.fail(exception.getCode());
-        }
+    public Response<UserRes.SignUpRes> signup(@Valid @RequestBody UserReq.SignUpReq signUpReq) {
+        return Response.ok(userService.signup(signUpReq));
     }
+
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "로그인")
-    public Response<UserRes.LoginRes> login(@RequestBody UserReq.LoginReq loginReq, HttpServletResponse response) {
-        try {
-            Token token = userService.login(loginReq, response);
-            UserRes.LoginRes loginRes = UserRes.LoginRes.builder()
-                    .accessToken(token.getAccessToken())
-                    .key(token.getKey())
-                    .userId(token.getUserId())
-                    .build();
-            return Response.ok(loginRes);
-        } catch (GlobalException exception) {
-            return Response.fail(exception.getCode());
-        }
+    public Response<UserRes.LoginRes> login(@Valid @RequestBody UserReq.LoginReq loginReq, HttpServletResponse response) {
+        Token token = userService.login(loginReq, response);
+        log.info("User logged in: studentNumber={}", loginReq.getStudentNumber());
+        return Response.ok(UserRes.LoginRes.fromToken(token));
     }
 
     @DeleteMapping("/logout")
     @Operation(summary = "로그아웃", description = "로그아웃")
-    public Response<Void> logout(HttpServletResponse response, @RequestHeader("Authorization") String authorizationHeader) {
-        try {
-            String accessToken = authorizationHeader.substring(7);
-
-            userService.logout(response, accessToken);
-            return Response.ok(null);
-        } catch (GlobalException exception) {
-            return Response.fail(exception.getCode());
-        }
+    public Response<Void> logout(HttpServletResponse response, HttpServletRequest request) {
+        String accessToken = jwtUtil.extractTokenFromHeader(request.getHeader("Authorization"));
+        userService.logout(response, accessToken);
+        return Response.ok(null);
     }
 
     @GetMapping("/myprofile")
     @Operation(summary = "내 세부 프로필 조회", description = "내 세부 프로필 조회")
     public Response<UserRes.ProfileRes> getProfile(HttpServletRequest request) {
-        try {
-            Long userId = jwtUtil.extractUserIdFromRequest(request);
-            return Response.ok(userService.getProfile(userId));
-        } catch (GlobalException exception) {
-            return Response.fail(exception.getCode());
-        }
+        Long userId = jwtUtil.extractUserIdFromRequest(request);
+        return Response.ok(userService.getProfile(userId));
     }
 
-    @GetMapping("profile/{nickname}")
+    @GetMapping("/profile/{nickname}")
     @Operation(summary = "유저 프로필 조회", description = "유저 프로필 조회")
     public Response<UserRes.UserProfileRes> getProfile(@PathVariable String nickname) {
-        try {
-            return Response.ok(userService.getUserProfile(nickname));
-        } catch (GlobalException exception) {
-            return Response.fail(exception.getCode());
-        }
+        return Response.ok(userService.getUserProfile(nickname));
     }
 
     @PatchMapping("/myprofile/nickname")
@@ -87,12 +65,8 @@ public class UserController {
     public Response<UserRes.NicknameUpdateRes> updateNickname(
             HttpServletRequest request,
             @Valid @RequestBody UserReq.NicknameUpdateReq nicknameUpdateReq) {
-        try {
-            Long userId = jwtUtil.extractUserIdFromRequest(request);
-            return Response.ok(userService.updateNickname(userId, nicknameUpdateReq));
-        } catch (GlobalException exception) {
-            return Response.fail(exception.getCode());
-        }
+        Long userId = jwtUtil.extractUserIdFromRequest(request);
+        return Response.ok(userService.updateNickname(userId, nicknameUpdateReq));
     }
 
     @PatchMapping("/myprofile/emoji")
@@ -100,23 +74,35 @@ public class UserController {
     public Response<UserRes.EmojiUpdateRes> updateEmoji(
             HttpServletRequest request,
             @Valid @RequestBody UserReq.EmojiUpdateReq emojiUpdateReq) {
-        try {
-            Long userId = jwtUtil.extractUserIdFromRequest(request);
-            return Response.ok(userService.updateEmoji(userId, emojiUpdateReq));
-        } catch (GlobalException exception) {
-            return Response.fail(exception.getCode());
-        }
+        Long userId = jwtUtil.extractUserIdFromRequest(request);
+        return Response.ok(userService.updateEmoji(userId, emojiUpdateReq));
     }
 
     @DeleteMapping("/withdraw")
     @Operation(summary = "회원탈퇴", description = "회원탈퇴")
     public Response<Void> withdraw(HttpServletRequest request, HttpServletResponse response) {
-        try {
+        Long userId = jwtUtil.extractUserIdFromRequest(request);
+        userService.withdraw(userId, response);
+        return Response.ok(null);
+    }
+
+    @GetMapping("/check-login")
+    public Response<UserRes.CheckLoginRes> checkLogin(HttpServletRequest request, HttpServletResponse response) {
+        String accessToken = jwtUtil.getAccessToken(request);
+
+        if (accessToken != null && jwtUtil.validateToken(request, accessToken)) {
             Long userId = jwtUtil.extractUserIdFromRequest(request);
-            userService.withdraw(userId, response);
-            return Response.ok(null);
-        } catch (GlobalException exception) {
-            return Response.fail(exception.getCode());
+            return Response.ok(UserRes.CheckLoginRes.loggedIn(userId, accessToken));
+        } else {
+            String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
+            if (refreshToken != null && jwtUtil.validateRefreshToken(refreshToken)) {
+                String studentNumber = jwtUtil.getStudentNumberFromToken(refreshToken);
+                Long userId = jwtUtil.getUserIdFromToken(refreshToken);
+                String newAccessToken = jwtUtil.getToken(studentNumber, userId, new java.util.Date(), jwtUtil.getAccessTokenValidTime());
+                response.setHeader("Authorization", "Bearer " + newAccessToken);
+                return Response.ok(UserRes.CheckLoginRes.refreshed(userId, newAccessToken));
+            }
         }
+        return Response.ok(UserRes.CheckLoginRes.loggedOut());
     }
 }

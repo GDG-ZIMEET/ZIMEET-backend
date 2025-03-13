@@ -2,7 +2,7 @@ package com.gdg.z_meet.domain.meeting.controller;
 
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
-import com.gdg.z_meet.domain.meeting.entity.TeamType;
+import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.service.HiQueryService;
 import com.gdg.z_meet.domain.meeting.service.MeetingCommandService;
 import com.gdg.z_meet.domain.meeting.service.MeetingQueryService;
@@ -51,20 +51,20 @@ public class MeetingController {
 
     @Operation(summary = "우리 팀 조회")
     @GetMapping("/myTeam")
-    public Response<MeetingResponseDTO.GetMyTeamDTO> getPreMyTeam(@RequestParam(name = "teamType") TeamType teamType) {
+    public Response<MeetingResponseDTO.GetPreMyTeamDTO> getPreMyTeam(@RequestParam(name = "teamType") TeamType teamType) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
-        MeetingResponseDTO.GetMyTeamDTO response = meetingQueryService.getPreMyTeam(userId, teamType);
+        MeetingResponseDTO.GetPreMyTeamDTO response = meetingQueryService.getPreMyTeam(userId, teamType);
 
         return Response.ok(response);
     }
 
     @Operation(summary = "우리 팀 상세 조회")
     @GetMapping("/myTeam/detail")
-    public Response<MeetingResponseDTO.GetTeamDTO> getMyTeam(@RequestParam(name = "teamType") TeamType teamType) {
+    public Response<MeetingResponseDTO.GetMyTeamDTO> getMyTeam(@RequestParam(name = "teamType") TeamType teamType) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
-        MeetingResponseDTO.GetTeamDTO response = meetingQueryService.getMyTeam(userId, teamType);
+        MeetingResponseDTO.GetMyTeamDTO response = meetingQueryService.getMyTeam(userId, teamType);
 
         return Response.ok(response);
     }
@@ -130,11 +130,12 @@ public class MeetingController {
 
     @Operation(summary = "팀원 검색하기")
     @GetMapping("/search")
-    public Response<MeetingResponseDTO.GetSearchListDTO> getSearch(@RequestParam(name = "nickname", required = false) @Size(min = 1, max = 8) String nickname,
-                                                               @RequestParam(name = "phoneNumber", required = false) @Size(min = 1, max = 11) String phoneNumber) {
+    public Response<MeetingResponseDTO.GetSearchListDTO> getSearch(@RequestParam(name = "teamType") TeamType teamType,
+                                                                   @RequestParam(name = "nickname", required = false) @Size(min = 1, max = 8) String nickname,
+                                                                   @RequestParam(name = "phoneNumber", required = false) @Size(min = 1, max = 11) String phoneNumber) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
-        MeetingResponseDTO.GetSearchListDTO response = meetingQueryService.getSearch(userId, nickname, phoneNumber);
+        MeetingResponseDTO.GetSearchListDTO response = meetingQueryService.getSearch(userId, teamType, nickname, phoneNumber);
 
         return Response.ok(response);
     }

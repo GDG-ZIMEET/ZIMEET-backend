@@ -1,14 +1,10 @@
 package com.gdg.z_meet.domain.meeting.service;
 
-import com.gdg.z_meet.domain.chat.entity.TeamChatRoom;
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
-import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
-import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
-import com.gdg.z_meet.domain.meeting.entity.TeamType;
+import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
-import com.gdg.z_meet.domain.meeting.entity.status.HiStatus;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
@@ -23,15 +19,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.*;
 import java.util.function.Function;
 
 import java.util.stream.Collectors;
@@ -41,6 +32,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class MeetingQueryServiceImpl implements MeetingQueryService {
 
+    private final HiRepository hiRepository;
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
@@ -77,12 +69,15 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
 
-        return MeetingConverter.toGetTeamDTO(team, users);
+        Team myTeam = teamRepository.findByTeamType(userId, team.getTeamType()).get();
+        Boolean hi = hiRepository.existsByFromAndTo(myTeam, team);
+
+        return MeetingConverter.toGetTeamDTO(team, users, hi);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public MeetingResponseDTO.GetMyTeamDTO getPreMyTeam(Long userId, TeamType teamType) {
+    public MeetingResponseDTO.GetPreMyTeamDTO getPreMyTeam(Long userId, TeamType teamType) {
 
         Optional<Team> teamOptional = teamRepository.findByTeamType(userId, teamType);
         if (teamOptional.isEmpty()) {
@@ -97,12 +92,12 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                             .map(userTeam -> userTeam.getUser().getUserProfile().getEmoji())
                             .collect(Collectors.toList());
 
-        return MeetingConverter.toGetMyTeamDTO(team, emojiList);
+        return MeetingConverter.toGetPreMyTeamDTO(team, emojiList);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public MeetingResponseDTO.GetTeamDTO getMyTeam(Long userId, TeamType teamType) {
+    public MeetingResponseDTO.GetMyTeamDTO getMyTeam(Long userId, TeamType teamType) {
 
         Team team = teamRepository.findByTeamType(userId, teamType)
                 .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
@@ -114,7 +109,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
 
-        return MeetingConverter.toGetTeamDTO(team, users);
+        return MeetingConverter.toGetMyTeamDTO(team, users);
     }
 
     @Override
@@ -143,7 +138,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public MeetingResponseDTO.GetSearchListDTO getSearch(Long userId, String nickname, String phoneNumber) {
+    public MeetingResponseDTO.GetSearchListDTO getSearch(Long userId, TeamType teamType, String nickname, String phoneNumber) {
 
         if (nickname == null && phoneNumber == null) {
             throw new BusinessException(Code.SEARCH_FILTER_NULL);
@@ -156,9 +151,11 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<User> users;
 
         if (nickname != null) {
-            users = userRepository.findAllByNicknameContainingWithProfile(gender, nickname);
+            users = userRepository.findAllByNicknameWithProfile(gender, nickname, userId, teamType);
+        } else if (phoneNumber.length() >= 7) {
+            users = userRepository.findAllByPhoneNumberWithProfile(gender, phoneNumber, userId, teamType);
         } else {
-            users = userRepository.findAllByPhoneNumberContainingWithProfile(gender, phoneNumber);
+            users = Collections.emptyList();
         }
         return MeetingConverter.GetSearchListDTO(users);
     }
@@ -182,7 +179,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private Map<Long, List<String>> collectMajor(List<Team> teamList) {
 
         return collectTeamInfo(teamList,
-                userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor()),
+                userTeam -> String.valueOf(userTeam.getUser().getUserProfile().getMajor().getShortName()),
                 true);
     }
 

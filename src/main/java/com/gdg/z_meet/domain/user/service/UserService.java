@@ -3,15 +3,18 @@ package com.gdg.z_meet.domain.user.service;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Level;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
+import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.domain.user.dto.Token;
 import com.gdg.z_meet.domain.user.dto.UserReq;
 import com.gdg.z_meet.domain.user.dto.UserRes;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
+import com.gdg.z_meet.global.response.Code;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,16 +29,11 @@ public class UserService {
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
-        userRepository.findByStudentNumber(signUpReq.getStudentNumber())
-                .ifPresent(user -> {
-                    throw new IllegalArgumentException("이미 가입된 학번입니다.");
-                });
-
-        userProfileRepository.findByNickname(signUpReq.getNickname())
-                .ifPresent(user -> {
-                    throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
-                });
-
+        String password = signUpReq.getPassword();
+        if (password == null || !password.matches("\\d{4,6}")
+                || password.length() < 4 || password.length() > 6) {
+            throw new BusinessException(Code.INVALID_PASSWORD);
+        }
         String encodedPassword = encoder.encode(signUpReq.getPassword());
 
         User user = User.builder()
@@ -69,10 +67,10 @@ public class UserService {
     @Transactional
     public Token login(UserReq.LoginReq loginReq, HttpServletResponse response) {
         User user = userRepository.findByStudentNumber(loginReq.getStudentNumber())
-                .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 학번입니다."));
+                .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
         if (!encoder.matches(loginReq.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new BusinessException(Code.INVALID_PASSWORD);
         }
 
         Token token = jwtUtil.createToken(loginReq.getStudentNumber(), user.getId());
@@ -83,18 +81,13 @@ public class UserService {
 
     @Transactional
     public void logout(HttpServletResponse response, String accessToken) {
-        Cookie cookie = new Cookie("refreshToken", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        clearRefreshTokenCookie(response);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public UserRes.ProfileRes getProfile(Long userId) {
         UserProfile userProfile = userProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
         User user = userProfile.getUser();
 
@@ -118,19 +111,16 @@ public class UserService {
                 .build();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public UserRes.UserProfileRes getUserProfile(String nickname) {
         UserProfile userProfile = userProfileRepository.findByNickname(nickname)
-                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
         User user = userProfile.getUser();
 
-        String studentNumber = user.getStudentNumber();
-        String studentYear = studentNumber.substring(2,4);
-
         return UserRes.UserProfileRes.builder()
                 .nickname(userProfile.getNickname())
-                .studentNumber(studentYear)
+                .studentNumber(user.getStudentNumber().substring(2,4))
                 .gender(userProfile.getGender())
                 .emoji(userProfile.getEmoji())
                 .mbti(userProfile.getMbti())
@@ -143,10 +133,11 @@ public class UserService {
                 .build();
     }
 
+    @CacheEvict(value = "userDetails", key = "#studentNumber")
     @Transactional
     public UserRes.NicknameUpdateRes updateNickname(Long userId, UserReq.NicknameUpdateReq request) {
         UserProfile userProfile = userProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
         userProfile.setNickname(request.getNickname());
         userProfileRepository.save(userProfile);
@@ -156,10 +147,11 @@ public class UserService {
                 .build();
     }
 
+    @CacheEvict(value = "userDetails", key = "#studentNumber")
     @Transactional
     public UserRes.EmojiUpdateRes updateEmoji(Long userId, UserReq.EmojiUpdateReq request) {
         UserProfile userProfile = userProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("프로필이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
         userProfile.setEmoji(request.getEmoji());
         userProfileRepository.save(userProfile);
@@ -172,11 +164,15 @@ public class UserService {
     @Transactional
     public void withdraw(Long userId, HttpServletResponse response) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
         userProfileRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
 
+        clearRefreshTokenCookie(response);
+    }
+
+    private void clearRefreshTokenCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie("refreshToken", null);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);

@@ -173,8 +173,8 @@ public class ChatRoomQueryService {
                 .map(userProfile -> {
                     // 사용자 ID가 동일한 경우 이름에 "(나)" 추가
                     String userName = userProfile.getUser().getId().equals(userId)
-                            ? userProfile.getUser().getName() + "(나)"
-                            : userProfile.getUser().getName();
+                            ? userProfile.getUser().getUserProfile().getNickname() + "(나)"
+                            : userProfile.getUser().getUserProfile().getNickname();
 
                     return new ChatRoomDto.UserProfileDto(
                             userProfile.getUser().getId(),
@@ -218,9 +218,11 @@ public class ChatRoomQueryService {
 
         List<UserTeam> userTeams = userTeamRepository.findByTeamIdIn(teamIds);
 
+        // 유저 프로필 맵으로 전환
         Map<Long, ChatRoomDto.UserProfileDto> userProfileMap = userProfileDtos.stream()
                 .collect(Collectors.toMap(ChatRoomDto.UserProfileDto::getUserId, Function.identity()));
 
+        // 팀별 유저 리스트 맵핑
         Map<Long, List<Long>> teamUserMap = userTeams.stream()
                 .collect(Collectors.groupingBy(
                         userTeam -> userTeam.getTeam().getId(),
@@ -228,9 +230,16 @@ public class ChatRoomQueryService {
                 ));
 
         List<ChatRoomDto.chatRoomUserList> teamUserLists = new ArrayList<>();
+
         for (TeamChatRoom teamChatRoom : teamChatRooms) {
             Long teamId = teamChatRoom.getTeam().getId();
-            String teamName = teamChatRoom.getName();
+
+            // 상대방 팀의 이름 추출
+            String teamName = teamChatRooms.stream()
+                    .filter(tc -> !tc.getTeam().getId().equals(teamId))  // 현재 teamChatRoom이 아닌 것 선택
+                    .map(TeamChatRoom::getName)  // 이름 추출
+                    .findFirst()  // 상대방 이름 가져오기
+                    .orElse("알 수 없는 팀");  // 혹시라도 2개가 아닐 경우 대비
 
             List<Long> teamUserIds = teamUserMap.getOrDefault(teamId, Collections.emptyList());
             List<ChatRoomDto.UserProfileDto> teamUsers = teamUserIds.stream()
