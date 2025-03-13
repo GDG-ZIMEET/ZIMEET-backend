@@ -7,8 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@NoRepositoryBean
-@Repository
 public interface KaKaoPayDataRepository extends JpaRepository<KaKaoPayData, Long> {
     Optional<KaKaoPayData> findByOrderId(String orderId);
 }

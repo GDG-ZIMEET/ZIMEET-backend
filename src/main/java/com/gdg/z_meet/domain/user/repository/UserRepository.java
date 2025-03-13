@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@NoRepositoryBean
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 

@@ -27,6 +27,8 @@ spring:
     redis:
       host: redis1
       port: 6379
+      repositories:
+        enabled: false
     mongodb:
       host: mongodb1
       port: 27017
