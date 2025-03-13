@@ -24,13 +24,13 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String studentNumber;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String phoneNumber;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)

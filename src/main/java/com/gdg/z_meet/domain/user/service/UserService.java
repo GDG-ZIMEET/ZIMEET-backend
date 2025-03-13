@@ -13,6 +13,7 @@ import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.response.Code;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,7 +29,9 @@ public class UserService {
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
-        if (signUpReq.getPassword() == null || signUpReq.getPassword().length() < 4 || signUpReq.getPassword().length() > 6) {
+        String password = signUpReq.getPassword();
+        if (password == null || !password.matches("\\d{4,6}")
+                || password.length() < 4 || password.length() > 6) {
             throw new BusinessException(Code.INVALID_PASSWORD);
         }
         String encodedPassword = encoder.encode(signUpReq.getPassword());
@@ -130,6 +133,7 @@ public class UserService {
                 .build();
     }
 
+    @CacheEvict(value = "userDetails", key = "#studentNumber")
     @Transactional
     public UserRes.NicknameUpdateRes updateNickname(Long userId, UserReq.NicknameUpdateReq request) {
         UserProfile userProfile = userProfileRepository.findByUserId(userId)
@@ -143,6 +147,7 @@ public class UserService {
                 .build();
     }
 
+    @CacheEvict(value = "userDetails", key = "#studentNumber")
     @Transactional
     public UserRes.EmojiUpdateRes updateEmoji(Long userId, UserReq.EmojiUpdateReq request) {
         UserProfile userProfile = userProfileRepository.findByUserId(userId)

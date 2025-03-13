@@ -130,11 +130,12 @@ public class MeetingController {
 
     @Operation(summary = "팀원 검색하기")
     @GetMapping("/search")
-    public Response<MeetingResponseDTO.GetSearchListDTO> getSearch(@RequestParam(name = "nickname", required = false) @Size(min = 1, max = 8) String nickname,
-                                                               @RequestParam(name = "phoneNumber", required = false) @Size(min = 1, max = 11) String phoneNumber) {
+    public Response<MeetingResponseDTO.GetSearchListDTO> getSearch(@RequestParam(name = "teamType") TeamType teamType,
+                                                                   @RequestParam(name = "nickname", required = false) @Size(min = 1, max = 8) String nickname,
+                                                                   @RequestParam(name = "phoneNumber", required = false) @Size(min = 1, max = 11) String phoneNumber) {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
-        MeetingResponseDTO.GetSearchListDTO response = meetingQueryService.getSearch(userId, nickname, phoneNumber);
+        MeetingResponseDTO.GetSearchListDTO response = meetingQueryService.getSearch(userId, teamType, nickname, phoneNumber);
 
         return Response.ok(response);
     }
