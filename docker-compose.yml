@@ -21,7 +21,7 @@ services:
       - mongodb_data:/data/db
 
   backend:
-    container_name: backend
+#    container_name: backend
     build:
       context: ./
       dockerfile: Dockerfile
