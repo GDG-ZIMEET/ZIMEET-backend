@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/api")
 public class HealthCheckController {
 
-    @Operation(description = "운영 서버 헬스 체킹을 위한 컨트롤러")
+    @Operation(description = "서버 헬스 체킹을 위한 컨트롤러")
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("Server is running");
+        return ResponseEntity.ok("Server is running !!");
     }
 }
