@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 // MongoDB 리포지토리만 활성화
 @Configuration
-@EnableMongoRepositories(basePackages = "com.gdg.z_meet.domain.chat.repository")
+@EnableMongoRepositories(basePackages = "com.gdg.z_meet.domain.chat.repository.mongo")
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @Override
