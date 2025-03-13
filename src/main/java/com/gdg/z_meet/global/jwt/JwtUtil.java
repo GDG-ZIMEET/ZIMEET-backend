@@ -1,6 +1,7 @@
 package com.gdg.z_meet.global.jwt;
 
 import com.gdg.z_meet.domain.user.dto.Token;
+import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -29,12 +30,12 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtUtil {
     private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
-    private static final String BEARER_PREFIX = "Bearer ";
     private static final String REFRESH_TOKEN_COOKIE = "refreshToken";
     private static final long ACCESS_TOKEN_VALID_TIME = 7 * 24 * 60 * 60 * 1000L;  // 7일
     private static final long REFRESH_TOKEN_VALID_TIME = 31 * 24 * 60 * 60 * 1000L; // 31일
 
     private final UserDetailsService userDetailsService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -76,16 +77,11 @@ public class JwtUtil {
                 .secure(true)
                 .path("/")
                 .maxAge(REFRESH_TOKEN_VALID_TIME / 1000)
-                .sameSite("None")  // SameSite 속성을 None으로 설정
+                .sameSite("None")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         log.info("Refresh token set in cookie: name={}, value={}, maxAge={}",
                 REFRESH_TOKEN_COOKIE, refreshToken, cookie.getMaxAge());
-    }
-
-    public String extractKeyIdFromAccessToken(String accessToken) {
-        String availableToken = extractTokenFromHeader(accessToken);
-        return jwtParser.parseClaimsJws(availableToken).getBody().getSubject();
     }
 
     public String getRefreshTokenFromCookie(HttpServletRequest request) {
@@ -103,9 +99,26 @@ public class JwtUtil {
     }
 
     public Authentication getAuthentication(String token) {
-        String availableToken = extractTokenFromHeader(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(getStudentNumberFromToken(availableToken));
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        try {
+            if (token == null || token.trim().isEmpty()) {
+                log.warn("Token is null or empty");
+                return null;
+            }
+            String availableToken = extractTokenFromHeader(token);
+            log.debug("Extracted token: {}", availableToken);
+            if (availableToken == null || availableToken.trim().isEmpty()) {
+                log.warn("Extracted token is null or empty after processing");
+                return null;
+            }
+            String studentNumber = getStudentNumberFromToken(availableToken);
+            log.debug("Extracted studentNumber: {}", studentNumber);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(studentNumber);
+            log.debug("Loaded userDetails: {}", userDetails.getUsername());
+            return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        } catch (Exception e) {
+            log.error("Failed to get authentication: {}", e.getMessage());
+            return null;
+        }
     }
 
     public String getStudentNumberFromToken(String token) {
@@ -120,26 +133,46 @@ public class JwtUtil {
         return request.getHeader("Authorization");
     }
 
-    public String extractTokenFromHeader(String authorizationHeader) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
-            throw new JwtValidationException("유효하지 않은 토큰 형식입니다.");
+    // 이것도 뜸
+    public String extractTokenFromHeader(String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            return token.substring("Bearer ".length());
         }
-        return authorizationHeader.substring(BEARER_PREFIX.length()).trim();
+        return token;
     }
 
     public boolean validateRefreshToken(String refreshToken) {
         try {
-            jwtParser.parseClaimsJws(refreshToken);
+            Jws<Claims> claims = jwtParser.parseClaimsJws(refreshToken);
+            if (claims.getBody().getExpiration().before(new Date())) {
+                log.warn("Refresh token expired: {}", refreshToken);
+                return false;
+            }
+            String userId = refreshTokenRepository.findByToken(refreshToken);
+            if (userId == null) {
+                log.warn("Refresh token not found in Redis: {}", refreshToken);
+                return false;
+            }
+            // 여기에 걸림
+            log.info("Refresh token validated successfully: {}", refreshToken);
             return true;
         } catch (JwtException e) {
-            log.warn("Invalid refresh token: {}", e.getMessage());
+            log.error("Invalid refresh token format: {}", e.getMessage());
             return false;
         }
     }
 
     public boolean validateToken(ServletRequest request, String jwtToken) {
         try {
+            if (jwtToken == null || jwtToken.trim().isEmpty()) {
+                log.warn("JWT token is null or empty");
+                return false;
+            }
             String token = extractTokenFromHeader(jwtToken);
+            if (token == null || token.trim().isEmpty()) {
+                log.warn("Extracted token is null or empty");
+                return false;
+            }
             Claims claims = jwtParser.parseClaimsJws(token).getBody();
             return !claims.getExpiration().before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
@@ -156,7 +189,15 @@ public class JwtUtil {
 
     public Long extractUserIdFromRequest(HttpServletRequest request) {
         String token = getAccessToken(request);
-        return extractUserIdFromToken(token); // extractTokenFromHeader에서 예외 처리
+        if (token == null || token.trim().isEmpty()) {
+            log.warn("No Authorization header found in request");
+            return null;
+        }
+        String availableToken = extractTokenFromHeader(token);
+        if (availableToken == null || availableToken.trim().isEmpty()) {
+            return null;
+        }
+        return getUserIdFromToken(availableToken);
     }
 
     public long getAccessTokenValidTime() {
