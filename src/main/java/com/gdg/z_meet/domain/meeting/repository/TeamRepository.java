@@ -32,7 +32,7 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
             "WHERE ut.user.id IN :userIds AND t.teamType = :teamType AND t.activeStatus = 'ACTIVE'")
     Boolean existsAnyMemberByTeamType(@Param("userIds") List<Long> userIds, @Param("teamType") TeamType teamType);
 
-    @Query("UPDATE Team t SET t.activeStatus = 'INACTIVE' WHERE t = :team")
-    @Modifying
-    void deleteByTeam(Team team);
+    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Team t " +
+            "WHERE t.id = :teamId AND t.activeStatus = 'ACTIVE'")
+    Boolean existsByIdAndActiveStatus(@Param("teamId") Long teamId);
 }

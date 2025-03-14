@@ -100,9 +100,10 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         }
 
         userProfileRepository.subtractDelete(users);
-        teamRepository.deleteByTeam(team);
+        team.inactivateTeam();
+        teamRepository.save(team);
 
-        if (teamRepository.existsById(teamId)) {
+        if (teamRepository.existsByIdAndActiveStatus(teamId)) {
             throw new BusinessException(Code.TEAM_DELETE_FAILED);
         }
     }
