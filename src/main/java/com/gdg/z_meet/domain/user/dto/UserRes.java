@@ -109,4 +109,36 @@ public class UserRes {
                     .build();
         }
     }
+
+    @Getter
+    @Builder
+    public static class DuplicateCheckRes {
+        private boolean isDuplicated;
+        private String message;
+
+        public DuplicateCheckRes(boolean isDuplicated, String message) {
+            this.isDuplicated = isDuplicated;
+            this.message = message;
+        }
+        public static DuplicateCheckRes ofStudentNumber(boolean isDuplicated) {
+            return DuplicateCheckRes.builder()
+                    .isDuplicated(isDuplicated)
+                    .message(isDuplicated ? "이미 사용 중인 학번입니다." : "사용 가능한 학번입니다.")
+                    .build();
+        }
+
+        public static DuplicateCheckRes ofPhoneNumber(boolean isDuplicated) {
+            return DuplicateCheckRes.builder()
+                    .isDuplicated(isDuplicated)
+                    .message(isDuplicated ? "이미 사용 중인 전화번호입니다." : "사용 가능한 전화번호입니다.")
+                    .build();
+        }
+
+        public static DuplicateCheckRes ofNickname(boolean isDuplicated) {
+            return DuplicateCheckRes.builder()
+                    .isDuplicated(isDuplicated)
+                    .message(isDuplicated ? "이미 사용 중인 닉네임입니다." : "사용 가능한 닉네임입니다.")
+                    .build();
+        }
+    }
 }

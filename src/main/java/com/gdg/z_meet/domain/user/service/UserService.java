@@ -4,7 +4,6 @@ import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Level;
 import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
-import com.gdg.z_meet.global.config.RedisConfig;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.domain.user.dto.Token;
@@ -33,7 +32,6 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
-    private final RedisConfig redisConfig;
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
@@ -42,6 +40,16 @@ public class UserService {
                 || password.length() < 4 || password.length() > 6) {
             throw new BusinessException(Code.INVALID_PASSWORD);
         }
+        if (isStudentNumberDuplicate(signUpReq.getStudentNumber())) {
+            throw new BusinessException(Code.DUPLICATE_STUDENT_NUMBER);
+        }
+        if (isPhoneNumberDuplicate(signUpReq.getPhoneNumber())) {
+            throw new BusinessException(Code.DUPLICATE_PHONE_NUMBER);
+        }
+        if (isNicknameDuplicate(signUpReq.getNickname())) {
+            throw new BusinessException(Code.DUPLICATE_NICKNAME);
+        }
+
         String encodedPassword = encoder.encode(signUpReq.getPassword());
 
         User user = User.builder()
@@ -184,6 +192,18 @@ public class UserService {
         refreshTokenRepository.delete(refreshToken);
 
         clearRefreshTokenCookie(response);
+    }
+
+    public boolean isStudentNumberDuplicate(String studentNumber) {
+        return userRepository.existsByStudentNumber(studentNumber);
+    }
+
+    public boolean isPhoneNumberDuplicate(String phoneNumber) {
+        return userRepository.existsByPhoneNumber(phoneNumber);
+    }
+
+    public boolean isNicknameDuplicate(String nickname) {
+        return userProfileRepository.existsByNickname(nickname);
     }
 
     private void clearRefreshTokenCookie(HttpServletResponse response) {

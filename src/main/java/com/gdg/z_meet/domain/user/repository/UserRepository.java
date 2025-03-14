@@ -37,4 +37,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "AND NOT EXISTS (SELECT 1 FROM Team t JOIN UserTeam ut ON ut.team = t " +
             "WHERE ut.user = u AND t.teamType = :teamType)")
     List<User> findAllByPhoneNumberWithProfile(@Param("gender") Gender gender, @Param("phoneNumber") String phoneNumber, @Param("userId") Long userId, @Param("teamType") TeamType teamType);
+
+    boolean existsByStudentNumber(String studentNumber);
+    boolean existsByPhoneNumber(String phoneNumber);
 }
