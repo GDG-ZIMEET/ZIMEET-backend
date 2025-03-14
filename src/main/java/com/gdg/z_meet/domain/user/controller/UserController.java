@@ -84,6 +84,25 @@ public class UserController {
         return Response.ok(null);
     }
 
+    @GetMapping("/check/student-number")
+    @Operation(summary = "학번 중복 확인", description = "학번 중복 확인")
+    public Response<UserRes.DuplicateCheckRes> checkStudentNumber(@RequestParam String value) {
+        boolean isDuplicate = userService.isStudentNumberDuplicate(value);
+        return Response.ok(UserRes.DuplicateCheckRes.ofStudentNumber(isDuplicate));
+    }
+
+    @GetMapping("/check/phone-number")
+    public Response<UserRes.DuplicateCheckRes> checkPhoneNumber(@RequestParam String value) {
+        boolean isDuplicate = userService.isPhoneNumberDuplicate(value);
+        return Response.ok(UserRes.DuplicateCheckRes.ofPhoneNumber(isDuplicate));
+    }
+
+    @GetMapping("/check/nickname")
+    public Response<UserRes.DuplicateCheckRes> checkNickname(@RequestParam String value) {
+        boolean isDuplicate = userService.isNicknameDuplicate(value);
+        return Response.ok(UserRes.DuplicateCheckRes.ofNickname(isDuplicate));
+    }
+
     @GetMapping("/check-login")
     public Response<UserRes.CheckLoginRes> checkLogin(HttpServletRequest request) {
         String accessToken = jwtUtil.getAccessToken(request);
