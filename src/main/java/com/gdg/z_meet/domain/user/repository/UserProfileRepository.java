@@ -29,4 +29,6 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
   
     @Query("SELECT up FROM UserProfile up JOIN up.user u JOIN UserTeam ut ON u.id = ut.user.id WHERE ut.team.id = :teamId")
     List<UserProfile> findByTeamId(Long teamId);
+
+    boolean existsByNickname(String nickname);
 }
