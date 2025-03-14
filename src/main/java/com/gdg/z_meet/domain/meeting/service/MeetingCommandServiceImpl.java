@@ -87,7 +87,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         Long teamId = team.getId();
 
         // 삭제 기회 확인
-        List<UserTeam> userTeams = userTeamRepository.findByTeamId(teamId);
+        List<UserTeam> userTeams = userTeamRepository.findByTeamIdAndActiveStatus(teamId);
         List<Long> users = userTeams.stream()
                 .map(UserTeam -> UserTeam.getUser().getId())
                 .collect(Collectors.toList());

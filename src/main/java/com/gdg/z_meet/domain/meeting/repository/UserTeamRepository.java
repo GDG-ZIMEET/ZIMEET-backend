@@ -11,14 +11,18 @@ import java.util.List;
 public interface UserTeamRepository extends JpaRepository<UserTeam, Long> {
 
     @Query("SELECT CASE WHEN COUNT(ut) > 0 THEN true ELSE false END FROM UserTeam ut WHERE ut.user.id = :userId AND ut.team.id = :teamId AND ut.team.activeStatus = 'ACTIVE'")
-    boolean existsByUserIdAndTeamId(@Param("userId") Long userId, @Param("teamId") Long teamId);
+    boolean existsByUserIdAndTeamIdAndActiveStatus(@Param("userId") Long userId, @Param("teamId") Long teamId);
+
+    boolean existsByUserIdAndTeamId(Long userId, Long teamId);
 
     @Query("SELECT ut FROM UserTeam ut WHERE ut.team.id = :teamId AND ut.team.activeStatus = 'ACTIVE'")
-    List<UserTeam> findByTeamId(@Param("teamId") Long teamId);
+    List<UserTeam> findByTeamIdAndActiveStatus(@Param("teamId") Long teamId);
+
+    List<UserTeam> findByTeamId(Long teamId);
 
     List<UserTeam> findByTeamIdIn(List<Long> teamIds);
 
-    @Query("SELECT COUNT(ut) FROM UserTeam ut WHERE ut.team.id = :teamId AND ut.team.activeStatus = 'ACTIVE'")
+    @Query("SELECT COUNT(ut) FROM UserTeam ut WHERE ut.team.id = :teamId")
     Long countByTeamId(@Param("teamId") Long teamId);
 
     @Query("SELECT ut FROM UserTeam ut WHERE ut.user.id = :userId AND ut.team.activeStatus = 'ACTIVE'")
