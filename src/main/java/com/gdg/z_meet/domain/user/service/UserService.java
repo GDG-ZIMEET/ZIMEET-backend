@@ -2,7 +2,9 @@ package com.gdg.z_meet.domain.user.service;
 
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Level;
+import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
+import com.gdg.z_meet.global.config.RedisConfig;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.domain.user.dto.Token;
@@ -11,21 +13,27 @@ import com.gdg.z_meet.domain.user.dto.UserRes;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.response.Code;
-import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
+    private final RedisConfig redisConfig;
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
@@ -64,7 +72,6 @@ public class UserService {
         return UserRes.SignUpRes.builder().message("회원가입 성공!").build();
     }
 
-    @Transactional
     public Token login(UserReq.LoginReq loginReq, HttpServletResponse response) {
         User user = userRepository.findByStudentNumber(loginReq.getStudentNumber())
                 .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
@@ -76,11 +83,15 @@ public class UserService {
         Token token = jwtUtil.createToken(loginReq.getStudentNumber(), user.getId());
         jwtUtil.createCookie(response, token.getRefreshToken());
 
+        refreshTokenRepository.save(token.getRefreshToken(), user.getId(), jwtUtil.getRefreshTokenValidTime() / 1000);
         return token;
     }
 
-    @Transactional
-    public void logout(HttpServletResponse response, String accessToken) {
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
+        if (refreshToken != null) {
+            refreshTokenRepository.delete(refreshToken);
+        }
         clearRefreshTokenCookie(response);
     }
 
@@ -162,22 +173,28 @@ public class UserService {
     }
 
     @Transactional
-    public void withdraw(Long userId, HttpServletResponse response) {
+    public void withdraw(Long userId, HttpServletRequest request, HttpServletResponse response) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
         userProfileRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
 
+        String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
+        refreshTokenRepository.delete(refreshToken);
+
         clearRefreshTokenCookie(response);
     }
 
     private void clearRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("refreshToken", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        log.info("Refresh token cookie cleared");
     }
 }
