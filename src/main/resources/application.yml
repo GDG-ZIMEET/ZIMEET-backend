@@ -30,8 +30,10 @@ spring:
       host: localhost
       port: 6379
     mongodb:
-      uri: mongodb://${DEFAULT_URL}:27017/${DEFAULT_SCHEMA}
+      host: ${DEFAULT_URL}
+      port: 27017
       database: ${DEFAULT_SCHEMA}
+
   cache:
     type: caffeine
     caffeine:

@@ -1,6 +1,7 @@
 package com.gdg.z_meet.global.config;
 
 import com.mongodb.client.MongoClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
@@ -11,20 +12,25 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 // MongoDB 리포지토리만 활성화
 @Configuration
 @EnableMongoRepositories(basePackages = "com.gdg.z_meet.domain.chat.repository.mongo")
-public class MongoConfig extends AbstractMongoClientConfiguration {
+public class MongoConfig {
 
-    @Override
-    protected String getDatabaseName() {
-        return "zmeet"; // 사용할 MongoDB 데이터베이스 이름
-    }
+    @Value("${spring.data.mongodb.host}")
+    private String mongoHost;
 
-    @Override
+    @Value("${spring.data.mongodb.port}")
+    private int mongoPort;
+
+    @Value("${spring.data.mongodb.database}")
+    private String databaseName;
+
+    @Bean
     public MongoClient mongoClient() {
-        return MongoClients.create("mongodb://localhost:27017"); // MongoDB 서버 주소
+        String connectionString = String.format("mongodb://%s:%d", mongoHost, mongoPort);
+        return MongoClients.create(connectionString);
     }
 
     @Bean
     public MongoTemplate mongoTemplate() {
-        return new MongoTemplate(mongoClient(), getDatabaseName());
+        return new MongoTemplate(mongoClient(), databaseName);
     }
 }

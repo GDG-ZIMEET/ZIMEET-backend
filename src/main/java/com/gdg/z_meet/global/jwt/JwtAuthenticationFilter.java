@@ -28,6 +28,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/health")
+                || path.startsWith("/swagger/") || path.startsWith("/swagger-ui/") || path.startsWith("/v3/api-docs")
+                || path.startsWith("/resources/static/")
+                ||  path.startsWith("/api/booths/")
+                || path.startsWith("/api/user/")
+                || path.startsWith("/ws/") || path.startsWith("/ws/info/");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String uri = request.getRequestURI();
