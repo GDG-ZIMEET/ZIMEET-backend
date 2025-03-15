@@ -3,6 +3,7 @@ package com.gdg.z_meet.domain.meeting.service;
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
+import com.gdg.z_meet.domain.meeting.entity.enums.ActiveStatus;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
@@ -58,13 +59,17 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetTeamDTO getTeam(Long userId, Long teamId) {
 
-        if (userTeamRepository.existsByUserIdAndTeamId(userId, teamId)) {
+        if (userTeamRepository.existsByUserIdAndTeamIdAndActiveStatus(userId, teamId)) {
             throw new BusinessException(Code.INVALID_MY_TEAM_ACCESS);
         }
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+        if (team.getActiveStatus() == ActiveStatus.INACTIVE) {
+            throw new BusinessException(Code.TEAM_ALREADY_DELETED);
+        }
+
         validateTeamType(teamId, team.getTeamType());
 
-        List<UserTeam> userTeams = userTeamRepository.findByTeamId(teamId);
+        List<UserTeam> userTeams = userTeamRepository.findByTeamIdAndActiveStatus(teamId);
         List<User> users = userTeams.stream()
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
@@ -87,7 +92,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         Team team = teamOptional.get();
         validateTeamType(team.getId(), teamType);
 
-        List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+        List<UserTeam> userTeams = userTeamRepository.findByTeamIdAndActiveStatus(team.getId());
         List<String> emojiList = userTeams.stream()
                             .map(userTeam -> userTeam.getUser().getUserProfile().getEmoji())
                             .collect(Collectors.toList());
@@ -104,7 +109,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         validateTeamType(team.getId(), teamType);
 
-        List<UserTeam> userTeams = userTeamRepository.findByTeamId(team.getId());
+        List<UserTeam> userTeams = userTeamRepository.findByTeamIdAndActiveStatus(team.getId());
         List<User> users = userTeams.stream()
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
@@ -186,7 +191,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private Map<Long, Double> collectAge(List<Team> teamList) {
 
         return teamList.stream().collect(Collectors.toMap(
-                Team::getId, team -> userTeamRepository.findByTeamId(team.getId()).stream()
+                Team::getId, team -> userTeamRepository.findByTeamIdAndActiveStatus(team.getId()).stream()
                         .mapToInt(userTeam -> userTeam.getUser().getUserProfile().getAge())
                         .average()
                         .orElse(0.0)
@@ -207,7 +212,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         return teamList.stream().collect(Collectors.toMap(
                 Team::getId, team -> {
-                    Stream<String> stream = userTeamRepository.findByTeamId(team.getId())
+                    Stream<String> stream = userTeamRepository.findByTeamIdAndActiveStatus(team.getId())
                             .stream()
                             .map(mapper);
                     return (distinct ? stream.distinct() : stream)

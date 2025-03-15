@@ -46,6 +46,7 @@ public enum Code implements BaseCode {
     SEARCH_FILTER_NULL(HttpStatus.BAD_REQUEST, "MEETING4011", "검색 조건이 없습니다."),
     SEARCH_FILTER_EXCEEDED(HttpStatus.BAD_REQUEST, "MEETING4012", "검색 조건은 한 가지만 가능합니다."),
     RANDOM_MEETING_USER_COUNT(HttpStatus.BAD_REQUEST, "CHAT4005",  "랜덤 미팅에 참여하는 사용자 수는 반드시 6명이어야 합니다."),
+    TEAM_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "MEETING4013", "삭제된 팀입니다."),
 
     //Matching Error
     MATCHING_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "MATCHING4001", "이미 랜덤 매칭중입니다."),

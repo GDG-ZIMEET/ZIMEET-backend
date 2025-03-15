@@ -87,7 +87,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         Long teamId = team.getId();
 
         // 삭제 기회 확인
-        List<UserTeam> userTeams = userTeamRepository.findByTeamId(teamId);
+        List<UserTeam> userTeams = userTeamRepository.findByTeamIdAndActiveStatus(teamId);
         List<Long> users = userTeams.stream()
                 .map(UserTeam -> UserTeam.getUser().getId())
                 .collect(Collectors.toList());
@@ -100,10 +100,10 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         }
 
         userProfileRepository.subtractDelete(users);
-        userTeamRepository.deleteAllByTeamId(teamId);
-        teamRepository.delete(team);
+        team.inactivateTeam();
+        teamRepository.save(team);
 
-        if (teamRepository.existsById(teamId)) {
+        if (teamRepository.existsByIdAndActiveStatus(teamId)) {
             throw new BusinessException(Code.TEAM_DELETE_FAILED);
         }
     }
