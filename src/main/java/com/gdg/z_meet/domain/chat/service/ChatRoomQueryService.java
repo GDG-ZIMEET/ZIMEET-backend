@@ -230,6 +230,11 @@ public class ChatRoomQueryService {
                 ));
 
         List<ChatRoomDto.chatRoomUserList> teamUserLists = new ArrayList<>();
+        Long myTeamId = userTeams.stream()
+                .filter(userTeam -> userTeam.getUser().getId().equals(userId))
+                .map(userTeam -> userTeam.getTeam().getId())
+                .findFirst()
+                .orElse(null); // 현재 사용자의 팀 ID
 
         for (TeamChatRoom teamChatRoom : teamChatRooms) {
             Long teamId = teamChatRoom.getTeam().getId();
@@ -253,6 +258,10 @@ public class ChatRoomQueryService {
                     .userProfiles(teamUsers)
                     .build());
         }
+        //우리팀을 첫번째로 배치
+        if (myTeamId != null) {
+            teamUserLists.sort(Comparator.comparing(team -> !team.getTeamId().equals(myTeamId)));
+        }
 
         return teamUserLists;
     }
@@ -273,18 +282,20 @@ public class ChatRoomQueryService {
                 .filter(profile -> profile.getGender() != user.getUserProfile().getGender()) // 이성 팀
                 .collect(Collectors.toList());
 
-        // 사용자 목록을 성별에 따라 나눠서 반환
-        return Arrays.asList(
-                ChatRoomDto.chatRoomUserList.builder()
-                        .teamId(null)
-                        .teamName("이성팀")
-                        .userProfiles(anotherTeamUsers)
-                        .build(),
-                ChatRoomDto.chatRoomUserList.builder()
-                        .teamId(null)
-                        .teamName("내 팀")
-                        .userProfiles(myTeamUsers)
-                        .build()
-        );
+        List<ChatRoomDto.chatRoomUserList> sortedUserLists = new ArrayList<>();
+
+        sortedUserLists.add(ChatRoomDto.chatRoomUserList.builder()
+                .teamId(null)
+                .teamName("내 팀") // 내 팀을 항상 첫 번째로 배치
+                .userProfiles(myTeamUsers)
+                .build());
+
+        sortedUserLists.add(ChatRoomDto.chatRoomUserList.builder()
+                .teamId(null)
+                .teamName("이성 팀")
+                .userProfiles(anotherTeamUsers)
+                .build());
+
+        return sortedUserLists;
     }
 }
