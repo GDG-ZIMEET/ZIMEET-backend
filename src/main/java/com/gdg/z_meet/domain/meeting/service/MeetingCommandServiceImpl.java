@@ -3,6 +3,7 @@ package com.gdg.z_meet.domain.meeting.service;
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
+import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
@@ -32,6 +33,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
+    private final Event event = Event.NEUL_2025;
     private final HiRepository hiRepository;
 
     @Override
@@ -71,6 +73,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
                 .teamType(teamType)
                 .name(request.getName())
                 .gender(gender)
+                .event(Event.NEUL_2025)
                 .build();
         teamRepository.save(newTeam);
 
@@ -84,7 +87,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     @Transactional
     public void delTeam(Long userId, TeamType teamType) {
 
-        Team team = teamRepository.findByTeamType(userId, teamType)
+        Team team = teamRepository.findByTeamType(userId, teamType, event)
                 .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
         Long teamId = team.getId();
 

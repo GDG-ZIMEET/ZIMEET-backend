@@ -4,6 +4,7 @@ import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.enums.ActiveStatus;
+import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
@@ -38,13 +39,14 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
+    private final Event event = Event.NEUL_2025;
 
     @Override
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetTeamGalleryDTO getTeamGallery(Long userId, TeamType teamType, Integer page) {
 
         Gender gender = userProfileRepository.findByUserId(userId).get().getGender();
-        List<Team> teamList = teamRepository.findAllByTeamType(userId, gender, teamType, PageRequest.of(page, 12));
+        List<Team> teamList = teamRepository.findAllByTeamType(userId, gender, teamType, event, PageRequest.of(page, 12));
         Collections.shuffle(teamList);
 
         Map<Long, List<String>> emojiList = collectEmoji(teamList);
@@ -62,7 +64,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         if (userTeamRepository.existsByUserIdAndTeamIdAndActiveStatus(userId, teamId)) {
             throw new BusinessException(Code.INVALID_MY_TEAM_ACCESS);
         }
-        Team team = teamRepository.findById(teamId).orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
+        Team team = teamRepository.findByIdAndEvent(teamId, event).orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
         if (team.getActiveStatus() == ActiveStatus.INACTIVE) {
             throw new BusinessException(Code.TEAM_ALREADY_DELETED);
         }
@@ -74,7 +76,8 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
 
-        Team myTeam = teamRepository.findByTeamType(userId, team.getTeamType()).get();
+        Team myTeam = teamRepository.findByTeamType(userId, team.getTeamType(), event)
+                .orElseThrow(() -> new BusinessException(Code.MY_TEAM_NOT_FOUND));
         Boolean hi = hiRepository.existsByFromAndTo(myTeam, team);
 
         return MeetingConverter.toGetTeamDTO(team, users, hi);
@@ -84,7 +87,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetPreMyTeamDTO getPreMyTeam(Long userId, TeamType teamType) {
 
-        Optional<Team> teamOptional = teamRepository.findByTeamType(userId, teamType);
+        Optional<Team> teamOptional = teamRepository.findByTeamType(userId, teamType, event);
         if (teamOptional.isEmpty()) {
             return null;
         }
@@ -104,7 +107,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetMyTeamDTO getMyTeam(Long userId, TeamType teamType) {
 
-        Team team = teamRepository.findByTeamType(userId, teamType)
+        Team team = teamRepository.findByTeamType(userId, teamType, event)
                 .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
 
         validateTeamType(team.getId(), teamType);
@@ -121,7 +124,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetMyTeamHiDTO getMyTeamHi(Long userId, TeamType teamType) {
 
-        Team team = teamRepository.findByTeamType(userId, teamType)
+        Team team = teamRepository.findByTeamType(userId, teamType, event)
                 .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
 
         validateTeamType(team.getId(), teamType);
