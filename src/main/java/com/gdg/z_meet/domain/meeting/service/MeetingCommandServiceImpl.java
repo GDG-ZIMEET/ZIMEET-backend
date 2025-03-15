@@ -3,8 +3,10 @@ package com.gdg.z_meet.domain.meeting.service;
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
+import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
+import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
@@ -31,6 +33,8 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
+    private final Event event = Event.NEUL_2025;
+    private final HiRepository hiRepository;
 
     @Override
     @Transactional
@@ -69,6 +73,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
                 .teamType(teamType)
                 .name(request.getName())
                 .gender(gender)
+                .event(Event.NEUL_2025)
                 .build();
         teamRepository.save(newTeam);
 
@@ -82,12 +87,12 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     @Transactional
     public void delTeam(Long userId, TeamType teamType) {
 
-        Team team = teamRepository.findByTeamType(userId, teamType)
+        Team team = teamRepository.findByTeamType(userId, teamType, event)
                 .orElseThrow(() -> new BusinessException(Code.TEAM_NOT_FOUND));
         Long teamId = team.getId();
 
         // 삭제 기회 확인
-        List<UserTeam> userTeams = userTeamRepository.findByTeamId(teamId);
+        List<UserTeam> userTeams = userTeamRepository.findByTeamIdAndActiveStatus(teamId);
         List<Long> users = userTeams.stream()
                 .map(UserTeam -> UserTeam.getUser().getId())
                 .collect(Collectors.toList());
@@ -100,11 +105,16 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         }
 
         userProfileRepository.subtractDelete(users);
-        userTeamRepository.deleteAllByTeamId(teamId);
-        teamRepository.delete(team);
+        team.inactivateTeam();
+        delHi(teamId);
+        teamRepository.save(team);
 
-        if (teamRepository.existsById(teamId)) {
+        if (teamRepository.existsByIdAndActiveStatus(teamId)) {
             throw new BusinessException(Code.TEAM_DELETE_FAILED);
         }
+    }
+
+    private void delHi(Long teamId){
+        hiRepository.updateHiByTeamId(teamId);
     }
 }
