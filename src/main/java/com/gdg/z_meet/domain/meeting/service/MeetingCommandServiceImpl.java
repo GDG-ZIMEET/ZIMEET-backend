@@ -5,6 +5,7 @@ import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
+import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
@@ -31,6 +32,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
+    private final HiRepository hiRepository;
 
     @Override
     @Transactional
@@ -101,10 +103,15 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
 
         userProfileRepository.subtractDelete(users);
         team.inactivateTeam();
+        delHi(teamId);
         teamRepository.save(team);
 
         if (teamRepository.existsByIdAndActiveStatus(teamId)) {
             throw new BusinessException(Code.TEAM_DELETE_FAILED);
         }
+    }
+
+    private void delHi(Long teamId){
+        hiRepository.updateHiByTeamId(teamId);
     }
 }
