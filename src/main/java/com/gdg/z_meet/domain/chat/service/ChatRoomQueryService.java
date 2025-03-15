@@ -244,7 +244,7 @@ public class ChatRoomQueryService {
                     .filter(tc -> !tc.getTeam().getId().equals(teamId))  // 현재 teamChatRoom이 아닌 것 선택
                     .map(TeamChatRoom::getName)  // 이름 추출
                     .findFirst()  // 상대방 이름 가져오기
-                    .orElse("알 수 없는 팀");  // 혹시라도 2개가 아닐 경우 대비
+                    .orElse("알 수 없는");  // 혹시라도 2개가 아닐 경우 대비
 
             List<Long> teamUserIds = teamUserMap.getOrDefault(teamId, Collections.emptyList());
             List<ChatRoomDto.UserProfileDto> teamUsers = teamUserIds.stream()
@@ -286,13 +286,13 @@ public class ChatRoomQueryService {
 
         sortedUserLists.add(ChatRoomDto.chatRoomUserList.builder()
                 .teamId(null)
-                .teamName("내 팀") // 내 팀을 항상 첫 번째로 배치
+                .teamName("내 ") // 내 팀을 항상 첫 번째로 배치
                 .userProfiles(myTeamUsers)
                 .build());
 
         sortedUserLists.add(ChatRoomDto.chatRoomUserList.builder()
                 .teamId(null)
-                .teamName("이성 팀")
+                .teamName("이성 ")
                 .userProfiles(anotherTeamUsers)
                 .build());
 
