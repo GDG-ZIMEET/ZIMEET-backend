@@ -1,6 +1,7 @@
 package com.gdg.z_meet.domain.meeting.entity;
 
 import com.gdg.z_meet.domain.meeting.entity.enums.ActiveStatus;
+import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.enums.Verification;
 import com.gdg.z_meet.global.common.BaseEntity;
@@ -48,6 +49,10 @@ public class Team extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private ActiveStatus activeStatus = ActiveStatus.ACTIVE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Event event;
 
     // hi 값을 변경하는 메서드
     public void decreaseHi() {

@@ -3,6 +3,7 @@ package com.gdg.z_meet.domain.meeting.service;
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
+import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
@@ -69,6 +70,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
                 .teamType(teamType)
                 .name(request.getName())
                 .gender(gender)
+                .event(Event.NEUL_2025)
                 .build();
         teamRepository.save(newTeam);
 
