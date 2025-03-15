@@ -76,7 +76,8 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .map(UserTeam::getUser)
                 .collect(Collectors.toList());
 
-        Team myTeam = teamRepository.findByTeamType(userId, team.getTeamType(), event).get();
+        Team myTeam = teamRepository.findByTeamType(userId, team.getTeamType(), event)
+                .orElseThrow(() -> new BusinessException(Code.MY_TEAM_NOT_FOUND));
         Boolean hi = hiRepository.existsByFromAndTo(myTeam, team);
 
         return MeetingConverter.toGetTeamDTO(team, users, hi);
