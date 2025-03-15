@@ -10,7 +10,8 @@ import java.util.List;
 
 public interface UserTeamRepository extends JpaRepository<UserTeam, Long> {
 
-    @Query("SELECT CASE WHEN COUNT(ut) > 0 THEN true ELSE false END FROM UserTeam ut WHERE ut.user.id = :userId AND ut.team.id = :teamId AND ut.team.activeStatus = 'ACTIVE'")
+    @Query("SELECT CASE WHEN COUNT(ut) > 0 THEN true ELSE false END FROM UserTeam ut " +
+            "WHERE ut.user.id = :userId AND ut.team.id = :teamId AND ut.team.activeStatus = 'ACTIVE'")
     boolean existsByUserIdAndTeamIdAndActiveStatus(@Param("userId") Long userId, @Param("teamId") Long teamId);
 
     boolean existsByUserIdAndTeamId(Long userId, Long teamId);
