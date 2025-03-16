@@ -86,4 +86,6 @@ public class UserProfile {
     public void upgradeToPlus() {
         this.level = Level.PLUS;
     }
+
+    public void addDelete() { this.leftDelete++; }
 }
