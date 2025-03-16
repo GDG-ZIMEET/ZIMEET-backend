@@ -31,9 +31,8 @@ public class Club extends BaseEntity {
 
     private String account;
 
-    @Column(nullable = false)
     private String time;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String info;
 }

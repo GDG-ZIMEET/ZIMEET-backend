@@ -38,10 +38,8 @@ public class BoothRequestDTO {
 
         String account;
 
-        @NotBlank
         String time;
 
-        @NotBlank
         String info;
     }
 }
