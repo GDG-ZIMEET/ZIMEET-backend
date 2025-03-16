@@ -23,7 +23,6 @@ public class Club extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
     private String rep;
 
     @Enumerated(EnumType.STRING)
@@ -35,6 +34,6 @@ public class Club extends BaseEntity {
     @Column(nullable = false)
     private String time;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String info;
 }

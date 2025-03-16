@@ -14,10 +14,7 @@ public class BoothRequestDTO {
     @Getter
     public static class CreateItemDTO {
 
-        @NotBlank
         String name;
-
-        @NotBlank
         String content;
     }
 
@@ -31,14 +28,12 @@ public class BoothRequestDTO {
         @NotBlank
         String name;
 
-        @NotBlank
         String rep;
 
         @NotNull
         @ValidEnum(enumClass = Category.class)
         String category;
 
-        @NotNull
         List<CreateItemDTO> itemList;
 
         String account;
