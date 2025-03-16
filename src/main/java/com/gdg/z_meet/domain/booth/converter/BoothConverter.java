@@ -25,6 +25,15 @@ public class BoothConverter {
                 .build();
     }
 
+    public static Item toItem(BoothRequestDTO.CreateItemDTO item, Club club){
+
+        return Item.builder()
+                .name(item.getName())
+                .content(item.getContent())
+                .club(club)
+                .build();
+    }
+
     public static BoothResponseDTO.CreateClubDTO toCreateClubDTO(Club club){
 
         return BoothResponseDTO.CreateClubDTO.builder()
