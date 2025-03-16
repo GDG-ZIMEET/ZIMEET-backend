@@ -40,4 +40,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByStudentNumber(String studentNumber);
     boolean existsByPhoneNumber(String phoneNumber);
+
+    @Query("SELECT u FROM User u JOIN FETCH u.userProfile WHERE u.name = :name AND u.phoneNumber = :phoneNumber")
+    Optional<User> findByNameAndPhoneNumberWithProfile(String name, String phoneNumber);
 }

@@ -153,6 +153,5 @@ public class MeetingResponseDTO {
     @AllArgsConstructor
     public static class GetMyDeleteDTO {
         Integer leftDelete;
-
     }
 }
