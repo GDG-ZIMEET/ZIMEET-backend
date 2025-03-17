@@ -41,11 +41,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         return path.startsWith("/api/health")
-                || path.startsWith("/swagger") || path.startsWith("/swagger-ui")
+                || path.startsWith("/swagger") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")
                 || path.startsWith("/resources/static/")
                 || path.startsWith("/api/booths") || path.startsWith("/api/event")
                 || path.startsWith("/api/user")
-                || path.startsWith("/ws");
+                || path.startsWith("/ws") || path.startsWith("/ws/info");
     }
 
     @Override
