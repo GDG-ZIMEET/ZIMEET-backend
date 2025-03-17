@@ -70,4 +70,6 @@ public class Team extends BaseEntity {
     public void inactivateTeam() {
         this.activeStatus = ActiveStatus.INACTIVE;
     }
+
+    public void setNeulHi() { this.hi = 99; }
 }

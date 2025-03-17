@@ -76,6 +76,8 @@ public class UserService {
                 .user(user)
                 .build();
         userProfileRepository.save(userProfile);
+
+        // 늘품제용 티켓 무제한 설정
         userProfile.setNeulTicket();
 
         return UserRes.SignUpRes.builder().message("회원가입 성공!").build();
