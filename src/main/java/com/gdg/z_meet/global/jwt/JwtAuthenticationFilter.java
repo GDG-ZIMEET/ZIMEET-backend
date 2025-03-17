@@ -32,15 +32,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Set<String> loggedAccessTokens = Collections.synchronizedSet(new HashSet<>());
     private static final Set<String> loggedRefreshTokens = Collections.synchronizedSet(new HashSet<>());
-    private static final Set<String> loggedMissingTokens = Collections.synchronizedSet(new HashSet<>()); // 추가
-    private static final Set<String> loggedInvalidRequests = Collections.synchronizedSet(new HashSet<>()); // 추가
+    private static final Set<String> loggedMissingTokens = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<String> loggedInvalidTokens = Collections.synchronizedSet(new HashSet<>()); // 변경
+
 
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         return path.startsWith("/api/health")
-                || path.startsWith("/swagger/") || path.startsWith("/swagger-ui/") || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger") || path.startsWith("/swagger-ui")
                 || path.startsWith("/resources/static/")
                 || path.startsWith("/api/booths") || path.startsWith("/api/event")
                 || path.startsWith("/api/user")
@@ -99,7 +100,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             loggedAccessTokens.add(newAccessToken);
                         }
 
-                        filterChain.doFilter(wrappedRequest, response); // 수정된 요청 전달
+                        filterChain.doFilter(wrappedRequest, response);
                         return;
                     } else {
                         if (!loggedMissingTokens.contains(refreshToken)) {
@@ -110,14 +111,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         return;
                     }
                 } else {
-                    log.warn("Refresh token validation failed: {}", refreshToken);
+                    if (!loggedInvalidTokens.contains(refreshToken)) {
+                        log.warn("Refresh token validation failed: {}", refreshToken);
+                        loggedInvalidTokens.add(refreshToken);
+                    }
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }
             } else {
-                if (!loggedInvalidRequests.contains(uri)) {
-                    log.warn("No valid access or refresh token provided");
-                    loggedInvalidRequests.add(uri);
+                String clientIdentifier = request.getRemoteAddr();        // 클라이언트 IP 기반으로 관리
+                if (!loggedInvalidTokens.contains(clientIdentifier)) {
+                    log.warn("No valid access or refresh token provided for client: {}", clientIdentifier);
+                    loggedInvalidTokens.add(clientIdentifier);
                 }
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
