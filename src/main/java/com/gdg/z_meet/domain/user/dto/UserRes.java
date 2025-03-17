@@ -3,6 +3,8 @@ package com.gdg.z_meet.domain.user.dto;
 import com.gdg.z_meet.domain.user.entity.enums.*;
 import lombok.*;
 
+import java.util.List;
+
 public class UserRes {
     @Builder
     @NoArgsConstructor
@@ -140,5 +142,14 @@ public class UserRes {
                     .message(isDuplicated ? "이미 사용 중인 닉네임입니다." : "사용 가능한 닉네임입니다.")
                     .build();
         }
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetLevelDTO {
+        Long userId;
+        String level;
     }
 }

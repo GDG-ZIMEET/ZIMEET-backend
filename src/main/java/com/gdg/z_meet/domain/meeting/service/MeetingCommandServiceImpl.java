@@ -115,18 +115,6 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         }
     }
 
-    @Override
-    @Transactional
-    public MeetingResponseDTO.GetMyDeleteDTO patchMyDelete(String name, String phoneNumber) {
-
-        User user = userRepository.findByNameAndPhoneNumberWithProfile(name, phoneNumber)
-                .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
-
-        user.getUserProfile().addDelete();
-
-        return MeetingConverter.toGetMyDeleteDTO(user);
-    }
-
     private void delHi(Long teamId){
         hiRepository.updateHiByTeamId(teamId);
     }
