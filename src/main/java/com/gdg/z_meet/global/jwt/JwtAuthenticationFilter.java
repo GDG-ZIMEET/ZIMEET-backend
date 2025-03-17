@@ -16,7 +16,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -27,6 +30,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    private static final Set<String> loggedAccessTokens = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<String> loggedRefreshTokens = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<String> loggedMissingTokens = Collections.synchronizedSet(new HashSet<>()); // 추가
+    private static final Set<String> loggedInvalidRequests = Collections.synchronizedSet(new HashSet<>()); // 추가
+
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
@@ -35,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/resources/static/")
                 || path.startsWith("/api/booths") || path.startsWith("/api/event")
                 || path.startsWith("/api/user")
-                || path.startsWith("/ws") || path.startsWith("/ws/info/");
+                || path.startsWith("/ws/") || path.startsWith("/ws/info/");
     }
 
     @Override
@@ -55,17 +64,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             if (accessToken != null && jwtUtil.validateToken(request, accessToken)) {
                 setAuthentication(accessToken);
-                log.info("Access token validated successfully");
+                if (!loggedAccessTokens.contains(accessToken)) {
+                    log.info("Access token validated successfully");
+                    loggedAccessTokens.add(accessToken);
+                }
             } else if (refreshToken != null) {
-                log.info("Attempting to validate refresh token: {}", refreshToken);
+
                 if (jwtUtil.validateRefreshToken(refreshToken)) {
                     String userIdStr = refreshTokenRepository.findByToken(refreshToken);
-                    log.info("User ID found in Redis: {}", userIdStr);
+                    if (!loggedRefreshTokens.contains(refreshToken)) {
+                        log.info("User ID found in Redis: {}", userIdStr);
+                    }
                     if (userIdStr != null) {
                         Long userId = Long.parseLong(userIdStr);
                         String studentNumber = jwtUtil.getStudentNumberFromToken(refreshToken);
                         String newAccessToken = jwtUtil.getToken(studentNumber, userId, new Date(), jwtUtil.getAccessTokenValidTime());
+
                         response.setHeader("Authorization", BEARER_PREFIX + newAccessToken);
+
                         // 요청 객체에 새 토큰 반영
                         HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
                             @Override
@@ -77,11 +93,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             }
                         };
                         setAuthentication(newAccessToken);
-                        log.info("Access token refreshed for userId: {}", userId);
+
+                        if (!loggedAccessTokens.contains(newAccessToken)) {
+                            log.info("Access token refreshed for userId: {}", userId);
+                            loggedAccessTokens.add(newAccessToken);
+                        }
+
                         filterChain.doFilter(wrappedRequest, response); // 수정된 요청 전달
                         return;
                     } else {
-                        log.warn("Refresh token not found in Redis: {}", refreshToken);
+                        if (!loggedMissingTokens.contains(refreshToken)) {
+                            log.warn("Refresh token not found in Redis: {}", refreshToken);
+                            loggedMissingTokens.add(refreshToken);
+                        }
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         return;
                     }
@@ -91,7 +115,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
             } else {
-                log.warn("No valid access or refresh token provided");
+                if (!loggedInvalidRequests.contains(uri)) {
+                    log.warn("No valid access or refresh token provided");
+                    loggedInvalidRequests.add(uri);
+                }
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
@@ -99,7 +126,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             log.error("JWT processing failed: {}", e.getMessage());
             sendErrorResponse(response, "Authentication failed", HttpStatus.UNAUTHORIZED);
-            return;
         }
     }
 
