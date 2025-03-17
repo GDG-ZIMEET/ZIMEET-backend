@@ -2,6 +2,7 @@ package com.gdg.z_meet.domain.event.service;
 
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
+import com.gdg.z_meet.domain.user.dto.UserRes;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -25,5 +26,19 @@ public class EventService {
         user.getUserProfile().addDelete();
 
         return MeetingConverter.toGetMyDeleteDTO(user);
+    }
+
+    @Transactional
+    public UserRes.GetLevelDTO patchLevel(String name, String phoneNumber) {
+
+        User user = userRepository.findByNameAndPhoneNumberWithProfile(name, phoneNumber)
+                .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
+
+        user.getUserProfile().upLevel();
+
+        return UserRes.GetLevelDTO.builder()
+                .userId(user.getId())
+                .level(String.valueOf(user.getUserProfile().getLevel()))
+                .build();
     }
 }
