@@ -22,9 +22,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Date;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -36,6 +34,8 @@ public class JwtUtil {
 
     private final UserDetailsService userDetailsService;
     private final RefreshTokenRepository refreshTokenRepository;
+
+    private static final Set<String> loggedRefreshTokens = Collections.synchronizedSet(new HashSet<>());
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -86,15 +86,27 @@ public class JwtUtil {
 
     public String getRefreshTokenFromCookie(HttpServletRequest request) {
         if (request.getCookies() == null) {
-            log.warn("No cookies found in request");
+            if (!loggedRefreshTokens.contains("NO_COOKIES")) {
+                log.warn("No cookies found in request");
+                loggedRefreshTokens.add("NO_COOKIES");
+            }
             return null;
         }
+
         String refreshToken = Arrays.stream(request.getCookies())
                 .filter(cookie -> REFRESH_TOKEN_COOKIE.equals(cookie.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
                 .orElse(null);
-        log.info("Refresh token from cookie: {}", refreshToken != null ? refreshToken : "Not found");
+
+        if (refreshToken != null && !loggedRefreshTokens.contains(refreshToken)) {
+            log.info("Refresh token from cookie: {}", refreshToken);
+            loggedRefreshTokens.add(refreshToken);
+        } else if (refreshToken == null && !loggedRefreshTokens.contains("NO_REFRESH")) {
+            log.info("Refresh token from cookie: Not found");
+            loggedRefreshTokens.add("NO_REFRESH");
+        }
+
         return refreshToken;
     }
 
