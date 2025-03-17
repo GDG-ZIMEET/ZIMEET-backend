@@ -76,6 +76,7 @@ public class UserService {
                 .user(user)
                 .build();
         userProfileRepository.save(userProfile);
+        userProfile.setNeulTicket();
 
         return UserRes.SignUpRes.builder().message("회원가입 성공!").build();
     }
