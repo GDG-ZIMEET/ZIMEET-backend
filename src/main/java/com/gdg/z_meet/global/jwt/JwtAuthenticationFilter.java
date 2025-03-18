@@ -1,5 +1,6 @@
 package com.gdg.z_meet.global.jwt;
 
+import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -36,6 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         log.debug("Request URI: {}, Access Token: {}, Refresh Token: {}", uri, accessToken, refreshToken);
 
+        // 회원가입/로그인 API는 필터 제외
         if (uri.equals("/api/user/signup") || uri.equals("/api/user/login")) {
             filterChain.doFilter(request, response);
             return;
@@ -43,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             if (accessToken != null && jwtUtil.validateToken(request, accessToken)) {
-                setAuthentication(accessToken);
+                setAuthentication(accessToken, response);
                 log.info("Access token validated successfully");
             } else if (refreshToken != null) {
                 log.info("Attempting to validate refresh token: {}", refreshToken);
@@ -55,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         String studentNumber = jwtUtil.getStudentNumberFromToken(refreshToken);
                         String newAccessToken = jwtUtil.getToken(studentNumber, userId, new Date(), jwtUtil.getAccessTokenValidTime());
                         response.setHeader("Authorization", BEARER_PREFIX + newAccessToken);
-                        // 요청 객체에 새 토큰 반영
+
                         HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
                             @Override
                             public String getHeader(String name) {
@@ -65,36 +68,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 return super.getHeader(name);
                             }
                         };
-                        setAuthentication(newAccessToken);
+                        setAuthentication(newAccessToken, response);
                         log.info("Access token refreshed for userId: {}", userId);
-                        filterChain.doFilter(wrappedRequest, response); // 수정된 요청 전달
+                        filterChain.doFilter(wrappedRequest, response);
                         return;
                     } else {
                         log.warn("Refresh token not found in Redis: {}", refreshToken);
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        sendErrorResponse(response, "Invalid refresh token", HttpStatus.UNAUTHORIZED);
                         return;
                     }
                 } else {
                     log.warn("Refresh token validation failed: {}", refreshToken);
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    sendErrorResponse(response, "Invalid refresh token", HttpStatus.UNAUTHORIZED);
                     return;
                 }
             } else {
                 log.warn("No valid access or refresh token provided");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                sendErrorResponse(response, "Authentication required", HttpStatus.UNAUTHORIZED);
                 return;
             }
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             log.error("JWT processing failed: {}", e.getMessage());
             sendErrorResponse(response, "Authentication failed", HttpStatus.UNAUTHORIZED);
-            return;
         }
     }
 
-    private void setAuthentication(String token) {
+    private void setAuthentication(String token, HttpServletResponse response) throws IOException {
         Authentication authentication = jwtUtil.getAuthentication(token);
         if (authentication != null) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            User user = (User) userDetails;
+            if (user.isDeleted()) {
+                log.warn("Deleted user attempted access: {}", user.getUsername());
+                sendErrorResponse(response, "User is deleted", HttpStatus.FORBIDDEN);
+                return;
+            }
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.debug("Authentication set successfully for token: {}", token);
         } else {

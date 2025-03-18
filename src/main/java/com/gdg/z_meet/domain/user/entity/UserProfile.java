@@ -75,6 +75,13 @@ public class UserProfile {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isDeleted;
+
+    public void setIsDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
     public void increaseTicket(int amount) {
         this.ticket += amount;
     }

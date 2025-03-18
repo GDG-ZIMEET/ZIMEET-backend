@@ -88,6 +88,10 @@ public class UserService {
             throw new BusinessException(Code.INVALID_PASSWORD);
         }
 
+        if (user.isDeleted()) {
+            throw new BusinessException(Code.USER_DELETED);
+        }
+
         Token token = jwtUtil.createToken(loginReq.getStudentNumber(), user.getId());
         jwtUtil.createCookie(response, token.getRefreshToken());
 
@@ -185,8 +189,14 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
-        userProfileRepository.deleteByUserId(userId);
-        userRepository.deleteById(userId);
+        user.setIsDeleted(true);
+        userRepository.save(user);
+
+        UserProfile userProfile = userProfileRepository.findByUserId(userId).orElse(null);
+        if (userProfile != null) {
+            userProfile.setIsDeleted(true);
+            userProfileRepository.save(userProfile);
+        }
 
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
         refreshTokenRepository.delete(refreshToken);
