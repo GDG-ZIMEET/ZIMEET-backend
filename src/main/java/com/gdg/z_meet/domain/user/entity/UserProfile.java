@@ -90,4 +90,6 @@ public class UserProfile {
     public void addDelete() { this.leftDelete++; }
 
     public void upLevel() { this.level = Level.PLUS; }
+
+    public void setNeulTicket() { this.ticket = 99; }
 }
