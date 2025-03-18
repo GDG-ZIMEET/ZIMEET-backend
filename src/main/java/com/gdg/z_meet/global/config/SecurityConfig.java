@@ -38,7 +38,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger", "/swagger/", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Swagger 허용
                         .requestMatchers("/api/user/**", "/api/booths/**", "/api/event/**").permitAll()   // /api 이하 경로 접근 허용
                         .requestMatchers("/","/api/health").permitAll() // 인증 없이 접근 허용
-//                        .requestMatchers("/ws", "/ws/**", "/ws/info/**").permitAll()  // WebSocket 엔드포인트 허용
+                        .requestMatchers("/api/ws", "/api/ws/**", "/api/ws/info/**").permitAll()
+                        .requestMatchers("/ws", "/ws/**", "/ws/info/**").permitAll()  // WebSocket 엔드포인트 허용
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
