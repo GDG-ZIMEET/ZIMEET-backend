@@ -3,10 +3,10 @@ package com.gdg.z_meet.domain.meeting.repository;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
+import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -39,4 +39,7 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     @Query("SELECT t FROM Team t WHERE t.id = :teamId AND t.event = :event")
     Optional<Team> findByIdAndEvent(@Param("teamId") Long teamId, @Param("event") Event event);
+
+    @Query("SELECT t FROM Team t JOIN UserTeam ut ON t.id = ut.team.id WHERE ut.user = :user AND t.event = :event AND t.activeStatus = 'ACTIVE'")
+    List<Team> findAllByUser(@Param("user") User user, @Param("event") Event event);
 }

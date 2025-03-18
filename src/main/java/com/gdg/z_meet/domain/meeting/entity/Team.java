@@ -72,4 +72,6 @@ public class Team extends BaseEntity {
     }
 
     public void setNeulHi() { this.hi = 99; }
+
+    public void patchVerification() { this.verification = Verification.COMPLETE; }
 }

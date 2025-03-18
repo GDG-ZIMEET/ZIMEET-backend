@@ -41,4 +41,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile WHERE u.name = :name AND u.phoneNumber = :phoneNumber")
     Optional<User> findByNameAndPhoneNumberWithProfile(String name, String phoneNumber);
+
+    @Query("SELECT u FROM User u JOIN FETCH u.userProfile WHERE u.name = :name AND u.studentNumber = :studentNumber")
+    Optional<User> findByNameAndStudentNumberWithProfile(String name, String studentNumber);
 }
