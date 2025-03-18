@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.user.service;
 
+import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -17,7 +18,11 @@ public class UserDetailsService implements org.springframework.security.core.use
     @Cacheable(value = "userDetails", key = "#studentNumber")
     @Override
     public UserDetails loadUserByUsername(String studentNumber) throws UsernameNotFoundException {
-        return userRepository.findByStudentNumber(studentNumber)
+        User user = userRepository.findByStudentNumber(studentNumber)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with student number: " + studentNumber));
+        if (user.isDeleted()) {
+            throw new UsernameNotFoundException("User is deleted: " + studentNumber);
+        }
+        return user;
     }
 }

@@ -79,7 +79,8 @@ public enum Code implements BaseCode {
     PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "U004", "프로필이 존재하지 않습니다."),
     DUPLICATE_STUDENT_NUMBER(HttpStatus.BAD_REQUEST, "U005", "이미 가입된 학번입니다."),
     DUPLICATE_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "U006", "이미 가입된 전화번호입니다."),
-    DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "U007", "이미 가입된 닉네임입니다.");
+    DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "U007", "이미 가입된 닉네임입니다."),
+    USER_DELETED(HttpStatus.BAD_REQUEST, "U008", "탈퇴한 회원입니다.");
 
 //    NOT_ACADEMY_EMAIL("EEM-001", "Email is not a university email."),
 //    AUTH_CODE_NOT_MATCH("ATH-001", "Auth code not match."),
