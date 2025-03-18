@@ -154,4 +154,21 @@ public class MeetingResponseDTO {
     public static class GetMyDeleteDTO {
         Integer leftDelete;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetVerificationTeamDTO {
+        Long teamId;
+        Integer verification;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetVerificationDTO {
+        List<GetVerificationTeamDTO> teamList;
+    }
 }
