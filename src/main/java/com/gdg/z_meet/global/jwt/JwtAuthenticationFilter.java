@@ -1,5 +1,6 @@
 package com.gdg.z_meet.global.jwt;
 
+import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -33,9 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Set<String> loggedAccessTokens = Collections.synchronizedSet(new HashSet<>());
     private static final Set<String> loggedRefreshTokens = Collections.synchronizedSet(new HashSet<>());
     private static final Set<String> loggedMissingTokens = Collections.synchronizedSet(new HashSet<>());
-    private static final Set<String> loggedInvalidTokens = Collections.synchronizedSet(new HashSet<>()); // 변경
-
-
+    private static final Set<String> loggedInvalidTokens = Collections.synchronizedSet(new HashSet<>());
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -64,17 +65,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             if (accessToken != null && jwtUtil.validateToken(request, accessToken)) {
-                setAuthentication(accessToken);
+                setAuthentication(accessToken, response);
                 if (!loggedAccessTokens.contains(accessToken)) {
                     log.info("Access token validated successfully");
                     loggedAccessTokens.add(accessToken);
                 }
             } else if (refreshToken != null) {
-
                 if (jwtUtil.validateRefreshToken(refreshToken)) {
                     String userIdStr = refreshTokenRepository.findByToken(refreshToken);
                     if (!loggedRefreshTokens.contains(refreshToken)) {
                         log.info("User ID found in Redis: {}", userIdStr);
+                        loggedRefreshTokens.add(refreshToken);
                     }
                     if (userIdStr != null) {
                         Long userId = Long.parseLong(userIdStr);
@@ -93,13 +94,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 return super.getHeader(name);
                             }
                         };
-                        setAuthentication(newAccessToken);
-
+                        setAuthentication(newAccessToken, response);
                         if (!loggedAccessTokens.contains(newAccessToken)) {
                             log.info("Access token refreshed for userId: {}", userId);
                             loggedAccessTokens.add(newAccessToken);
                         }
-
                         filterChain.doFilter(wrappedRequest, response);
                         return;
                     } else {
@@ -107,7 +106,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             log.warn("Refresh token not found in Redis: {}", refreshToken);
                             loggedMissingTokens.add(refreshToken);
                         }
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        sendErrorResponse(response, "Invalid refresh token", HttpStatus.UNAUTHORIZED);
                         return;
                     }
                 } else {
@@ -115,16 +114,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         log.warn("Refresh token validation failed: {}", refreshToken);
                         loggedInvalidTokens.add(refreshToken);
                     }
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    sendErrorResponse(response, "Invalid refresh token", HttpStatus.UNAUTHORIZED);
                     return;
                 }
             } else {
-                String clientIdentifier = request.getRemoteAddr();        // 클라이언트 IP 기반으로 관리
+                String clientIdentifier = request.getRemoteAddr();
                 if (!loggedInvalidTokens.contains(clientIdentifier)) {
                     log.warn("No valid access or refresh token provided for client: {}", clientIdentifier);
                     loggedInvalidTokens.add(clientIdentifier);
                 }
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                sendErrorResponse(response, "Authentication required", HttpStatus.UNAUTHORIZED);
                 return;
             }
             filterChain.doFilter(request, response);
@@ -134,14 +133,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    private void setAuthentication(String token) {
-        Authentication authentication = jwtUtil.getAuthentication(token);
-        if (authentication != null) {
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.debug("Authentication set successfully for token: {}", token);
-        } else {
-            log.warn("Authentication object is null for token: {}", token);
-            throw new JwtValidationException("Failed to create authentication from token");
+    private void setAuthentication(String token, HttpServletResponse response) throws IOException {
+        try {
+            Authentication authentication = jwtUtil.getAuthentication(token);
+            if (authentication != null) {
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("Authentication set successfully for token: {}", token);
+            } else {
+                log.warn("Authentication object is null for token: {}", token);
+                sendErrorResponse(response, "Authentication failed", HttpStatus.UNAUTHORIZED);
+            }
+        } catch (UsernameNotFoundException e) {
+            log.warn("User authentication failed: {}", e.getMessage());
+            sendErrorResponse(response, e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 

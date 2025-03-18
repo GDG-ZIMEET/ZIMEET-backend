@@ -33,8 +33,15 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String phoneNumber;
 
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isDeleted;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserProfile userProfile;
+
+    public void setIsDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -70,5 +77,4 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
 }

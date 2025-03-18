@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.user.service;
 
+import com.gdg.z_meet.domain.order.repository.ItemPurchaseRepository;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Level;
 import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
@@ -32,6 +33,7 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
+    private final ItemPurchaseRepository itemPurchaseRepository;
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
@@ -89,6 +91,10 @@ public class UserService {
 
         if (!encoder.matches(loginReq.getPassword(), user.getPassword())) {
             throw new BusinessException(Code.INVALID_PASSWORD);
+        }
+
+        if (user.isDeleted()) {
+            throw new BusinessException(Code.USER_DELETED);
         }
 
         Token token = jwtUtil.createToken(loginReq.getStudentNumber(), user.getId());
@@ -188,8 +194,11 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
+        user.setIsDeleted(true);
+        userRepository.save(user);
+
+        itemPurchaseRepository.deleteByBuyerId(userId);
         userProfileRepository.deleteByUserId(userId);
-        userRepository.deleteById(userId);
 
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
         refreshTokenRepository.delete(refreshToken);
