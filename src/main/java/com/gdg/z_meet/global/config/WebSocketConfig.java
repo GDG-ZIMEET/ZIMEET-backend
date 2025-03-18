@@ -27,7 +27,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws") // WebSocket 연결 URL
+        registry.addEndpoint("/ws", "/ws/info") // WebSocket 연결 URL
                 .setAllowedOrigins("https://api.zimeet.store", "http://localhost:3000", "https://zimeetgdg.web.app")  // 프론트엔드의 도메인을 지정
                 .withSockJS(); // SockJS 지원
 
