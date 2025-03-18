@@ -36,4 +36,13 @@ public class EventController {
 
         return Response.ok(response);
     }
+
+    @Operation(summary = "인증뱃지 추가")
+    @PatchMapping("/verification")
+    public Response<MeetingResponseDTO.GetVerificationDTO> patchVerification(@RequestParam(name = "name") String name, @RequestParam(name = "studentNumber") String studentNumber) {
+
+        MeetingResponseDTO.GetVerificationDTO response = eventService.patchVerification(name, studentNumber);
+
+        return Response.ok(response);
+    }
 }
