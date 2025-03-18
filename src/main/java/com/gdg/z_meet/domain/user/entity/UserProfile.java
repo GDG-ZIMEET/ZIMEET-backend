@@ -62,10 +62,10 @@ public class UserProfile {
     @Column(nullable = false)
     @Builder.Default
     private int leftDelete = 2;
-
+    
     @Column(nullable = false)
     @Builder.Default
-    private Level level = LIGHT;
+    private Level level = Level.LIGHT;
 
     @Column(nullable = false)
     @Builder.Default
@@ -93,4 +93,10 @@ public class UserProfile {
     public void upgradeToPlus() {
         this.level = Level.PLUS;
     }
+
+    public void addDelete() { this.leftDelete++; }
+
+    public void upLevel() { this.level = Level.PLUS; }
+
+    public void setNeulTicket() { this.ticket = 99; }
 }

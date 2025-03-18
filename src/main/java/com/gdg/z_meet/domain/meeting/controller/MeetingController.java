@@ -159,5 +159,4 @@ public class MeetingController {
 
         return Response.ok(response);
     }
-
 }

@@ -14,11 +14,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -29,6 +33,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    private static final Set<String> loggedAccessTokens = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<String> loggedRefreshTokens = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<String> loggedMissingTokens = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<String> loggedInvalidTokens = Collections.synchronizedSet(new HashSet<>());
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/health")
+                || path.startsWith("/swagger") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")
+                || path.startsWith("/resources/static/")
+                || path.startsWith("/api/booths") || path.startsWith("/api/event")
+                || path.startsWith("/api/user")
+                || path.startsWith("/ws") || path.startsWith("/ws/info");
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -38,7 +58,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         log.debug("Request URI: {}, Access Token: {}, Refresh Token: {}", uri, accessToken, refreshToken);
 
-        // 회원가입/로그인 API는 필터 제외
         if (uri.equals("/api/user/signup") || uri.equals("/api/user/login")) {
             filterChain.doFilter(request, response);
             return;
@@ -47,18 +66,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             if (accessToken != null && jwtUtil.validateToken(request, accessToken)) {
                 setAuthentication(accessToken, response);
-                log.info("Access token validated successfully");
+                if (!loggedAccessTokens.contains(accessToken)) {
+                    log.info("Access token validated successfully");
+                    loggedAccessTokens.add(accessToken);
+                }
             } else if (refreshToken != null) {
-                log.info("Attempting to validate refresh token: {}", refreshToken);
                 if (jwtUtil.validateRefreshToken(refreshToken)) {
                     String userIdStr = refreshTokenRepository.findByToken(refreshToken);
-                    log.info("User ID found in Redis: {}", userIdStr);
+                    if (!loggedRefreshTokens.contains(refreshToken)) {
+                        log.info("User ID found in Redis: {}", userIdStr);
+                        loggedRefreshTokens.add(refreshToken);
+                    }
                     if (userIdStr != null) {
                         Long userId = Long.parseLong(userIdStr);
                         String studentNumber = jwtUtil.getStudentNumberFromToken(refreshToken);
                         String newAccessToken = jwtUtil.getToken(studentNumber, userId, new Date(), jwtUtil.getAccessTokenValidTime());
+
                         response.setHeader("Authorization", BEARER_PREFIX + newAccessToken);
 
+                        // 요청 객체에 새 토큰 반영
                         HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
                             @Override
                             public String getHeader(String name) {
@@ -69,21 +95,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             }
                         };
                         setAuthentication(newAccessToken, response);
-                        log.info("Access token refreshed for userId: {}", userId);
+                        if (!loggedAccessTokens.contains(newAccessToken)) {
+                            log.info("Access token refreshed for userId: {}", userId);
+                            loggedAccessTokens.add(newAccessToken);
+                        }
                         filterChain.doFilter(wrappedRequest, response);
                         return;
                     } else {
-                        log.warn("Refresh token not found in Redis: {}", refreshToken);
+                        if (!loggedMissingTokens.contains(refreshToken)) {
+                            log.warn("Refresh token not found in Redis: {}", refreshToken);
+                            loggedMissingTokens.add(refreshToken);
+                        }
                         sendErrorResponse(response, "Invalid refresh token", HttpStatus.UNAUTHORIZED);
                         return;
                     }
                 } else {
-                    log.warn("Refresh token validation failed: {}", refreshToken);
+                    if (!loggedInvalidTokens.contains(refreshToken)) {
+                        log.warn("Refresh token validation failed: {}", refreshToken);
+                        loggedInvalidTokens.add(refreshToken);
+                    }
                     sendErrorResponse(response, "Invalid refresh token", HttpStatus.UNAUTHORIZED);
                     return;
                 }
             } else {
-                log.warn("No valid access or refresh token provided");
+                String clientIdentifier = request.getRemoteAddr();
+                if (!loggedInvalidTokens.contains(clientIdentifier)) {
+                    log.warn("No valid access or refresh token provided for client: {}", clientIdentifier);
+                    loggedInvalidTokens.add(clientIdentifier);
+                }
                 sendErrorResponse(response, "Authentication required", HttpStatus.UNAUTHORIZED);
                 return;
             }
@@ -95,20 +134,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void setAuthentication(String token, HttpServletResponse response) throws IOException {
-        Authentication authentication = jwtUtil.getAuthentication(token);
-        if (authentication != null) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            User user = (User) userDetails;
-            if (user.isDeleted()) {
-                log.warn("Deleted user attempted access: {}", user.getUsername());
-                sendErrorResponse(response, "User is deleted", HttpStatus.FORBIDDEN);
-                return;
+        try {
+            Authentication authentication = jwtUtil.getAuthentication(token);
+            if (authentication != null) {
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("Authentication set successfully for token: {}", token);
+            } else {
+                log.warn("Authentication object is null for token: {}", token);
+                sendErrorResponse(response, "Authentication failed", HttpStatus.UNAUTHORIZED);
             }
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.debug("Authentication set successfully for token: {}", token);
-        } else {
-            log.warn("Authentication object is null for token: {}", token);
-            throw new JwtValidationException("Failed to create authentication from token");
+        } catch (UsernameNotFoundException e) {
+            log.warn("User authentication failed: {}", e.getMessage());
+            sendErrorResponse(response, e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 

@@ -52,7 +52,7 @@ public class KaKaoPayService {
         User buyer = userRepository.findById(parameter.getBuyerId()).orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
 
         if (!ProductType.valueOf(parameter.getProductType()).equals(ProductType.TICKET) && !ProductType.valueOf(parameter.getProductType()).equals(ProductType.SEASON)) {
-                boolean isMember = userTeamRepository.existsByUserIdAndTeamId(parameter.getBuyerId(), parameter.getTeamId());
+                boolean isMember = userTeamRepository.existsByUserIdAndTeamIdAndActiveStatus(parameter.getBuyerId(), parameter.getTeamId());
             if (!isMember) {
                 throw new BusinessException(Code.TEAM_USER_NOT_FOUND);
             }

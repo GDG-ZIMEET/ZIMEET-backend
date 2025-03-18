@@ -7,7 +7,16 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
+import java.util.List;
+
 public class BoothRequestDTO {
+
+    @Getter
+    public static class CreateItemDTO {
+
+        String name;
+        String content;
+    }
 
     @Getter
     public static class CreateClubDTO {
@@ -19,19 +28,18 @@ public class BoothRequestDTO {
         @NotBlank
         String name;
 
-        @NotBlank
         String rep;
 
         @NotNull
         @ValidEnum(enumClass = Category.class)
         String category;
 
+        List<CreateItemDTO> itemList;
+
         String account;
 
-        @NotBlank
         String time;
 
-        @NotBlank
         String info;
     }
 }

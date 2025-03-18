@@ -29,8 +29,10 @@ public class BoothController {
     @Operation(summary = "(테스트용)부스 등록")
     @PostMapping
     public Response<BoothResponseDTO.CreateClubDTO> createClub(@RequestBody @Valid BoothRequestDTO.CreateClubDTO request) {
-        Club club = boothCommandService.createClub(request);
-        return Response.ok(BoothConverter.toCreateClubDTO(club));
+
+        BoothResponseDTO.CreateClubDTO response = boothCommandService.createClub(request);
+
+        return Response.ok(response);
     }
 
     @Operation(summary = "부스배치도 조회", description = "장소별로 부스를 조회합니다.")
@@ -38,6 +40,7 @@ public class BoothController {
     public Response<BoothResponseDTO.GetAllClubDTO> getAllClub(@PathVariable @ValidEnum(enumClass = Place.class) String place) {
 
         BoothResponseDTO.GetAllClubDTO response = boothQueryService.getAllClub(place);
+
         return Response.ok(response);
     }
 
@@ -46,6 +49,7 @@ public class BoothController {
     public Response<BoothResponseDTO.GetClubDTO> getClub(@PathVariable Long clubId) {
 
         BoothResponseDTO.GetClubDTO response = boothQueryService.getClub(clubId);
+
         return Response.ok(response);
     }
 }
