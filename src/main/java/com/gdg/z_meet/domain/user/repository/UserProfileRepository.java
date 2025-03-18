@@ -23,12 +23,12 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     @Query("UPDATE UserProfile up SET up.leftDelete = up.leftDelete - 1 WHERE up.user.id IN :userIds")
     void subtractDelete(@Param("userIds") List<Long> userIds);
 
-    void deleteByUserId(Long userId);
-
     Optional<UserProfile> findByUser(User user);
   
     @Query("SELECT up FROM UserProfile up JOIN up.user u JOIN UserTeam ut ON u.id = ut.user.id WHERE ut.team.id = :teamId")
     List<UserProfile> findByTeamId(Long teamId);
 
     boolean existsByNickname(String nickname);
+
+    void deleteByUserId(Long userId);
 }
