@@ -64,6 +64,7 @@ public class UserProfile {
     private int leftDelete = 2;
     
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private Level level = Level.LIGHT;
 
