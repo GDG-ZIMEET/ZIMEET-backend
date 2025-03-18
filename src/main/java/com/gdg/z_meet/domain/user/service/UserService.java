@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.user.service;
 
+import com.gdg.z_meet.domain.order.repository.ItemPurchaseRepository;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Level;
 import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
@@ -32,6 +33,7 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
+    private final ItemPurchaseRepository itemPurchaseRepository;
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
@@ -195,11 +197,8 @@ public class UserService {
         user.setIsDeleted(true);
         userRepository.save(user);
 
-        UserProfile userProfile = userProfileRepository.findByUserId(userId).orElse(null);
-        if (userProfile != null) {
-            userProfile.setIsDeleted(true);
-            userProfileRepository.save(userProfile);
-        }
+        itemPurchaseRepository.deleteByBuyerId(userId);
+        userProfileRepository.deleteByUserId(userId);
 
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
         refreshTokenRepository.delete(refreshToken);

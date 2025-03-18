@@ -29,4 +29,6 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     List<UserProfile> findByTeamId(Long teamId);
 
     boolean existsByNickname(String nickname);
+
+    void deleteByUserId(Long userId);
 }
