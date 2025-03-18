@@ -28,7 +28,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws") // WebSocket 연결 URL
-                .withSockJS(); // SockJS 지원
+                .setAllowedOriginPatterns("*")
+                .withSockJS() // SockJS 지원
+                .setWebSocketEnabled(true)
+                .setSessionCookieNeeded(false);
 
         registry.addEndpoint("/ws/plain") // 일반 WebSocket 전용 (Postman 테스트용)
                 .setAllowedOriginPatterns("*");
