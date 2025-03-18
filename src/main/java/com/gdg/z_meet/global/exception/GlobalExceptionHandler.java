@@ -138,6 +138,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
     }
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<Object> handleNullPointerException(NullPointerException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Response.fail(Code.INTERNAL_SERVER_ERROR, ex.getMessage()));
+    }
+
     @ExceptionHandler(UnsatisfiedDependencyException.class)
     public ResponseEntity<Object> handleUnsatisfiedDependencyException(UnsatisfiedDependencyException ex) {
 

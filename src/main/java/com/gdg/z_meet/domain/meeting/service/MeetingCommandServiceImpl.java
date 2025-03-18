@@ -78,6 +78,9 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
                 .build();
         teamRepository.save(newTeam);
 
+        // 늘품제용 하이 무제한 설정
+        newTeam.setNeulHi();
+
         List<UserTeam> userTeams = teamMembers.stream()
                 .map(user -> MeetingConverter.toUserTeam(user, newTeam))
                 .collect(Collectors.toList());

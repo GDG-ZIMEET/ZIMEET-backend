@@ -41,7 +41,9 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         if (user.getUserProfile().getTicket() == 0) {
             throw new BusinessException(Code.TICKET_LIMIT_EXCEEDED);
         }
-        user.getUserProfile().decreaseTicket(1);
+
+        // 늘품제용 티켓 무제한 설정
+        //user.getUserProfile().decreaseTicket(1);
 
         // 진행중인 매칭 확인
         if (matchingRepository.existsByWaitingMatching(userId)) {
@@ -85,7 +87,9 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         userMatchingRepository.delete(userMatching);
 
         User user = userRepository.findByIdWithProfile(userId);
-        user.getUserProfile().increaseTicket(1);
+
+        // 늘품제용 티켓 무제한 설정
+        //user.getUserProfile().increaseTicket(1);
 
         List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
         messageMatching(matching, userMatchings);
