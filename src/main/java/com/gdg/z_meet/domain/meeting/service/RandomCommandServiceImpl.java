@@ -42,7 +42,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
 
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public void joinMatching(Long userId) {
 
         User user = userRepository.findByIdWithProfile(userId);
@@ -90,7 +90,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public void cancelMatching(Long userId) {
 
         // 완료된 매칭은 취소 불가
