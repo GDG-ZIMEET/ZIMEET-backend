@@ -16,6 +16,7 @@ import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,10 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     private final UserMatchingRepository userMatchingRepository;
     private final UserRepository userRepository;
     private final ChatRoomCommandService chatRoomCommandService;
+
+    @Autowired
+    private MatchingLockService matchingLockService;
+
 
     @Override
     @Transactional
@@ -137,15 +142,21 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
     private void validateMatching(Matching matching, List<UserMatching> userMatchings) {
 
-        long male = userMatchings.stream()
-                .filter(user -> user.getUser().getUserProfile().getGender() == Gender.MALE)
-                .count();
-        long female = userMatchings.stream()
-                .filter(user -> user.getUser().getUserProfile().getGender() == Gender.FEMALE)
-                .count();
+        matchingLockService.lock(matching.getId());
 
-        if (male == 3 && female == 3) {
-            matching.setMatchingStatus(MatchingStatus.COMPLETE);
+        try {
+            long male = userMatchings.stream()
+                    .filter(user -> user.getUser().getUserProfile().getGender() == Gender.MALE)
+                    .count();
+            long female = userMatchings.stream()
+                    .filter(user -> user.getUser().getUserProfile().getGender() == Gender.FEMALE)
+                    .count();
+
+            if (male == 3 && female == 3) {
+                matching.setMatchingStatus(MatchingStatus.COMPLETE);
+            }
+        } finally {
+            matchingLockService.unlock(matching.getId());
         }
     }
 }
