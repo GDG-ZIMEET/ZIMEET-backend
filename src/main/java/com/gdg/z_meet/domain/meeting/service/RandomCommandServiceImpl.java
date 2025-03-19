@@ -43,7 +43,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
     @Override
     @Transactional
-    public RandomResponseDTO.MatchingDTO joinMatching(Long userId) {
+    public void joinMatching(Long userId) {
 
         User user = userRepository.findByIdWithProfile(userId);
         if (user.getUserProfile().getTicket() == 0) {
@@ -87,8 +87,6 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         if (matching.getMatchingStatus() == MatchingStatus.COMPLETE) {
             chatRoomCommandService.addUserJoinChat(userIds);
         }
-
-        return matchingDTO;
     }
 
     @Override
