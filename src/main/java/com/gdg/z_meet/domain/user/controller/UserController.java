@@ -76,7 +76,7 @@ public class UserController {
         return Response.ok(userService.updateEmoji(userId, emojiUpdateReq));
     }
 
-    @DeleteMapping("/withdraw")
+    @PatchMapping("/withdraw")
     @Operation(summary = "회원탈퇴", description = "회원탈퇴")
     public Response<Void> withdraw(HttpServletRequest request, HttpServletResponse response) {
         Long userId = jwtUtil.extractUserIdFromRequest(request);

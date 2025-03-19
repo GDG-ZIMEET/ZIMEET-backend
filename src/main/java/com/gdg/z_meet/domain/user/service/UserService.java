@@ -197,7 +197,7 @@ public class UserService {
         user.setIsDeleted(true);
         userRepository.save(user);
 
-        itemPurchaseRepository.deleteByBuyerId(userId);
+//        itemPurchaseRepository.deleteByBuyerId(userId);
         userProfileRepository.deleteByUserId(userId);
 
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
