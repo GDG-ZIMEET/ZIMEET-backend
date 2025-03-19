@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -94,15 +95,23 @@ public class RandomCommandServiceImpl implements RandomCommandService {
                 .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
 
         UserMatching userMatching = userMatchingRepository.findByUserIdAndMatchingId(userId, matching.getId());
-        userMatchingRepository.delete(userMatching);
 
-        User user = userRepository.findByIdWithProfile(userId);
+        if (userMatching != null) { safeDeleteUserMatching(userMatching); }
+
+        userRepository.findByIdWithProfile(userId);
 
         // 늘품제용 티켓 무제한 설정
         //user.getUserProfile().increaseTicket(1);
 
         List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
         messageMatching(matching, userMatchings);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void safeDeleteUserMatching(UserMatching userMatching) {
+        if (userMatchingRepository.existsById(userMatching.getId())) {
+            userMatchingRepository.delete(userMatching);
+        }
     }
 
     private RandomResponseDTO.MatchingDTO messageMatching(Matching matching, List<UserMatching> userMatchings) {
