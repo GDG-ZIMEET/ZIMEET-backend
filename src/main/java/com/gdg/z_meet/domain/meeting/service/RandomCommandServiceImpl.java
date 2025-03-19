@@ -2,6 +2,7 @@ package com.gdg.z_meet.domain.meeting.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gdg.z_meet.domain.chat.service.ChatRoomCommandService;
 import com.gdg.z_meet.domain.meeting.converter.RandomConverter;
 import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Matching;
@@ -32,6 +33,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     private final MatchingRepository matchingRepository;
     private final UserMatchingRepository userMatchingRepository;
     private final UserRepository userRepository;
+    private final ChatRoomCommandService chatRoomCommandService;
 
     @Override
     @Transactional
@@ -71,6 +73,14 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
         validateMatching(matching, userMatchings);
         RandomResponseDTO.MatchingDTO matchingDTO = messageMatching(matching, userMatchings);
+
+        List<Long> userIds = userMatchings.stream()
+                .map(um -> um.getUser().getId())
+                .collect(Collectors.toList());
+
+        if (matching.getMatchingStatus() == MatchingStatus.COMPLETE) {
+            chatRoomCommandService.addUserJoinChat(userIds);
+        }
 
         return matchingDTO;
     }
