@@ -41,7 +41,7 @@ public class RandomQueryServiceImpl implements RandomQueryService {
         Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
                 .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
 
-        List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
+        List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfileReadOnly(matching.getId());
         List<User> users = userMatchings.stream()
                 .map(UserMatching::getUser)
                 .collect(Collectors.toList());
