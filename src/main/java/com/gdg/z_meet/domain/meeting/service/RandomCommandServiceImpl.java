@@ -99,9 +99,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
                 .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
 
-        UserMatching userMatching = userMatchingRepository.findByUserIdAndMatchingId(userId, matching.getId());
-
-        if (userMatching != null) { safeDeleteUserMatching(userMatching); }
+        userMatchingRepository.findByIdForUpdate(userId).ifPresent(this::safeDeleteUserMatching);
 
         userRepository.findByIdWithProfile(userId);
 
@@ -114,10 +112,9 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void safeDeleteUserMatching(UserMatching userMatching) {
-        if (userMatchingRepository.existsById(userMatching.getId())) {
-            userMatchingRepository.delete(userMatching);
-        }
+        userMatchingRepository.findById(userMatching.getId()).ifPresent(userMatchingRepository::delete);
     }
+
 
     private RandomResponseDTO.MatchingDTO messageMatching(Matching matching, List<UserMatching> userMatchings) {
 

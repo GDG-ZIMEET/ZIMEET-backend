@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserMatchingRepository extends JpaRepository<UserMatching, Long> {
 
@@ -16,4 +17,8 @@ public interface UserMatchingRepository extends JpaRepository<UserMatching, Long
     List<UserMatching> findAllByMatchingIdWithUserProfile(@Param("matchingId") Long matchingId);
 
     UserMatching findByUserIdAndMatchingId(Long userId, Long matchingId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM UserMatching u WHERE u.id = :id")
+    Optional<UserMatching> findByIdForUpdate(@Param("id") Long id);
 }
