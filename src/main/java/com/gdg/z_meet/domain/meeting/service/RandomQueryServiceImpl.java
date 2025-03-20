@@ -39,7 +39,12 @@ public class RandomQueryServiceImpl implements RandomQueryService {
     public RandomResponseDTO.MatchingDTO getMatching(Long userId) {
 
         Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
-                .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
+                .orElse(null);
+
+        if (matching == null) {
+            matching = matchingRepository.findCompleteMatchingByUserId(userId)
+                    .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
+        }
 
         List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfileReadOnly(matching.getId());
         List<User> users = userMatchings.stream()
