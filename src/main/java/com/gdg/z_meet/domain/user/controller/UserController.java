@@ -55,9 +55,9 @@ public class UserController {
 
     @GetMapping("/profile/{nickname}")
     @Operation(summary = "유저 프로필 조회", description = "유저 프로필 조회")
-    public Response<UserRes.UserProfileRes> getProfile(@PathVariable String nickname) {
+    public Response<UserRes.UserProfileRes> getProfile(HttpServletRequest request, @PathVariable String nickname) {
 
-        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        Long userId = jwtUtil.extractUserIdFromRequest(request);
         return Response.ok(userService.getUserProfile(userId, nickname));
     }
 
