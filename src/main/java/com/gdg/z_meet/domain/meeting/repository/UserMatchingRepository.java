@@ -22,6 +22,6 @@ public interface UserMatchingRepository extends JpaRepository<UserMatching, Long
     UserMatching findByUserIdAndMatchingId(Long userId, Long matchingId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT u FROM UserMatching u WHERE u.id = :id")
-    Optional<UserMatching> findByIdForUpdate(@Param("id") Long id);
+    @Query("SELECT um FROM UserMatching um WHERE um.user.id = :userId AND um.matching.matchingStatus = 'WAITING'")
+    Optional<UserMatching> findByUserIdForUpdate(@Param("userId") Long userId);
 }

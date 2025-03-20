@@ -97,7 +97,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
                 .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
 
-        userMatchingRepository.findByIdForUpdate(userId).ifPresent(this::safeDeleteUserMatching);
+        userMatchingRepository.findByUserIdForUpdate(userId).ifPresent(this::safeDeleteUserMatching);
 
         userRepository.findByIdWithProfile(userId);
 
