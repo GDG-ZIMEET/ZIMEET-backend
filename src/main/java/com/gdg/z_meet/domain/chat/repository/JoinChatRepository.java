@@ -4,6 +4,7 @@ import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.entity.JoinChat;
 import com.gdg.z_meet.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,4 +23,8 @@ public interface JoinChatRepository extends JpaRepository<JoinChat, Long> {
     List<Long> findUserIdsByUserIdInAndChatRoomId(@Param("userIds") List<Long> userIds, @Param("chatRoomId") Long chatRoomId);
     @Query("SELECT jc FROM JoinChat jc WHERE jc.user.id = :userId AND jc.status = 'ACTIVE'")
     List<JoinChat> findByUserIdAndStatus(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("UPDATE JoinChat j SET j.status = 'INACTIVE' WHERE j.user.id = :userId")
+    void deleteJoinChatWithUser(@Param("userId") Long userId);
 }
