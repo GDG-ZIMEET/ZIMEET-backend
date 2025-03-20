@@ -61,6 +61,8 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.GetTeamDTO getTeam(Long userId, Long teamId) {
 
+        User user = userRepository.findByIdWithProfile(userId);
+
         if (userTeamRepository.existsByUserIdAndTeamIdAndActiveStatus(userId, teamId)) {
             throw new BusinessException(Code.INVALID_MY_TEAM_ACCESS);
         }
@@ -80,7 +82,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .orElseThrow(() -> new BusinessException(Code.MY_TEAM_NOT_FOUND));
         Boolean hi = hiRepository.existsByFromAndTo(myTeam, team);
 
-        return MeetingConverter.toGetTeamDTO(team, users, hi);
+        return MeetingConverter.toGetTeamDTO(user, team, users, hi);
     }
 
     @Override

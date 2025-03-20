@@ -142,15 +142,18 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserRes.UserProfileRes getUserProfile(String nickname) {
+    public UserRes.UserProfileRes getUserProfile(Long userId, String nickname) {
+
+        User user = userRepository.findByIdWithProfile(userId);
+
         UserProfile userProfile = userProfileRepository.findByNickname(nickname)
                 .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
 
-        User user = userProfile.getUser();
+        User findUser = userProfile.getUser();
 
         return UserRes.UserProfileRes.builder()
                 .nickname(userProfile.getNickname())
-                .studentNumber(user.getStudentNumber().substring(2,4))
+                .studentNumber(findUser.getStudentNumber().substring(2,4))
                 .gender(userProfile.getGender())
                 .emoji(userProfile.getEmoji())
                 .mbti(userProfile.getMbti())
@@ -160,6 +163,7 @@ public class UserService {
                 .major(userProfile.getMajor().getShortName())
                 .age(userProfile.getAge())
                 .music(userProfile.getMusic())
+                .level(String.valueOf(user.getUserProfile().getLevel()))
                 .build();
     }
 

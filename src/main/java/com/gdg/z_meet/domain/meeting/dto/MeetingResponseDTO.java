@@ -64,6 +64,7 @@ public class MeetingResponseDTO {
         String gender;
         List<GetTeamUserDTO> userList;
         Boolean hi;
+        String level;
     }
 
     @Builder

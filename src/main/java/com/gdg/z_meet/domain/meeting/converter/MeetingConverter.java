@@ -36,7 +36,7 @@ public class MeetingConverter {
                 .build();
     }
 
-    public static MeetingResponseDTO.GetTeamDTO toGetTeamDTO(Team team, List<User> users, Boolean hi){
+    public static MeetingResponseDTO.GetTeamDTO toGetTeamDTO(User u, Team team, List<User> users, Boolean hi){
 
         List<MeetingResponseDTO.GetTeamUserDTO> teamUserDTOS = users.stream()
                 .map(user -> MeetingResponseDTO.GetTeamUserDTO.builder()
@@ -61,6 +61,7 @@ public class MeetingConverter {
                 .gender(String.valueOf(team.getGender()))
                 .userList(teamUserDTOS)
                 .hi(hi)
+                .level(String.valueOf(u.getUserProfile().getLevel()))
                 .build();
     }
 
