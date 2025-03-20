@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.user.controller;
 
+import com.gdg.z_meet.global.common.AuthenticatedUserUtils;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;
 import com.gdg.z_meet.domain.user.dto.Token;
@@ -55,7 +56,9 @@ public class UserController {
     @GetMapping("/profile/{nickname}")
     @Operation(summary = "유저 프로필 조회", description = "유저 프로필 조회")
     public Response<UserRes.UserProfileRes> getProfile(@PathVariable String nickname) {
-        return Response.ok(userService.getUserProfile(nickname));
+
+        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+        return Response.ok(userService.getUserProfile(userId, nickname));
     }
 
     @PatchMapping("/myprofile/nickname")

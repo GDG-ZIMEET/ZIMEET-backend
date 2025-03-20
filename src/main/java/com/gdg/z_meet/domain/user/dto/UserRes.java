@@ -66,6 +66,7 @@ public class UserRes {
         private IdealType idealType;
         private IdealAge idealAge;
         private Music music;
+        private String level;
     }
 
     @Getter
