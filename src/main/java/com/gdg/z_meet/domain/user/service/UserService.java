@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.user.service;
 
+import com.gdg.z_meet.domain.chat.service.ChatRoomCommandService;
 import com.gdg.z_meet.domain.order.repository.ItemPurchaseRepository;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Level;
@@ -34,6 +35,7 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
     private final ItemPurchaseRepository itemPurchaseRepository;
+    private final ChatRoomCommandService chatRoomCommandService;
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
@@ -193,6 +195,8 @@ public class UserService {
     public void withdraw(Long userId, HttpServletRequest request, HttpServletResponse response) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
+
+        chatRoomCommandService.removeUser(userId);
 
         user.setIsDeleted(true);
         userRepository.save(user);

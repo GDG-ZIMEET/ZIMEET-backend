@@ -229,4 +229,40 @@ public class ChatRoomCommandService {
         }
 
     }
+
+    //사용자의 모든 채팅방 나가기
+    @Transactional
+    public void removeUser(Long userId) {
+        // DB에서 사용자 상태를 INACTIVE로 변경
+        joinChatRepository.deleteJoinChatWithUser(userId);
+
+        // Redis에서 해당 사용자가 속한 모든 채팅방과 관련된 데이터를 한 번에 삭제
+        String joinChatsKey = "user:" + userId + ":chatrooms";
+        Set<Object> chatRoomIdsSet = redisTemplate.opsForSet().members(joinChatsKey);
+
+        if (chatRoomIdsSet != null && !chatRoomIdsSet.isEmpty()) {
+            Set<String> chatRoomIds = chatRoomIdsSet.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toSet());
+            // 여러 채팅방에 대한 사용자 정보 삭제
+            for (String chatRoomId : chatRoomIds) {
+                String chatRoomUsersKey = "chatroom:" + chatRoomId + ":users";
+
+                // Redis에서 사용자와 채팅방 간 매핑 데이터 제거
+                redisTemplate.opsForSet().remove(joinChatsKey, chatRoomId);
+                redisTemplate.opsForSet().remove(chatRoomUsersKey, String.valueOf(userId));
+
+                // 채팅방에 남은 사용자가 없다면 해당 채팅방 삭제
+                Long remainingUsers = redisTemplate.opsForSet().size(chatRoomUsersKey);
+                if (remainingUsers != null && remainingUsers == 0) {
+                    redisTemplate.opsForHash().delete(CHAT_ROOMS_KEY, chatRoomId);
+                    redisTemplate.opsForZSet().remove(CHAT_ROOM_ACTIVITY_KEY, chatRoomId);
+                }
+            }
+        }
+
+        // Redis에서 사용자 채팅방 목록 삭제
+        redisTemplate.delete(joinChatsKey);
+    }
+
 }
