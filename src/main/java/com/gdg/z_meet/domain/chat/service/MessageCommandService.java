@@ -74,49 +74,45 @@ public class MessageCommandService {
     public void saveMessagesToDB() {
 
         List<ChatRoom> chatRooms = chatRoomRepository.findAll();  // MySQL에서 chatRoom 조회
+
         for (ChatRoom chatRoom : chatRooms) {
             Long chatRoomId = chatRoom.getId();
             String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
+
             Long totalMessages = redisTemplate.opsForList().size(chatRoomMessagesKey);
+            if (totalMessages == null || totalMessages == 0) continue; // 저장할 메시지가 없음
 
-            if (totalMessages == null || totalMessages <= MAX_REDIS_MESSAGES) {
-                continue;  // MAX개 이하라면 저장하지 않음
-            }
+            List<Object> messages = redisTemplate.opsForList().range(chatRoomMessagesKey, 0, -1);
+            if (messages == null || messages.isEmpty()) continue;
 
-            int messagesToMove = (int) (totalMessages - MAX_REDIS_MESSAGES);
-            if (messagesToMove <= 0) continue;  // 저장할 메시지가 없음
+            List<ChatMessage> chatMessages = messages.stream()
+                    .map(obj -> objectMapper.convertValue(obj, ChatMessage.class))
+                    .filter(chatMessage -> chatMessage.getSenderId() != null)
+                    .collect(Collectors.toList());
 
-            List<Object> messages = redisTemplate.opsForList().range(chatRoomMessagesKey, 0, messagesToMove - 1);
-            if (messages != null && !messages.isEmpty()) {
-                List<ChatMessage> chatMessages = messages.stream()
-                        .map(obj -> objectMapper.convertValue(obj, ChatMessage.class))
-                        .filter(chatMessage -> chatMessage.getSenderId() != null)
-                        .collect(Collectors.toList());
+            List<Message> messageList = chatMessages.stream()
+                    .map(chatMessage -> {
+                        User user = userRepository.findById(chatMessage.getSenderId())
+                                .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
+                        LocalDateTime now = LocalDateTime.now();
 
-                List<Message> messageList = chatMessages.stream()
-                        .map(chatMessage -> {
-                            // MySQL에서 userId, chatRoomId를 가져와 MongoDB에 저장
-                            User user = userRepository.findById(chatMessage.getSenderId())
-                                    .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
-                            LocalDateTime now = LocalDateTime.now();
+                        return Message.builder()
+                                .chatRoomId(chatRoomId.toString())
+                                .userId(user.getId().toString())
+                                .content(chatMessage.getContent())
+                                .createdAt(chatMessage.getSendAt())
+                                .updatedAt(now)
+                                .build();
+                    })
+                    .collect(Collectors.toList());
 
-                            return Message.builder()
-                                    .chatRoomId(chatRoom.getId().toString())
-                                    .userId(user.getId().toString())
-                                    .content(chatMessage.getContent())
-                                    .createdAt(chatMessage.getSendAt())
-                                    .updatedAt(now)
-                                    .build();
-                        })
-                        .collect(Collectors.toList());
-                mongoMessageRepository.saveAll(messageList);
+            mongoMessageRepository.saveAll(messageList);
 
-                // 저장한 메시지를 Redis에서 삭제
-                redisTemplate.opsForList().trim(chatRoomMessagesKey, messagesToMove, -1);
-            }
+            // Redis에서 모든 메시지 제거
+            redisTemplate.delete(chatRoomMessagesKey);
         }
-
     }
+
 
 
 
