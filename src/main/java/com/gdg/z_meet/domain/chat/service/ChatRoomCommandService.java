@@ -23,6 +23,7 @@ import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -50,6 +51,16 @@ public class ChatRoomCommandService {
 
     private static final String CHAT_ROOMS_KEY = "chatrooms";
     private static final String CHAT_ROOM_ACTIVITY_KEY = "chatroom:activity";
+
+    //레디스 초기화
+    @PostConstruct
+    public void initRandomChatIdRedis() {
+        String key = "chat:randomChatId";
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(key))) {
+            Long max = chatRoomRepository.findMaxRandomChatId().orElse(0L);
+            redisTemplate.opsForValue().set(key, String.valueOf(max));
+        }
+    }
 
 
     // 채팅방 삭제
@@ -124,9 +135,8 @@ public class ChatRoomCommandService {
         if(userIds.size() != 4)
             throw new BusinessException(Code.RANDOM_MEETING_USER_COUNT);
 
-        // 가장 큰 randomChatId 조회 후 +1
-        Long maxRandomChatId = chatRoomRepository.findMaxRandomChatId().orElse(0L);
-        Long newRandomChatId = maxRandomChatId + 1;
+        // Redis에서 auto-increment된 randomChatId 가져오기
+        Long newRandomChatId = redisTemplate.opsForValue().increment("chat:randomChatId");
 
         //채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
