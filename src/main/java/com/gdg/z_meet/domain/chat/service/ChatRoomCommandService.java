@@ -121,7 +121,7 @@ public class ChatRoomCommandService {
     }
 
     public ChatRoomDto.resultChatRoomDto addUserJoinChat(List<Long> userIds){
-        if(userIds.size() != 6)
+        if(userIds.size() != 4)
             throw new BusinessException(Code.RANDOM_MEETING_USER_COUNT);
 
         // 가장 큰 randomChatId 조회 후 +1
