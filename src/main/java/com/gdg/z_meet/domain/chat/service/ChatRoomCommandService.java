@@ -52,7 +52,7 @@ public class ChatRoomCommandService {
     private static final String CHAT_ROOMS_KEY = "chatrooms";
     private static final String CHAT_ROOM_ACTIVITY_KEY = "chatroom:activity";
 
-    //레디스 초기화
+    //레디스 초기화 : 랜덤채팅 최신id 저장
     @PostConstruct
     public void initRandomChatIdRedis() {
         String key = "chat:randomChatId";

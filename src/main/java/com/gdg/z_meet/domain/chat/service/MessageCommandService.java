@@ -108,8 +108,10 @@ public class MessageCommandService {
 
             mongoMessageRepository.saveAll(messageList);
 
-            // Redis에서 모든 메시지 제거
-            redisTemplate.delete(chatRoomMessagesKey);
+             //레디스에서 최신 nn개의 메시지를 제외하고 모두 저장
+            if (totalMessages > MAX_REDIS_MESSAGES) {
+                redisTemplate.opsForList().trim(chatRoomMessagesKey, -MAX_REDIS_MESSAGES, -1);
+            }
         }
     }
 
