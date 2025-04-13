@@ -29,9 +29,6 @@ public class HiCommandServiceImpl implements HiCommandService {
 
     private final HiRepository hiRepository;
     private final TeamRepository teamRepository;
-    private final MeetingQueryServiceImpl meetingQueryService;
-    private final UserTeamRepository userTeamRepository;
-    private final UserProfileRepository userProfileRepository;
     private final UserRepository userRepository;
 
     // 중복 제거용 유틸 메서드 - Team/User 공통 처리
@@ -87,9 +84,7 @@ public class HiCommandServiceImpl implements HiCommandService {
         // 유효성 검사
         if (from.getTeamType() != to.getTeamType()) throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         if (from.getGender() == to.getGender()) throw new BusinessException(Code.SAME_GENDER);
-        if (hiRepository.existsByFromIdAndToIdAndHiStatusNotAndHiType(from.getId(), to.getId(), HiStatus.EXPIRED, HiType.TEAM)) {
-            throw new BusinessException(Code.HI_DUPLICATION);
-        }
+        validateHiDuplication(from.getId(), to.getId(), HiType.TEAM);
 
         // 늘품제용 하이 무제한 설정
         //from.decreaseHi(); // 하이 갯수 차감
@@ -120,9 +115,7 @@ public class HiCommandServiceImpl implements HiCommandService {
 
         // 유효성 검사
         if (from.getUserProfile().getGender() == to.getUserProfile().getGender()) throw new BusinessException(Code.SAME_GENDER);
-        if (hiRepository.existsByFromIdAndToIdAndHiStatusNotAndHiType(from.getId(), to.getId(), HiStatus.EXPIRED, HiType.USER)) {
-            throw new BusinessException(Code.HI_DUPLICATION);
-        }
+        validateHiDuplication(from.getId(), to.getId(), HiType.USER);
 
         // 늘품제용 하이 무제한 설정
         //from.decreaseHi(); // 하이 갯수 차감
