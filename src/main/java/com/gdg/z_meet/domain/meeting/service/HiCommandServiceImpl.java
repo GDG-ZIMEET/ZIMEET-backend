@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Service
 @AllArgsConstructor
@@ -33,57 +34,31 @@ public class HiCommandServiceImpl implements HiCommandService {
     private final UserProfileRepository userProfileRepository;
     private final UserRepository userRepository;
 
-    // 팀 분리
-    public Map<String, Team> assignTeams(List<Long> teamIds, Long fromId) {
-        List<Team> teams = teamRepository.findByIdIn(teamIds);
+    // 중복 제거용 유틸 메서드 - Team/User 공통 처리
+    public <T> Map<String, T> assignEntities(List<T> entities, Long fromId, Function<T, Long> idExtractor) {
+        if (entities.size() != 2) throw new BusinessException(Code.ENTITY_NOT_FOUND);
 
-        if (teams.size() != 2) {
-            throw new BusinessException(Code.TEAM_NOT_FOUND); // 모든 팀을 못 찾은 경우
-        }
-
-        Team from = null;
-        Team to = null;
-
-        // 팀 순서 확인 후 할당
-        if (teams.get(0).getId().equals(fromId)) {
-            from = teams.get(0); // 보내는 팀
-            to = teams.get(1);   // 받는 팀
+        T from, to;
+        if (idExtractor.apply(entities.get(0)).equals(fromId)) {
+            from = entities.get(0);
+            to = entities.get(1);
         } else {
-            from = teams.get(1);
-            to = teams.get(0);
+            from = entities.get(1);
+            to = entities.get(0);
         }
 
-        Map<String, Team> teamMap = new HashMap<>();
-        teamMap.put("from", from);
-        teamMap.put("to", to);
-        return teamMap;
+        Map<String, T> result = new HashMap<>();
+        result.put("from", from);
+        result.put("to", to);
+        return result;
     }
 
-    // 유저 분리
-    public Map<String, User> assignUsers(List<Long> userIds, Long fromId) {
-        List<User> users = userRepository.findByIdIn(userIds);
-
-        if (users.size() != 2) {
-            throw new BusinessException(Code.USER_NOT_FOUND); // 모든 팀을 못 찾은 경우
-        }
-
-        User from = null;
-        User to = null;
-
-        // 팀 순서 확인 후 할당
-        if (users.get(0).getId().equals(fromId)) {
-            from = users.get(0); // 보낸 유저
-            to = users.get(1);   // 받은 유저
-        } else {
-            from = users.get(1);
-            to = users.get(0);
-        }
-
-        Map<String, User> userMap = new HashMap<>();
-        userMap.put("from", from);
-        userMap.put("to", to);
-        return userMap;
+    // 하이 중복 체크 로직 추출
+    private void validateHiDuplication(Long fromId, Long toId, HiType hiType) {
+        boolean exists = hiRepository.existsByFromIdAndToIdAndHiStatusNotAndHiType(fromId, toId, HiStatus.EXPIRED, hiType);
+        if (exists) throw new BusinessException(Code.HI_DUPLICATION);
     }
+
 
     @Override
     public void sendHi(MeetingRequestDTO.hiDto hiDto) {
@@ -100,7 +75,12 @@ public class HiCommandServiceImpl implements HiCommandService {
         List<Long> teamIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
 
         // 공통 메서드 호출하여 from, to 팀 할당
-        Map<String, Team> teams = assignTeams(teamIds, hiDto.getFromId());
+        Map<String, Team> teams = assignEntities(
+                teamRepository.findByIdIn(teamIds),
+                hiDto.getFromId(),
+                Team::getId
+        );
+
         Team from = teams.get("from");
         Team to = teams.get("to");
 
@@ -129,7 +109,12 @@ public class HiCommandServiceImpl implements HiCommandService {
         List<Long> userIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
 
         // 공통 메서드 호출하여 from, to 팀 할당
-        Map<String, User> users = assignUsers(userIds, hiDto.getFromId());
+        Map<String, User> users = assignEntities(
+                userRepository.findByIdIn(userIds),
+                hiDto.getFromId(),
+                User::getId
+        );
+
         User from = users.get("from");
         User to = users.get("to");
 
@@ -154,14 +139,12 @@ public class HiCommandServiceImpl implements HiCommandService {
     @Override
     @Transactional
     public void refuseHi(MeetingRequestDTO.hiDto hiDto) {
-        List<Long> teamIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
+        Long fromId = hiDto.getFromId();
+        Long toId = hiDto.getToId();
+        HiType type = hiDto.getType();
 
-        // 공통 메서드 호출하여 from, to 팀 할당
-        Map<String, Team> teams = assignTeams(teamIds, hiDto.getFromId());
-        Team from = teams.get("from");
-        Team to = teams.get("to");
+        Hi hi = hiRepository.findByFromIdAndToIdAndHiType(fromId, toId, type).orElseThrow(() -> new BusinessException(Code.HI_NOT_FOUND));
 
-        Hi hi = hiRepository.findByFromIdAndToId(from.getId(), to.getId());
         if (hi == null) throw new BusinessException(Code.HI_NOT_FOUND);
         hi.changeStatus(HiStatus.REFUSE);
         hiRepository.save(hi);

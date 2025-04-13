@@ -17,6 +17,7 @@ import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.entity.enums.HiStatus;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
+import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.meeting.service.HiCommandService;
 import com.gdg.z_meet.domain.meeting.service.HiCommandServiceImpl;
@@ -53,6 +54,7 @@ public class ChatRoomCommandService {
     private static final String CHAT_ROOMS_KEY = "chatrooms";
     private static final String CHAT_ROOM_ACTIVITY_KEY = "chatroom:activity";
     private final HiCommandServiceImpl hiCommandService;
+    private final TeamRepository teamRepository;
 
     //레디스 초기화 : 랜덤채팅 최신id 저장
     @PostConstruct
@@ -110,7 +112,12 @@ public class ChatRoomCommandService {
         List<Long> teamIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
 
         // 공통 메서드 호출하여 from, to 팀 할당
-        Map<String, Team> teams = hiCommandService.assignTeams(teamIds, hiDto.getFromId());
+        Map<String, Team> teams = hiCommandService.assignEntities(
+                teamRepository.findByIdIn(teamIds),
+                hiDto.getFromId(),
+                Team::getId
+        );
+
         Team from = teams.get("from");
         Team to = teams.get("to");
 

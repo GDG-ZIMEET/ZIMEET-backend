@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface HiRepository extends JpaRepository<Hi,Long> {
@@ -22,6 +23,8 @@ public interface HiRepository extends JpaRepository<Hi,Long> {
     @Modifying
     @Query("UPDATE Hi h SET h.hiStatus = 'DELETED' WHERE h.fromId = :teamId OR h.toId = :teamId")
     void updateHiByTeamId(@Param("teamId") Long teamId);
+
+    Optional<Hi> findByFromIdAndToIdAndHiType(Long fromId, Long toId, HiType hiType);
 
     Boolean existsByFromIdAndToIdAndHiType(Long fromId, Long toId, HiType hiType);
 

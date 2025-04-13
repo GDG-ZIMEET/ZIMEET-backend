@@ -59,6 +59,7 @@ public enum Code implements BaseCode {
     SAME_GENDER(HttpStatus.BAD_REQUEST, "Hi4002", "같은 성별에게는 하이를 보낼 수 없습니다."),
     HI_DUPLICATION(HttpStatus.BAD_REQUEST, "Hi4003", "이미 하이를 보낸 팀입니다."),
     HI_NOT_FOUND(HttpStatus.NOT_FOUND,"Hi4004","하이를 찾을 수 없습니다."),
+    ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND,"HI4005", "해당 팀(유저)를 찾을 수 없습니다."),
 
     // Chat Error
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4001","채팅방을 찾을 수 없습니다."),
