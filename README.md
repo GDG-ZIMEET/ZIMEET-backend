@@ -1,7 +1,7 @@
 # ZIMEET-backend
 
-
+<br> 
 
 ## Server Architecture 
 
-![지밋 아키텍처](https://github.com/user-attachments/assets/7d2b07ce-6786-4cdc-9eed-732a8aa1826f)
+![image](https://github.com/user-attachments/assets/6870f9ac-45ef-4588-991a-fae828c7a568)
