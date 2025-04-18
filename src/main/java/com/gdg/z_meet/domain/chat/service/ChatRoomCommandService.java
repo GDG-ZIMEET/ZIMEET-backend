@@ -140,7 +140,40 @@ public class ChatRoomCommandService {
                 .build();
     }
 
-    public ChatRoomDto.resultChatRoomDto addUserJoinChat(List<Long> userIds){
+    // 사용자 채팅방 추가
+    @Transactional
+    public ChatRoomDto.resultChatRoomDto addUserJoinChat(MeetingRequestDTO.hiDto hiDto) {
+        List<Long> userIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
+
+        // 공통 메서드 호출하여 from, to 팀 할당
+        Map<String, User> users = hiCommandService.assignEntities(
+                userRepository.findByIdIn(userIds),
+                hiDto.getFromId(),
+                User::getId
+        );
+        User from = users.get("from");
+        User to = users.get("to");
+
+        Hi hi = hiRepository.findByFromIdAndToId(from.getId(), to.getId());
+        if (hi == null) throw new BusinessException(Code.HI_NOT_FOUND);
+        hi.changeStatus(HiStatus.ACCEPT);
+        hiRepository.save(hi);
+
+        //채팅방 생성
+        ChatRoom chatRoom = ChatRoom.builder()
+                .chatType(ChatType.USER)
+                .build();
+        chatRoom = chatRoomRepository.save(chatRoom);
+
+        List<User> userList = users.values().stream().collect(Collectors.toList());
+        addUserToChatRoom(chatRoom, userList);
+
+        return ChatRoomDto.resultChatRoomDto.builder()
+                .chatRoomid(chatRoom.getId())
+                .build();
+    }
+
+    public ChatRoomDto.resultChatRoomDto addRandomUserJoinChat(List<Long> userIds){
         if(userIds.size() != 4)
             throw new BusinessException(Code.RANDOM_MEETING_USER_COUNT);
 
