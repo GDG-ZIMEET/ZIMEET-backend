@@ -4,4 +4,4 @@
 
 ## Server Architecture 
 
-![image](https://github.com/user-attachments/assets/6870f9ac-45ef-4588-991a-fae828c7a568)
+![지밋 아키텍처](https://github.com/user-attachments/assets/39afc09f-9919-4ec9-a35b-a7f4559e39ac)
