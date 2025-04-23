@@ -80,8 +80,7 @@ public class HiQueryServiceImpl implements HiQueryService{
             throw new BusinessException(Code.HI_DUPLICATION);
         }
 
-        // 늘품제용 하이 무제한 설정
-        //from.decreaseHi(); // 하이 갯수 차감
+        from.decreaseHi(); // 하이 갯수 차감
 
         Hi hi = Hi.builder()
                 .hiStatus(HiStatus.NONE)

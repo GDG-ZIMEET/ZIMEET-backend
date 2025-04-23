@@ -42,7 +42,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
 
     @Override
-    @Transactional(readOnly = false)
+    @Transactional
     public void joinMatching(Long userId) {
 
         User user = userRepository.findByIdWithProfile(userId);
@@ -50,8 +50,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
             throw new BusinessException(Code.TICKET_LIMIT_EXCEEDED);
         }
 
-        // 늘품제용 티켓 무제한 설정
-        //user.getUserProfile().decreaseTicket(1);
+        user.getUserProfile().decreaseTicket(1);
 
         // 진행중인 매칭 확인
         if (matchingRepository.existsByWaitingMatching(userId)) {
@@ -90,7 +89,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     }
 
     @Override
-    @Transactional(readOnly = false)
+    @Transactional
     public void cancelMatching(Long userId) {
 
         // 완료된 매칭은 취소 불가
@@ -99,10 +98,9 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
         userMatchingRepository.findByUserIdForUpdate(userId).ifPresent(this::safeDeleteUserMatching);
 
-        userRepository.findByIdWithProfile(userId);
+        User user = userRepository.findByIdWithProfile(userId);
 
-        // 늘품제용 티켓 무제한 설정
-        //user.getUserProfile().increaseTicket(1);
+        user.getUserProfile().increaseTicket(1);
 
         List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
         messageMatching(matching, userMatchings);
