@@ -121,7 +121,7 @@ public class ChatRoomCommandService {
         Team from = teams.get("from");
         Team to = teams.get("to");
 
-        Hi hi = hiRepository.findByFromIdAndToId(from.getId(), to.getId());
+        Hi hi = hiRepository.findByFromIdAndToIdAndHiStatus(from.getId(), to.getId(), HiStatus.NONE);
         if (hi == null) throw new BusinessException(Code.HI_NOT_FOUND);
         hi.changeStatus(HiStatus.ACCEPT);
         hiRepository.save(hi);
@@ -154,7 +154,8 @@ public class ChatRoomCommandService {
         User from = users.get("from");
         User to = users.get("to");
 
-        Hi hi = hiRepository.findByFromIdAndToId(from.getId(), to.getId());
+        Hi hi = hiRepository.findByFromIdAndToIdAndHiStatus(from.getId(), to.getId(), HiStatus.NONE);
+        System.out.println("하이에용 : " + hi.toString());
         if (hi == null) throw new BusinessException(Code.HI_NOT_FOUND);
         hi.changeStatus(HiStatus.ACCEPT);
         hiRepository.save(hi);
