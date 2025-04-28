@@ -71,7 +71,7 @@ public class Team extends BaseEntity {
         this.activeStatus = ActiveStatus.INACTIVE;
     }
 
-    public void setNeulHi() { this.hi = 99; }
+    public void setInfiniteHi() { this.hi = 99; }
 
     public void patchVerification() { this.verification = Verification.COMPLETE; }
 }
