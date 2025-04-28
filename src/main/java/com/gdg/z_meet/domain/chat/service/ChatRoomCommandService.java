@@ -62,7 +62,7 @@ public class ChatRoomCommandService {
         String key = "chat:randomChatId";
         if (Boolean.FALSE.equals(redisTemplate.hasKey(key))) {
             Long max = chatRoomRepository.findMaxRandomChatId().orElse(0L);
-            redisTemplate.opsForValue().set(key, String.valueOf(max));
+            redisTemplate.opsForValue().set(key, max);
         }
     }
 
@@ -155,7 +155,6 @@ public class ChatRoomCommandService {
         User to = users.get("to");
 
         Hi hi = hiRepository.findByFromIdAndToIdAndHiStatus(from.getId(), to.getId(), HiStatus.NONE);
-        System.out.println("하이에용 : " + hi.toString());
         if (hi == null) throw new BusinessException(Code.HI_NOT_FOUND);
         hi.changeStatus(HiStatus.ACCEPT);
         hiRepository.save(hi);
@@ -174,12 +173,22 @@ public class ChatRoomCommandService {
                 .build();
     }
 
+    private Long getNewRandomChatId() {
+        String key = "chat:randomChatId";
+
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(key))) {
+            redisTemplate.opsForValue().set(key, 0);
+        }
+
+        return redisTemplate.opsForValue().increment(key);
+    }
+
     public ChatRoomDto.resultChatRoomDto addRandomUserJoinChat(List<Long> userIds){
         if(userIds.size() != 4)
             throw new BusinessException(Code.RANDOM_MEETING_USER_COUNT);
 
         // Redis에서 auto-increment된 randomChatId 가져오기
-        Long newRandomChatId = redisTemplate.opsForValue().increment("chat:randomChatId");
+        Long newRandomChatId = getNewRandomChatId();
 
         //채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
