@@ -92,5 +92,5 @@ public class UserProfile {
 
     public void upLevel() { this.level = Level.PLUS; }
 
-    public void setNeulTicket() { this.ticket = 99; }
+    public void setInfiniteTicket() { this.ticket = 99; }
 }

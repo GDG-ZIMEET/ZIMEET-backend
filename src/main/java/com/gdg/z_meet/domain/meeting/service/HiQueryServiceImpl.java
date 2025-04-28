@@ -37,7 +37,6 @@ public class HiQueryServiceImpl implements HiQueryService{
     private final UserProfileRepository userProfileRepository;
     private final UserRepository userRepository;
 
-
     @Override
     @Transactional
     public List<MeetingResponseDTO.hiListDto> checkHiList(Long userId, String action){
