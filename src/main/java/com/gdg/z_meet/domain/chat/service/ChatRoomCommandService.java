@@ -108,7 +108,7 @@ public class ChatRoomCommandService {
 
     // 팀으로 채팅방 추가
     @Transactional
-    public ChatRoomDto.resultChatRoomDto addTeamJoinChat(MeetingRequestDTO.hiDto hiDto) {
+    public ChatRoomDto.resultChatRoomDto addTeamJoinChat(ChatRoomDto.hiDto hiDto) {
         List<Long> teamIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
 
         // 공통 메서드 호출하여 from, to 팀 할당
@@ -142,7 +142,7 @@ public class ChatRoomCommandService {
 
     // 사용자 채팅방 추가
     @Transactional
-    public ChatRoomDto.resultChatRoomDto addUserJoinChat(MeetingRequestDTO.hiDto hiDto) {
+    public ChatRoomDto.resultChatRoomDto addUserJoinChat(ChatRoomDto.hiDto hiDto) {
         List<Long> userIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
 
         // 공통 메서드 호출하여 from, to 팀 할당

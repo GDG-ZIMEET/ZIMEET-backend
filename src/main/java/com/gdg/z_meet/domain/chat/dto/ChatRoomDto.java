@@ -15,6 +15,16 @@ public class ChatRoomDto {
         private Long chatRoomid;
     }
 
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class hiDto {
+        Long toId;
+        Long fromId;
+    }
+
+
     @Getter
     @AllArgsConstructor
     @Builder
