@@ -84,7 +84,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
                 .collect(Collectors.toList());
 
         if (matching.getMatchingStatus() == MatchingStatus.COMPLETE) {
-            chatRoomCommandService.addUserJoinChat(userIds);
+            chatRoomCommandService.addRandomUserJoinChat(userIds);
         }
     }
 

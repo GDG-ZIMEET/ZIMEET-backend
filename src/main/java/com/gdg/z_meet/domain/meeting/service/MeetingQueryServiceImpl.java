@@ -5,6 +5,7 @@ import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.enums.ActiveStatus;
 import com.gdg.z_meet.domain.meeting.entity.enums.Event;
+import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
@@ -80,7 +81,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         Team myTeam = teamRepository.findByTeamType(userId, team.getTeamType(), event)
                 .orElseThrow(() -> new BusinessException(Code.MY_TEAM_NOT_FOUND));
-        Boolean hi = hiRepository.existsByFromAndTo(myTeam, team);
+        Boolean hi = hiRepository.existsByFromIdAndToIdAndHiType(myTeam.getId(), team.getId(), HiType.TEAM);
 
         return MeetingConverter.toGetTeamDTO(user, team, users, hi);
     }

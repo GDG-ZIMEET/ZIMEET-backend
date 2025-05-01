@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.user.repository;
 
+import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
@@ -44,4 +45,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile WHERE u.name = :name AND u.studentNumber = :studentNumber")
     Optional<User> findByNameAndStudentNumberWithProfile(String name, String studentNumber);
+
+
+    List<User> findByIdIn(List<Long> userIds);
 }

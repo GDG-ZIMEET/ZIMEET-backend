@@ -17,6 +17,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,17 +42,17 @@ public class MessageQueryService {
         Long totalMessages = redisTemplate.opsForList().size(chatRoomMessagesKey);
         List<ChatMessage> chatMessages = new ArrayList<>();
 
-        // Redis에서 메시지 가져오기
+        // Redis에서 메시지 가져오기 (내림차순)
         if (totalMessages != null && totalMessages > 0) {
-            int start = (int) Math.max(totalMessages - ((page + 1) * size), 0);
-            int end = (int) (totalMessages - (page * size) - 1);
+            int start = (int) Math.max(totalMessages - (page * size) - 1, 0);
+            int end = (int) Math.max(totalMessages - ((page + 1) * size), 0);
 
-            if (start <= end) {
-                List<Object> redisMessages = redisTemplate.opsForList().range(chatRoomMessagesKey, start, end);
+            if (start >= end) {
+                List<Object> redisMessages = redisTemplate.opsForList().range(chatRoomMessagesKey, end, start);
                 if (redisMessages != null) {
+                    Collections.reverse(redisMessages); // 최신 메시지가 먼저 오도록
                     chatMessages = redisMessages.stream()
                             .map(obj -> (ChatMessage) obj)
-                            .sorted(Comparator.comparing(ChatMessage::getSendAt)) //오름차순 정렬
                             .collect(Collectors.toList());
                 }
             }
@@ -79,14 +80,13 @@ public class MessageQueryService {
                                 .emoji(user.getUserProfile().getEmoji())  // MySQL에서 가져온 user의 emoji 사용
                                 .build();
                     })
-                    .sorted(Comparator.comparing(ChatMessage::getSendAt))
                     .collect(Collectors.toList());
 
             chatMessages.addAll(dbChatMessages);
         }
 
         chatMessages = chatMessages.stream()
-                .sorted(Comparator.comparing(ChatMessage::getSendAt)) //오름차순 정렬
+                .sorted(Comparator.comparing(ChatMessage::getSendAt).reversed()) //내림차순 정렬
                 .collect(Collectors.toList());
 
         return chatMessages;

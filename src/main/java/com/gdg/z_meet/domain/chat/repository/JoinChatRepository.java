@@ -27,4 +27,9 @@ public interface JoinChatRepository extends JpaRepository<JoinChat, Long> {
     @Modifying
     @Query("UPDATE JoinChat j SET j.status = 'INACTIVE' WHERE j.user.id = :userId")
     void deleteJoinChatWithUser(@Param("userId") Long userId);
+
+    @Query("SELECT jc FROM JoinChat jc WHERE jc.chatRoom.id = :chatRoomId AND jc.user.id != :userId")
+    Optional<JoinChat> findUserByChatRoomIdAndUserNotUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
+
+
 }
