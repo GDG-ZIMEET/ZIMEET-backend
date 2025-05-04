@@ -237,19 +237,21 @@ public class UserService {
         log.info("Refresh token cookie cleared");
     }
 
-    public UserRes.UpdatePasswordRes resetPassword(String name, String studentNumber, String phoneNumber){
+    public UserRes.UpdatePasswordRes resetPassword(String name, String studentNumber, String phoneNumber, String newPassword, String confirmPassword) {
         Optional<User> userOpt = userRepository.findByNameAndStudentNumberAndPhoneNumber(name, studentNumber, phoneNumber);
         if (userOpt.isEmpty()){
             throw new BusinessException(Code.PROFILE_NOT_FOUND);
         }
-        String tempPassword = generateTempPassword();
+        if (!newPassword.equals(confirmPassword)) {
+            throw new BusinessException(Code.PASSWORD_MISMATCH);
+        }
+
         User user = userOpt.get();
-        user.setPassword(encoder.encode(tempPassword));
+        user.setPassword(encoder.encode(newPassword));
         userRepository.save(user);
 
         return UserRes.UpdatePasswordRes.builder()
-                .message("임시 비밀번호가 발급되었습니다.")
-                .password(tempPassword)
+                .message("비밀번호가 재설정되었습니다.")
                 .build();
     }
 

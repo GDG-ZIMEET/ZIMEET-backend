@@ -160,6 +160,5 @@ public class UserRes {
     @AllArgsConstructor
     public static class UpdatePasswordRes {
         private String message;
-        private String password;
     }
 }

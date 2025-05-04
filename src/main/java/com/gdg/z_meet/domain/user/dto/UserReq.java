@@ -79,5 +79,7 @@ public class UserReq {
         private String name;
         private String studentNumber;
         private String phoneNumber;
+        private String newPassword;
+        private String confirmPassword;
     }
 }

@@ -122,7 +122,9 @@ public class UserController {
         UserRes.UpdatePasswordRes updatePasswordRes = userService.resetPassword(
                 resetPasswordReq.getName(),
                 resetPasswordReq.getStudentNumber(),
-                resetPasswordReq.getPhoneNumber()
+                resetPasswordReq.getPhoneNumber(),
+                resetPasswordReq.getNewPassword(),
+                resetPasswordReq.getConfirmPassword()
         );
         return Response.ok(updatePasswordRes);
     }
