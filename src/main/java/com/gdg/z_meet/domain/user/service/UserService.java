@@ -237,8 +237,8 @@ public class UserService {
         log.info("Refresh token cookie cleared");
     }
 
-    public UserRes.UpdatePasswordRes resetPassword(String studentNumber, String phoneNumber){
-        Optional<User> userOpt = userRepository.findByStudentNumberAndPhoneNumber(studentNumber, phoneNumber);
+    public UserRes.UpdatePasswordRes resetPassword(String name, String studentNumber, String phoneNumber){
+        Optional<User> userOpt = userRepository.findByNameAndStudentNumberAndPhoneNumber(name, studentNumber, phoneNumber);
         if (userOpt.isEmpty()){
             throw new BusinessException(Code.PROFILE_NOT_FOUND);
         }

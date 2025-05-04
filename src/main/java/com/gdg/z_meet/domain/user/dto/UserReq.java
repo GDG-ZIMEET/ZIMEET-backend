@@ -76,6 +76,7 @@ public class UserReq {
     @Getter
     @Setter
     public static class ResetPasswordReq{
+        private String name;
         private String studentNumber;
         private String phoneNumber;
     }
