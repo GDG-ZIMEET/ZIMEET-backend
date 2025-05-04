@@ -25,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -233,5 +235,30 @@ public class UserService {
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         log.info("Refresh token cookie cleared");
+    }
+
+    public UserRes.UpdatePasswordRes resetPassword(String studentNumber, String phoneNumber){
+        Optional<User> userOpt = userRepository.findByStudentNumberAndPhoneNumber(studentNumber, phoneNumber);
+        if (userOpt.isEmpty()){
+            throw new BusinessException(Code.PROFILE_NOT_FOUND);
+        }
+        String tempPassword = generateTempPassword();
+        User user = userOpt.get();
+        user.setPassword(encoder.encode(tempPassword));
+        userRepository.save(user);
+
+        return UserRes.UpdatePasswordRes.builder()
+                .message("임시 비밀번호가 발급되었습니다.")
+                .password(tempPassword)
+                .build();
+    }
+
+    private String generateTempPassword() {
+        StringBuilder tempPassword = new StringBuilder();
+        for (int i = 0; i < 6; i++) {
+            int randomDigit = (int) (Math.random() * 10);
+            tempPassword.append(randomDigit);
+        }
+        return tempPassword.toString();
     }
 }

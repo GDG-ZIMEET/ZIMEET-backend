@@ -115,4 +115,14 @@ public class UserController {
         }
         return Response.ok(UserRes.CheckLoginRes.loggedOut());
     }
+
+    @PostMapping("/reset")
+    @Operation(summary = "비밀번호 재설정", description = "비밀번호 재설정")
+    public Response<?> resetPassword(@RequestBody UserReq.ResetPasswordReq resetPasswordReq) {
+        UserRes.UpdatePasswordRes updatePasswordRes = userService.resetPassword(
+                resetPasswordReq.getStudentNumber(),
+                resetPasswordReq.getPhoneNumber()
+        );
+        return Response.ok(updatePasswordRes);
+    }
 }
