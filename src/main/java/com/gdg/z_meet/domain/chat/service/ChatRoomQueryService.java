@@ -136,6 +136,13 @@ public class ChatRoomQueryService {
             return "랜덤채팅 " + (chatRoom.getRandomChatId() +30) + "번방";
         }
 
+        if (chatRoom.getChatType() == ChatType.USER) {//사용자 채팅방일 경우 상대방 이름 반환
+            JoinChat joinChat = joinChatRepository.findUserByChatRoomIdAndUserNotUserId(chatRoomId, userId)
+                                                    .orElseThrow(() -> new BusinessException(Code.JOINCHAT_NOT_FOUND));
+            User user = joinChat.getUser();
+            return user.getUserProfile().getNickname();
+        }
+
         // 해당 채팅방의 팀 조회
         List<TeamChatRoom> teamChatRooms = teamChatRoomRepository.findByChatRoomId(chatRoomId);
 
@@ -198,12 +205,12 @@ public class ChatRoomQueryService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
 
-        // 채팅방이 RANDOM 타입인 경우 성별로 사용자 구분
-        if (chatRoom.getChatType() == ChatType.RANDOM) {
-            return getRandomChatRoomUserList(userId, roomId);
+        // 채팅방이 TEAM 타입인 경우 팀으로 사용자 구분
+        if (chatRoom.getChatType() == ChatType.TEAM) {
+            return getTeamChatRoomUserList(userId, roomId);
         }
+        return getRandomChatRoomUserList(userId, roomId);
 
-        return getTeamChatRoomUserList(userId, roomId);
 
 
     }

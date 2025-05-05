@@ -18,7 +18,8 @@ public class ChatRoom extends BaseEntity {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private ChatType chatType;  // TEAM or RANDOM
+    private ChatType chatType;
 
+    @Column(unique = true)
     private Long randomChatId;
 }

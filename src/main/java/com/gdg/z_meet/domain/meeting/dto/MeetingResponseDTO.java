@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.dto;
 
+import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
 import com.gdg.z_meet.domain.user.entity.enums.Major;
 import com.gdg.z_meet.domain.user.entity.enums.Music;
 import lombok.AllArgsConstructor;
@@ -117,6 +118,7 @@ public class MeetingResponseDTO {
         List<UserProfileDto> userProfileDtos;
         Double age;
         String dateTime;
+        HiType type; //USER or TEAM
 
         @Getter
         @AllArgsConstructor

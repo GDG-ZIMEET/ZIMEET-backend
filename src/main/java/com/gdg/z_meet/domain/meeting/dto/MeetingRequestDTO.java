@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.dto;
 
+import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -21,6 +22,7 @@ public class MeetingRequestDTO {
     public static class hiDto {
         Long toId;
         Long fromId;
+        HiType type; //USER or TEAM
     }
 
 
