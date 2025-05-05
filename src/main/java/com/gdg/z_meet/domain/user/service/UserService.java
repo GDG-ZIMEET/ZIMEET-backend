@@ -237,6 +237,7 @@ public class UserService {
         log.info("Refresh token cookie cleared");
     }
 
+    @Transactional
     public UserRes.UpdatePasswordRes resetPassword(String name, String studentNumber, String phoneNumber, String newPassword, String confirmPassword) {
         Optional<User> userOpt = userRepository.findByNameAndStudentNumberAndPhoneNumber(name, studentNumber, phoneNumber);
         if (userOpt.isEmpty()){
@@ -248,19 +249,9 @@ public class UserService {
 
         User user = userOpt.get();
         user.setPassword(encoder.encode(newPassword));
-        userRepository.save(user);
 
         return UserRes.UpdatePasswordRes.builder()
                 .message("비밀번호가 재설정되었습니다.")
                 .build();
-    }
-
-    private String generateTempPassword() {
-        StringBuilder tempPassword = new StringBuilder();
-        for (int i = 0; i < 6; i++) {
-            int randomDigit = (int) (Math.random() * 10);
-            tempPassword.append(randomDigit);
-        }
-        return tempPassword.toString();
     }
 }
