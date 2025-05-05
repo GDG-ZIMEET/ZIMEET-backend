@@ -153,4 +153,12 @@ public class UserRes {
         Long userId;
         String level;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdatePasswordRes {
+        private String message;
+    }
 }

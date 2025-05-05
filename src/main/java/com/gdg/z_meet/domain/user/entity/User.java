@@ -43,6 +43,10 @@ public class User implements UserDetails {
         this.isDeleted = isDeleted;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;

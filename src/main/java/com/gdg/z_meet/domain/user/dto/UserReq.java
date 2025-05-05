@@ -69,4 +69,17 @@ public class UserReq {
     public static class EmojiUpdateReq{
         private String emoji;
     }
+
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class ResetPasswordReq{
+        private String name;
+        private String studentNumber;
+        private String phoneNumber;
+        private String newPassword;
+        private String confirmPassword;
+    }
 }
