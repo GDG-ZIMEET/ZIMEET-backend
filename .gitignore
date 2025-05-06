@@ -38,6 +38,7 @@ out/
 .env
 
 nginx/nginx.conf
+src/main/java/com/gdg/z_meet/global/firebase/zi-meet-firebase-adminsdk-fbsvc-f026a2abf0.json
 
 ### Mac OS ###
 .DS_Store
