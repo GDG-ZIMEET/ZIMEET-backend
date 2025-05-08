@@ -39,6 +39,9 @@ spring:
     resources:
       static-locations: classpath:/static/, file:/static/
 
+firebase:
+  admin-sdk: firebase/zi-meet-firebase-adminsdk-fbsvc-f026a2abf0.json
+
 #kakao:
 #  pay:
 #    secret-key: ${KAKAO_PAY_SECRET_KEY}     # 실 결제 시크릿 키

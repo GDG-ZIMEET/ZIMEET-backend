@@ -82,7 +82,15 @@ public enum Code implements BaseCode {
     DUPLICATE_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "U006", "이미 가입된 전화번호입니다."),
     DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "U007", "이미 가입된 닉네임입니다."),
     USER_DELETED(HttpStatus.BAD_REQUEST, "U008", "탈퇴한 회원입니다."),
-    PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "U009", "비밀번호가 일치하지 않습니다.");
+    PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "U009", "비밀번호가 일치하지 않습니다."),
+
+
+    // FCM
+//    FEIGN_CLIENT_ERROR_400(HttpStatus.BAD_REQUEST, "4001", "BAD REQUEST in feign client"),
+//    FEIGN_CLIENT_ERROR_500(HttpStatus.INTERNAL_SERVER_ERROR, "5001", "Inter server Error in feign client"),
+    FCM_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "4002", "FCM 토큰을 찾을 수 없습니다."),
+    FCM_ACCESS_TOKEN_REQUEST_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "5002", "FCM 서버에 AccessToken 요청 상황에서 에러 발생"),
+    FCM_SEND_MESSAGE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "5003", "FCM 서버에 메시지 전송 상황에서 에러 발생");
 
 //    NOT_ACADEMY_EMAIL("EEM-001", "Email is not a university email."),
 //    AUTH_CODE_NOT_MATCH("ATH-001", "Auth code not match."),
