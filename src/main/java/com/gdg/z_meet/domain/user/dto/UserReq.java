@@ -82,4 +82,29 @@ public class UserReq {
         private String newPassword;
         private String confirmPassword;
     }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class pushAgreeReq{
+        boolean pushAgree;   // T/F
+    }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class saveFcmTokenReq{
+        String fcmToken;
+    }
+
+    @Builder
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class logoutReq{
+        String fcmToken;
+    }
+
 }

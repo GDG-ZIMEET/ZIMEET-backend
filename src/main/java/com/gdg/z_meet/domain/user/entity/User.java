@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -38,6 +39,13 @@ public class User implements UserDetails {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserProfile userProfile;
+
+    @ColumnDefault("false")
+    private boolean pushAgree;
+
+    public void setPushAgree(boolean pushAgree) {
+        this.pushAgree = pushAgree;
+    }
 
     public void setIsDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
