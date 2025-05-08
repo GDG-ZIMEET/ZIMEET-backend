@@ -62,6 +62,13 @@ dependencies {
 	// firebase
 	implementation 'com.google.firebase:firebase-admin:9.2.0'           // Google Firebase Admin
 	implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
+
+	// openFeign
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.0.3'
+	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+	implementation platform("org.springframework.cloud:spring-cloud-dependencies:2023.0.1")
+
+	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 }
 
 // plain jar 생성 X 설정
