@@ -98,13 +98,4 @@ public class UserReq {
     public static class saveFcmTokenReq{
         String fcmToken;
     }
-
-    @Builder
-    @Getter
-    @AllArgsConstructor(access = AccessLevel.PROTECTED)
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class logoutReq{
-        String fcmToken;
-    }
-
 }
