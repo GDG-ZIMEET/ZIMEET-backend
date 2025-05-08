@@ -81,5 +81,5 @@ tasks.named('test') {
 }
 
 tasks.withType(Test) {
-	enabled = false    // 빌드 시 테스트 x
+	enabled = true    // 빌드 시 테스트 x
 }
