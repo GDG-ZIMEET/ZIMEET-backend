@@ -1,6 +1,5 @@
 package com.gdg.z_meet.domain.fcm.service;
 
-import com.gdg.z_meet.domain.fcm.dto.FcmSendReq;
 import com.gdg.z_meet.domain.fcm.entity.FcmToken;
 import com.gdg.z_meet.domain.fcm.repository.FcmTokenRepository;
 import com.gdg.z_meet.domain.user.dto.UserReq;
@@ -10,8 +9,6 @@ import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
@@ -20,7 +17,6 @@ import com.google.firebase.messaging.Notification;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 
@@ -31,8 +27,6 @@ public class FcmServiceImpl implements FcmService {
 
     private final UserRepository userRepository;
     private final FcmTokenRepository fcmTokenRepository;
-
-    Logger logger = LoggerFactory.getLogger(FcmService.class);
 
     /*
     String title = "채팅방 나가기 알림";
@@ -125,7 +119,7 @@ public class FcmServiceImpl implements FcmService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
 
-        logger.info("받은 FCM 토큰 값 : " + fcmToken);
+        log.info("받은 FCM 토큰 값 : " + fcmToken);
 
         Message message = Message.builder()
                 .setToken(fcmToken)
@@ -137,9 +131,9 @@ public class FcmServiceImpl implements FcmService {
                 .build();
         try {
             String response = FirebaseMessaging.getInstance().send(message);
-            logger.info("FCM 응답: {}", response);
+            log.info("FCM 응답: {}", response);
         } catch (FirebaseMessagingException e) {
-            logger.warn("FCM 전송 실패: {}", e.getMessage(), e);
+            log.warn("FCM 전송 실패: {}", e.getMessage(), e);
             throw new BusinessException(Code.FCM_SEND_MESSAGE_ERROR);
         }
     }
