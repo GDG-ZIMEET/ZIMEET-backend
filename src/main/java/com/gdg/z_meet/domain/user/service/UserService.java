@@ -1,7 +1,7 @@
 package com.gdg.z_meet.domain.user.service;
 
 import com.gdg.z_meet.domain.chat.service.ChatRoomCommandService;
-import com.gdg.z_meet.domain.order.repository.ItemPurchaseRepository;
+import com.gdg.z_meet.domain.fcm.repository.FcmTokenRepository;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Level;
 import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
@@ -36,8 +36,8 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
-    private final ItemPurchaseRepository itemPurchaseRepository;
     private final ChatRoomCommandService chatRoomCommandService;
+    private final FcmTokenRepository fcmTokenRepository;
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
@@ -105,12 +105,17 @@ public class UserService {
         return token;
     }
 
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
+    public void logout(HttpServletRequest request, HttpServletResponse response, String fcmToken) {
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
         if (refreshToken != null) {
             refreshTokenRepository.delete(refreshToken);
         }
         clearRefreshTokenCookie(response);
+
+        // 해당 디바이스의 FCM 토큰만 삭제됨
+        if (fcmToken != null && !fcmToken.isBlank()) {
+            fcmTokenRepository.deleteByToken(fcmToken);
+        }
     }
 
     @Transactional(readOnly = true)

@@ -43,7 +43,7 @@ public class FcmController {
             @Parameter(name = "user", hidden = true)
     })
     @PostMapping("/token")
-    public Response<Long> saveFcmToken(@AuthUser Long userId, @RequestBody UserReq.saveFcmTokenReq req) {
+    public Response<Long> syncFcmToken(@AuthUser Long userId, @RequestBody UserReq.saveFcmTokenReq req) {
         fcmService.syncFcmToken(userId, req);
         return Response.ok(userId);
     }
