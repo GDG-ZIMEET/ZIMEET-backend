@@ -7,6 +7,7 @@ import com.gdg.z_meet.domain.user.dto.Token;
 import com.gdg.z_meet.domain.user.dto.UserReq;
 import com.gdg.z_meet.domain.user.dto.UserRes;
 import com.gdg.z_meet.domain.user.service.UserService;
+import com.gdg.z_meet.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,9 +42,9 @@ public class UserController {
 
     @DeleteMapping("/logout")
     @Operation(summary = "로그아웃", description = "로그아웃")
-    public Response<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        userService.logout(request, response);
-        return Response.ok(null);
+    public Response<Void> logout(@RequestBody UserReq.logoutReq userReq, HttpServletRequest request, HttpServletResponse response) {
+        userService.logout(request, response, userReq.getFcmToken());
+        return Response.ok();
     }
 
     @GetMapping("/myprofile")
