@@ -39,8 +39,12 @@ public class FcmServiceImpl implements FcmService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
 
-        List<FcmToken> tokens = fcmTokenRepository.findAllByUser(user);
+        if (!user.isPushAgree()) {
+            log.info("푸시 알림 비동의 상태: userId={}", userId);
+            return;
+        }
 
+        List<FcmToken> tokens = fcmTokenRepository.findAllByUser(user);
         if (tokens.isEmpty()) {
             log.warn("FCM 토큰 없음: userId={}", userId);
             return;
