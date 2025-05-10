@@ -72,6 +72,14 @@ public class UserProfile {
     @Builder.Default
     private int ticket = 2;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private int hi = 2;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isVisible = false;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
