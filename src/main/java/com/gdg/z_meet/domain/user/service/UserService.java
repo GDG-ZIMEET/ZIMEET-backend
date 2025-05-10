@@ -206,6 +206,8 @@ public class UserService {
 
         chatRoomCommandService.removeUser(userId);
 
+        fcmTokenRepository.deleteAllByUser(user);
+
         user.setIsDeleted(true);
         userRepository.save(user);
 
