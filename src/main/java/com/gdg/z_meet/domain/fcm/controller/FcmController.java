@@ -1,10 +1,8 @@
 package com.gdg.z_meet.domain.fcm.controller;
 
-import com.gdg.z_meet.domain.fcm.dto.FcmSendReq;
 import com.gdg.z_meet.domain.fcm.dto.FcmTestReq;
 import com.gdg.z_meet.domain.fcm.service.FcmService;
 import com.gdg.z_meet.domain.user.dto.UserReq;
-import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.global.response.Response;
 import com.gdg.z_meet.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;

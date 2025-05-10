@@ -9,9 +9,7 @@ import java.util.Optional;
 
 public interface FcmTokenRepository extends JpaRepository<FcmToken, Long> {
 
-    Optional<FcmToken> findByUser(User user);
-
-    void deleteByUser(User user);
+    void deleteAllByUser(User user);
 
     boolean existsByUserAndToken(User user, String token);
 

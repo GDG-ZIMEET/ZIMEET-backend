@@ -42,7 +42,7 @@ public class UserController {
 
     @DeleteMapping("/logout")
     @Operation(summary = "로그아웃", description = "로그아웃")
-    public Response<Void> logout(@RequestParam String fcmToken, HttpServletRequest request, HttpServletResponse response) {
+    public Response<Void> logout(@RequestHeader(value = "X-FCM-TOKEN", required = false) String fcmToken, HttpServletRequest request, HttpServletResponse response) {
         userService.logout(request, response, fcmToken);
         return Response.ok();
     }
