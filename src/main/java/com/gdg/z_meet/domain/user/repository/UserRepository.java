@@ -53,7 +53,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByIdIn(List<Long> userIds);
 
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile up " +
-            "WHERE u.id != :userId AND up.gender != :gender AND up.visibility = true " +
+            "WHERE u.id != :userId AND up.gender != :gender AND up.profileStatus = 'ACTIVE' " +
             "ORDER BY FUNCTION('RAND')")
     List<User> findAllByIsVisible(@Param("userId") Long userId, @Param("gender") Gender gender, Pageable pageable);
 

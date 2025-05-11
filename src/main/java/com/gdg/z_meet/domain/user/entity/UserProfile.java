@@ -78,7 +78,7 @@ public class UserProfile {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private ProfileStatus profileStatus = ProfileStatus.NONE ;
+    private ProfileStatus profileStatus = ProfileStatus.NONE;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -107,6 +107,6 @@ public class UserProfile {
 
     public void setInfiniteTicket() { this.ticket = 99; }
 
-    public void changeProfileStatus(boolean visible) { this.visibility = visible; }
+    public void changeProfileStatus(ProfileStatus status) { this.profileStatus = status; }
 
 }

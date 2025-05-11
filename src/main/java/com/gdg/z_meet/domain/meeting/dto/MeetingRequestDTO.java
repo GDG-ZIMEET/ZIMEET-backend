@@ -1,6 +1,8 @@
 package com.gdg.z_meet.domain.meeting.dto;
 
 import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
+import com.gdg.z_meet.domain.user.entity.enums.ProfileStatus;
+import com.gdg.z_meet.global.validation.annotation.ValidProfileStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -37,9 +39,10 @@ public class MeetingRequestDTO {
     }
 
     @Getter
-    public static class ShowProfileDTO {
+    public static class PatchProfileStatusDTO {
 
         @NotNull
-        Boolean visibility;
+        @ValidProfileStatus
+        ProfileStatus status;
     }
 }

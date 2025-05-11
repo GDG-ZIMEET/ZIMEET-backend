@@ -12,6 +12,7 @@ import com.gdg.z_meet.global.response.Response;
 import com.gdg.z_meet.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
@@ -174,7 +175,7 @@ public class MeetingController {
 
     @Operation(summary = "1대1 미팅 참여")
     @PatchMapping("/ONE_TO_ONE")
-    public Response<Void> patchProfileStatus(@AuthUser Long userId, @RequestBody MeetingRequestDTO.ShowProfileDTO request) {
+    public Response<Void> patchProfileStatus(@AuthUser Long userId, @Valid @RequestBody MeetingRequestDTO.PatchProfileStatusDTO request) {
 
         meetingCommandService.patchProfileStatus(userId, request);
 

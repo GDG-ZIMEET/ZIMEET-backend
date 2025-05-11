@@ -11,6 +11,7 @@ import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
+import com.gdg.z_meet.domain.user.entity.enums.ProfileStatus;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -116,15 +117,15 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
 
     @Override
     @Transactional
-    public void patchProfileStatus(Long userId, MeetingRequestDTO.ShowProfileDTO request) {
+    public void patchProfileStatus(Long userId, MeetingRequestDTO.PatchProfileStatusDTO request) {
 
         User user = userRepository.findByIdWithProfile(userId);
-        Boolean visible = request.getVisibility();
+        ProfileStatus status = request.getStatus();
 
-        if (user.getUserProfile().isVisibility() == visible) {
-            throw new BusinessException(visible ? Code.PROFILE_ALREADY_VISIBLE : Code.PROFILE_ALREADY_INVISIBLE);
+        if (user.getUserProfile().getProfileStatus() == status) {
+            throw new BusinessException(status == ProfileStatus.ACTIVE ? Code.PROFILE_ALREADY_VISIBLE : Code.PROFILE_ALREADY_INVISIBLE);
         }
-        user.getUserProfile().changeProfileStatus(visible);
+        user.getUserProfile().changeProfileStatus(status);
     }
 
     private void delHi(Long teamId){
