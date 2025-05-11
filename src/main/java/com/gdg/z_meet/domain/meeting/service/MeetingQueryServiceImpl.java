@@ -12,11 +12,13 @@ import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
+import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -179,6 +181,22 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         return MeetingConverter.toGetMyDeleteDTO(user);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetUserGalleryDTO getUserGallery(Long userId, Integer page) {
+
+        UserProfile userProfile = userProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(Code.USER_PROFILE_NOT_FOUND));
+
+        Gender gender = userProfile.getGender();
+        List<User> userList = userRepository.findAllByIsVisible(userId, gender, PageRequest.of(page, 12));
+        Collections.shuffle(userList);
+
+        return MeetingConverter.toGetUserGalleryDTO(userList);
+    }
+
+
 
     private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
 

@@ -9,6 +9,7 @@ import com.gdg.z_meet.domain.meeting.service.MeetingCommandService;
 import com.gdg.z_meet.domain.meeting.service.MeetingQueryService;
 import com.gdg.z_meet.global.common.AuthenticatedUserUtils;
 import com.gdg.z_meet.global.response.Response;
+import com.gdg.z_meet.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
@@ -158,6 +159,15 @@ public class MeetingController {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         MeetingResponseDTO.GetMyDeleteDTO response = meetingQueryService.getMyDelete(userId);
+
+        return Response.ok(response);
+    }
+
+    @Operation(summary = "1대1 갤러리 조회", description = "12명씩 페이징 됩니다.")
+    @GetMapping("/ONE_TO_ONE")
+    public Response<MeetingResponseDTO.GetUserGalleryDTO> getUserGallery(@AuthUser Long userId, @RequestParam(name = "page") Integer page) {
+
+        MeetingResponseDTO.GetUserGalleryDTO response = meetingQueryService.getUserGallery(userId, page);
 
         return Response.ok(response);
     }

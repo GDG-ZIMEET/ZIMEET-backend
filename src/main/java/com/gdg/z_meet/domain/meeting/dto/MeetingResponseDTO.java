@@ -174,4 +174,26 @@ public class MeetingResponseDTO {
     public static class GetVerificationDTO {
         List<GetVerificationTeamDTO> teamList;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetPreUserDTO {
+        Long userId;
+        String emoji;
+        String name;
+        Integer verification;
+        String major;
+        Integer age;
+        String music;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetUserGalleryDTO {
+        List<GetPreUserDTO> userList;
+    }
 }
