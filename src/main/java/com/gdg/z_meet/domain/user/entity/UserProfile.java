@@ -77,7 +77,7 @@ public class UserProfile {
 
     @Column(nullable = false)
     @Builder.Default
-    private boolean isVisible = false;
+    private boolean visibility = false;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
