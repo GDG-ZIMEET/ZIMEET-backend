@@ -76,8 +76,9 @@ public class UserProfile {
     private int hi = 2;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
-    private boolean visibility = false;
+    private ProfileStatus profileStatus = ProfileStatus.NONE ;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
