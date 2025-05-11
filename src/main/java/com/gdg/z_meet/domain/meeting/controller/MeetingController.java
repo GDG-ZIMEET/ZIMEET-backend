@@ -171,4 +171,13 @@ public class MeetingController {
 
         return Response.ok(response);
     }
+
+    @Operation(summary = "1대1 미팅 참여")
+    @PatchMapping("/ONE_TO_ONE")
+    public Response<Void> patchProfileStatus(@AuthUser Long userId, @RequestBody MeetingRequestDTO.ShowProfileDTO request) {
+
+        meetingCommandService.patchProfileStatus(userId, request);
+
+        return Response.ok();
+    }
 }

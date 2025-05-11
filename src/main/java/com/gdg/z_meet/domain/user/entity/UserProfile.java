@@ -105,4 +105,7 @@ public class UserProfile {
     public void upLevel() { this.level = Level.PLUS; }
 
     public void setInfiniteTicket() { this.ticket = 99; }
+
+    public void changeProfileStatus(boolean visible) { this.visibility = visible; }
+
 }

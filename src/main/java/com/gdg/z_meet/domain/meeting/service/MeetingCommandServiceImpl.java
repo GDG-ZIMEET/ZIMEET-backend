@@ -2,7 +2,6 @@ package com.gdg.z_meet.domain.meeting.service;
 
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
-import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
@@ -113,6 +112,19 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         if (teamRepository.existsByIdAndActiveStatus(teamId)) {
             throw new BusinessException(Code.TEAM_DELETE_FAILED);
         }
+    }
+
+    @Override
+    @Transactional
+    public void patchProfileStatus(Long userId, MeetingRequestDTO.ShowProfileDTO request) {
+
+        User user = userRepository.findByIdWithProfile(userId);
+        Boolean visible = request.getVisibility();
+
+        if (user.getUserProfile().isVisibility() == visible) {
+            throw new BusinessException(visible ? Code.PROFILE_ALREADY_VISIBLE : Code.PROFILE_ALREADY_INVISIBLE);
+        }
+        user.getUserProfile().changeProfileStatus(visible);
     }
 
     private void delHi(Long teamId){

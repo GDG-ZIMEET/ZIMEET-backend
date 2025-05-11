@@ -7,4 +7,5 @@ public interface MeetingCommandService {
 
     void createTeam(Long userId, TeamType teamType, MeetingRequestDTO.CreateTeamDTO request);
     void delTeam(Long userId, TeamType teamType);
+    void patchProfileStatus(Long userId, MeetingRequestDTO.ShowProfileDTO request);
 }

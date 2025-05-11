@@ -14,7 +14,6 @@ import java.util.List;
 
 public class MeetingRequestDTO {
 
-
     @Builder
     @Getter
     @NoArgsConstructor
@@ -37,4 +36,10 @@ public class MeetingRequestDTO {
         List<Long> teamMember;
     }
 
+    @Getter
+    public static class ShowProfileDTO {
+
+        @NotNull
+        Boolean visibility;
+    }
 }
