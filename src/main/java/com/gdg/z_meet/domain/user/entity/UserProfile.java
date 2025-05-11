@@ -1,10 +1,9 @@
 package com.gdg.z_meet.domain.user.entity;
 
+import com.gdg.z_meet.domain.meeting.entity.enums.Verification;
 import com.gdg.z_meet.domain.user.entity.enums.*;
 import jakarta.persistence.*;
 import lombok.*;
-
-import static com.gdg.z_meet.domain.user.entity.enums.Level.LIGHT;
 
 @Entity
 @Getter
@@ -79,6 +78,11 @@ public class UserProfile {
     @Column(nullable = false)
     @Builder.Default
     private boolean isVisible = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Verification verification = Verification.NONE;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
