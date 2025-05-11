@@ -32,7 +32,7 @@ ALTER TABLE user
 -- 5. [user_profile] hi, is_visible, verification 컬럼 추가
 ALTER TABLE user_profile
     ADD COLUMN hi INT NOT NULL DEFAULT 2,
-    ADD COLUMN visibility BIT NOT NULL DEFAULT b'0',
+    ADD COLUMN profile_status ENUM('NONE', 'ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'NONE',
     ADD COLUMN verification ENUM('COMPLETE', 'NONE') NOT NULL DEFAULT 'NONE';
 
 
