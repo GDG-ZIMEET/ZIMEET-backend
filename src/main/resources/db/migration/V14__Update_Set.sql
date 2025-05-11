@@ -32,5 +32,11 @@ ALTER TABLE user
 -- 5. [user_profile] hi, is_visible, verification 컬럼 추가
 ALTER TABLE user_profile
     ADD COLUMN hi INT NOT NULL DEFAULT 2,
-    ADD COLUMN is_visible BIT NOT NULL DEFAULT b'0',
+    ADD COLUMN visibility BIT NOT NULL DEFAULT b'0',
     ADD COLUMN verification ENUM('COMPLETE', 'NONE') NOT NULL DEFAULT 'NONE';
+
+
+-- 6. [User] 생성, 수정 시간 컬럼 추가
+ALTER TABLE User
+    ADD COLUMN created_at DATETIME(6) NULL,
+    ADD COLUMN updated_at DATETIME(6) NULL;
