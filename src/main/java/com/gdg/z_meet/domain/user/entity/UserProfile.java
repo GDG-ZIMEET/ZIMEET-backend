@@ -85,6 +85,10 @@ public class UserProfile {
     @Builder.Default
     private Verification verification = Verification.NONE;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean fcmSendOneOne = false;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -109,4 +113,6 @@ public class UserProfile {
 
     public void changeProfileStatus(ProfileStatus status) { this.profileStatus = status; }
 
+    public void setFcmSendOneOne(boolean fcmSendOneOne) { this.fcmSendOneOne = fcmSendOneOne; }
+  
 }

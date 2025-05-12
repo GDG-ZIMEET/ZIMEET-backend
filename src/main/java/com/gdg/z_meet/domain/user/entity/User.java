@@ -44,17 +44,9 @@ public class User extends BaseEntity implements UserDetails {
     @ColumnDefault("false")
     private boolean pushAgree;
 
-    public void setPushAgree(boolean pushAgree) {
-        this.pushAgree = pushAgree;
-    }
-
-    public void setIsDeleted(boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean fcmSendTwoTwo = false;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -90,4 +82,17 @@ public class User extends BaseEntity implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public void setIsDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setPushAgree(boolean pushAgree) { this.pushAgree = pushAgree;}
+
+    public void setFcmSendTwoTwo(boolean fcmSendTwoTwo) {this.fcmSendTwoTwo = fcmSendTwoTwo;}
+
 }

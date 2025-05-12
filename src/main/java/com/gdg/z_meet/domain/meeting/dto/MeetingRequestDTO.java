@@ -21,7 +21,7 @@ public class MeetingRequestDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class hiDto {
+    public static class HiDto {
         Long toId;
         Long fromId;
         HiType type; //USER or TEAM

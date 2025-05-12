@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.service;
 
+import com.gdg.z_meet.domain.fcm.service.custom.FcmMeetingMessageService;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
@@ -7,9 +8,7 @@ import com.gdg.z_meet.domain.meeting.entity.enums.HiStatus;
 import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
-import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
-import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
@@ -30,6 +29,7 @@ public class HiCommandServiceImpl implements HiCommandService {
     private final HiRepository hiRepository;
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final FcmMeetingMessageService fcmMeetingMessageService;
 
     // 중복 제거용 유틸 메서드 - Team/User 공통 처리
     public <T> Map<String, T> assignEntities(List<T> entities, Long fromId, Function<T, Long> idExtractor) {
@@ -58,7 +58,7 @@ public class HiCommandServiceImpl implements HiCommandService {
 
 
     @Override
-    public void sendHi(MeetingRequestDTO.hiDto hiDto) {
+    public void sendHi(MeetingRequestDTO.HiDto hiDto) {
         if(hiDto.getType()== HiType.USER){
             sendUserHi(hiDto);
         }
@@ -68,7 +68,7 @@ public class HiCommandServiceImpl implements HiCommandService {
 
     @Override
     @Transactional
-    public void sendTeamHi(MeetingRequestDTO.hiDto hiDto) {
+    public void sendTeamHi(MeetingRequestDTO.HiDto hiDto) {
         List<Long> teamIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
 
         // 공통 메서드 호출하여 from, to 팀 할당
@@ -96,11 +96,17 @@ public class HiCommandServiceImpl implements HiCommandService {
                 .hiType(HiType.TEAM)
                 .build();
         hiRepository.save(hi);
+        sendFcmGetHiTeam(hiDto);
+    }
+
+    private void sendFcmGetHiTeam (MeetingRequestDTO.HiDto hiDto) {
+        Long targetTeamId = hiDto.getToId();
+        fcmMeetingMessageService.messagingHiToTeam(targetTeamId);
     }
 
     @Override
     @Transactional
-    public void sendUserHi(MeetingRequestDTO.hiDto hiDto) {
+    public void sendUserHi(MeetingRequestDTO.HiDto hiDto) {
         List<Long> userIds = Arrays.asList(hiDto.getFromId(), hiDto.getToId());
 
         // 공통 메서드 호출하여 from, to 팀 할당
@@ -127,19 +133,24 @@ public class HiCommandServiceImpl implements HiCommandService {
                 .hiType(HiType.USER)
                 .build();
         hiRepository.save(hi);
+        sendFcmGetHiUser(hiDto);
+    }
+
+    private void sendFcmGetHiUser(MeetingRequestDTO.HiDto hiDto) {
+        Long targetUserId = hiDto.getToId();
+        fcmMeetingMessageService.messagingHiToUser(targetUserId);
     }
 
     @Override
     @Transactional
-    public void refuseHi(MeetingRequestDTO.hiDto hiDto) {
+    public void refuseHi(MeetingRequestDTO.HiDto hiDto) {
         Long fromId = hiDto.getFromId();
         Long toId = hiDto.getToId();
         HiType type = hiDto.getType();
 
         Hi hi = hiRepository.findByFromIdAndToIdAndHiType(fromId, toId, type).orElseThrow(() -> new BusinessException(Code.HI_NOT_FOUND));
 
-        if (hi == null) throw new BusinessException(Code.HI_NOT_FOUND);
-        hi.changeStatus(HiStatus.REFUSE);
+        hi.setChangeStatus(HiStatus.REFUSE);
         hiRepository.save(hi);
     }
 }

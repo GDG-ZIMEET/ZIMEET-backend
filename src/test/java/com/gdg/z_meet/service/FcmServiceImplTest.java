@@ -2,7 +2,7 @@ package com.gdg.z_meet.service;
 
 import com.gdg.z_meet.domain.fcm.entity.FcmToken;
 import com.gdg.z_meet.domain.fcm.repository.FcmTokenRepository;
-import com.gdg.z_meet.domain.fcm.service.FcmServiceImpl;
+import com.gdg.z_meet.domain.fcm.service.FcmMessageClient;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -35,7 +35,7 @@ class FcmServiceImplTest {
     private FcmTokenRepository fcmTokenRepository;
 
     @InjectMocks
-    private FcmServiceImpl fcmService;
+    private FcmMessageClient fcmMessageClient;
 
     @Mock
     private FirebaseMessaging firebaseMessaging;
@@ -60,7 +60,7 @@ class FcmServiceImplTest {
             when(firebaseMessaging.send(any(Message.class))).thenReturn("알림 전송에 성공하셨습니다 !!!");
 
             // when
-            fcmService.sendFcmMessage(userId, title, body);
+            fcmMessageClient.sendFcmMessage(userId, title, body);
 
             // then
             verify(firebaseMessaging, times(1)).send(any(Message.class));  // 한 번만 호출되었는지 확인
@@ -87,7 +87,7 @@ class FcmServiceImplTest {
             when(firebaseMessaging.send(any(Message.class))).thenThrow(new BusinessException(Code.FCM_SEND_MESSAGE_ERROR));
 
             // when
-            fcmService.sendFcmMessage(userId, title, body);
+            fcmMessageClient.sendFcmMessage(userId, title, body);
 
             // then
             verify(fcmTokenRepository).delete(deviceToken);  // 무효 토큰 삭제 확인
