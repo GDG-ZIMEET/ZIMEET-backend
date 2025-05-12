@@ -28,65 +28,6 @@ public class FcmServiceImpl implements FcmService {
     private final UserRepository userRepository;
     private final FcmTokenRepository fcmTokenRepository;
 
-    /*
-    String title = "채팅방 나가기 알림";
-    String body = String.format("'%s' 채팅방에서 나갔습니다.", chatRoom.getName());
-    fcmService.sendFcmMessage(user, title, body);
-     */
-    @Transactional
-    public void sendFcmMessage(Long userId, String title, String body ) {
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
-
-        if (!user.isPushAgree()) {
-            log.info("푸시 알림 비동의 상태: userId={}", userId);
-            return;
-        }
-
-        List<FcmToken> tokens = fcmTokenRepository.findAllByUser(user);
-        if (tokens.isEmpty()) {
-            log.warn("FCM 토큰 없음: userId={}", userId);
-            return;
-        }
-
-        // 유저 당 디바이스는 많아야 3개로 예상되므로 , for 문으로 순차 처리
-        for (FcmToken deviceToken : tokens) {
-            String token = deviceToken.getToken();
-            log.info("FCM 전송 대상 토큰: {}", token);
-
-            Message message = Message.builder()
-                    .setToken(token)
-                    .setNotification(Notification.builder()
-                            .setTitle(title)
-                            .setBody(body)
-                            .build())
-                    .build();
-
-            try {
-                String response = FirebaseMessaging.getInstance().send(message);   // FCM 서버에 메시지 전송
-                log.info("FCM 전송 성공: {}", response);
-            } catch (FirebaseMessagingException e) {
-                log.warn("FCM 전송 실패: {}", e.getMessage(), e);
-
-                Set<String> deletableErrorCodes = Set.of(
-                        "registration-token-not-registered",
-                        "invalid-argument",
-                        "messaging/invalid-registration-token",
-                        "unregistered"
-                );
-
-                // 해당 에러 코드일 경우 토큰 삭제
-                if (deletableErrorCodes.contains(e.getErrorCode())) {
-                    fcmTokenRepository.delete(deviceToken);
-                    log.warn("무효한 FCM 토큰 삭제: token={}, userId={}", token, user.getId());
-                }
-
-                // 예외 throw 하지 않으므로, 하나 전송 실패해도 계속해서 나머지 토큰에는 알림 발송
-            }
-        }
-    }
-
 
     @Override
     @Transactional
