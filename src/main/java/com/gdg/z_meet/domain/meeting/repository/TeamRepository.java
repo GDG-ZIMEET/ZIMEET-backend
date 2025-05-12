@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,4 +43,13 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     @Query("SELECT t FROM Team t JOIN UserTeam ut ON t.id = ut.team.id WHERE ut.user = :user AND t.event = :event AND t.activeStatus = 'ACTIVE'")
     List<Team> findAllByUser(@Param("user") User user, @Param("event") Event event);
+
+
+    @Query("SELECT u FROM User u " +
+            "WHERE u.createdAt <= :threshold " +
+            "AND u.id NOT IN (" +
+            "   SELECT ut.user.id FROM UserTeam ut " +
+            "   WHERE ut.team.teamType = 'TWO_TO_TWO'" +
+            ")")
+    List<User> findUsersNotInTwoToTwoTeam(@Param("threshold") LocalDateTime threshold);
 }

@@ -35,4 +35,25 @@ public class HiRepositoryImpl implements HiRepositoryCustom {
                 .distinct()
                 .fetch();
     }
+
+    @Override
+    public List<Long> findTeamIdToNotGetHi() {
+
+        QHi hi = QHi.hi;
+
+        LocalDateTime fourHoursAgo = LocalDateTime.now().minusHours(4);
+        LocalDateTime fourHoursAgoToMinute = fourHoursAgo.withSecond(0).withNano(0);
+
+        return queryFactory
+                .select(hi.toId)
+                .from(hi)
+                .where(
+                        hi.hiType.eq(HiType.TEAM),
+                        hi.hiStatus.eq(HiStatus.NONE),
+                        hi.fcmSendHiToTeam.eq(false),
+                        hi.createdAt.between(fourHoursAgoToMinute, fourHoursAgoToMinute.plusMinutes(1))
+                )
+                .distinct()
+                .fetch();
+    }
 }

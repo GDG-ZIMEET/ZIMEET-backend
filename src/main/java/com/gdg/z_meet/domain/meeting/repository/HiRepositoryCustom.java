@@ -4,4 +4,5 @@ import java.util.List;
 
 public interface HiRepositoryCustom {
     List<Long> findUserIdsToNotGetHi();
+    List<Long> findTeamIdToNotGetHi();
 }
