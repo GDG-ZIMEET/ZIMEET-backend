@@ -45,7 +45,8 @@ public class User extends BaseEntity implements UserDetails {
     private boolean pushAgree;
 
     @Column(nullable = false)
-    private boolean fcmSentTwoTwo = false;
+    @Builder.Default
+    private boolean fcmSendTwoTwo = false;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -92,6 +93,6 @@ public class User extends BaseEntity implements UserDetails {
 
     public void setPushAgree(boolean pushAgree) { this.pushAgree = pushAgree;}
 
-    public void setFcmSentTwoTwo(boolean fcmSentTwoTwo) {this.fcmSentTwoTwo = fcmSentTwoTwo;}
+    public void setFcmSendTwoTwo(boolean fcmSendTwoTwo) {this.fcmSendTwoTwo = fcmSendTwoTwo;}
 
 }

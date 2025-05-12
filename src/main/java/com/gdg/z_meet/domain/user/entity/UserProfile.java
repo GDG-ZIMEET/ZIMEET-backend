@@ -86,7 +86,8 @@ public class UserProfile {
     private Verification verification = Verification.NONE;
 
     @Column(nullable = false)
-    private boolean fcmSentOneOne = false;
+    @Builder.Default
+    private boolean fcmSendOneOne = false;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -110,5 +111,5 @@ public class UserProfile {
 
     public void setInfiniteTicket() { this.ticket = 99; }
 
-    public void setFcmSentOneOne(boolean fcmSentOneOne) { this.fcmSentOneOne = fcmSentOneOne; }
+    public void setFcmSendOneOne(boolean fcmSendOneOne) { this.fcmSendOneOne = fcmSendOneOne; }
 }
