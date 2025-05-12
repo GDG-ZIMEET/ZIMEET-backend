@@ -57,4 +57,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "ORDER BY FUNCTION('RAND')")
     List<User> findAllByIsVisible(@Param("userId") Long userId, @Param("gender") Gender gender, Pageable pageable);
 
+    @Query("SELECT u FROM User u JOIN FETCH u.userProfile up " +
+            "WHERE u.id = :userId AND up.profileStatus = 'ACTIVE' AND u.isDeleted = false")
+    Optional<User> findByProfileStatus(@Param("userId") Long userId);
 }

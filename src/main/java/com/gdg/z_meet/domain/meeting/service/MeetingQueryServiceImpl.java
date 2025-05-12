@@ -196,6 +196,19 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         return MeetingConverter.toGetUserGalleryDTO(userList);
     }
 
+    @Override
+    public MeetingResponseDTO.GetPreMyProfileDTO getPreMyProfile(Long userId) {
+
+        Optional<User> userOptional = userRepository.findByProfileStatus(userId);
+        if (userOptional.isEmpty()) {
+            return null;
+        }
+
+        User user = userOptional.get();
+
+        return MeetingConverter.toGetPreMyProfileDTO(user);
+    }
+
 
 
     private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
