@@ -1,7 +1,5 @@
 package com.gdg.z_meet.domain.meeting.service;
 
-import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
-import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
@@ -113,7 +111,7 @@ public class HiQueryServiceImpl implements HiQueryService{
                 long totalMinutesRemaining = (5 * 60) - totalMinutesElapsed; // 5시간(300분) 기준으로 남은 분 계산
 
                 if (totalMinutesRemaining <= 0) {
-                    hi.changeStatus(HiStatus.EXPIRED);
+                    hi.setChangeStatus(HiStatus.EXPIRED);
                     hiRepository.save(hi);
                     continue;
                 }
@@ -124,7 +122,7 @@ public class HiQueryServiceImpl implements HiQueryService{
                 dateTime = String.format("%d시간 %d분 남음", remainingHours, remainingMinutes);
 
                 if(remainingHours<=0 || remainingMinutes<0){
-                    hi.changeStatus(HiStatus.EXPIRED);
+                    hi.setChangeStatus(HiStatus.EXPIRED);
                     hiRepository.save(hi);
                     continue;
                 }

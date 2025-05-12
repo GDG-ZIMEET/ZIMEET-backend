@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-public interface HiRepository extends JpaRepository<Hi,Long> {
+public interface HiRepository extends JpaRepository<Hi,Long>, HiRepositoryCustom {
     Boolean existsByFromIdAndToIdAndHiStatusNotAndHiType(Long from, Long to, HiStatus status, HiType hiType);
     Hi findByFromIdAndToIdAndHiStatus(Long from, Long to, HiStatus status);
     @Query("SELECT DISTINCT h FROM Hi h WHERE h.toId IN (:teamIds) AND h.hiStatus='NONE' ORDER BY h.createdAt DESC")

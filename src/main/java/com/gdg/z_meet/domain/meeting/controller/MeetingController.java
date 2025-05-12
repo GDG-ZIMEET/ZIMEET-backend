@@ -104,14 +104,14 @@ public class MeetingController {
 
     @Operation(summary = "하이 보내기")
     @PostMapping("/hi/send")
-    public Response<String> sendHi(@RequestBody MeetingRequestDTO.hiDto hiDto){
+    public Response<String> sendHi(@RequestBody MeetingRequestDTO.HiDto hiDto){
         hiCommandService.sendHi(hiDto);
         return Response.ok(hiDto.getToId() +"팀에게 하이가 보내졌습니다. ");
     }
 
     @Operation(summary = "하이 거절하기")
     @PatchMapping("/hi/refuse")
-    public Response<String> refuseHi(@RequestBody MeetingRequestDTO.hiDto hiDto){
+    public Response<String> refuseHi(@RequestBody MeetingRequestDTO.HiDto hiDto){
         hiCommandService.refuseHi(hiDto);
         return Response.ok(hiDto.getFromId() +"팀이 보낸 하이가 거절되었습니다. ");
     }

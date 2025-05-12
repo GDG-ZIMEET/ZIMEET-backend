@@ -11,7 +11,6 @@ import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
 import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
 import com.gdg.z_meet.domain.chat.repository.mongo.MongoMessageRepository;
 import com.gdg.z_meet.domain.chat.repository.TeamChatRoomRepository;
-import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.entity.Hi;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
@@ -19,9 +18,7 @@ import com.gdg.z_meet.domain.meeting.entity.enums.HiStatus;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
-import com.gdg.z_meet.domain.meeting.service.HiCommandService;
 import com.gdg.z_meet.domain.meeting.service.HiCommandServiceImpl;
-import com.gdg.z_meet.domain.meeting.service.HiQueryServiceImpl;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -123,7 +120,7 @@ public class ChatRoomCommandService {
 
         Hi hi = hiRepository.findByFromIdAndToIdAndHiStatus(from.getId(), to.getId(), HiStatus.NONE);
         if (hi == null) throw new BusinessException(Code.HI_NOT_FOUND);
-        hi.changeStatus(HiStatus.ACCEPT);
+        hi.setChangeStatus(HiStatus.ACCEPT);
         hiRepository.save(hi);
 
         //채팅방 생성
@@ -156,7 +153,7 @@ public class ChatRoomCommandService {
 
         Hi hi = hiRepository.findByFromIdAndToIdAndHiStatus(from.getId(), to.getId(), HiStatus.NONE);
         if (hi == null) throw new BusinessException(Code.HI_NOT_FOUND);
-        hi.changeStatus(HiStatus.ACCEPT);
+        hi.setChangeStatus(HiStatus.ACCEPT);
         hiRepository.save(hi);
 
         //채팅방 생성
@@ -220,18 +217,18 @@ public class ChatRoomCommandService {
             // Redis에 참여 여부가 있는지 먼저 체크
             String joinChatsKey = "user:" + userId + ":chatrooms";
               // 새로운 User 정보 DB 저장 (배치 인서트로 한 번에 저장)
-                newJoinChats.add(JoinChat.builder()
-                        .user(user)
-                        .chatRoom(chatRoom)
-                        .status(JoinChatStatus.ACTIVE)
-                        .build());
+            newJoinChats.add(JoinChat.builder()
+                    .user(user)
+                    .chatRoom(chatRoom)
+                    .status(JoinChatStatus.ACTIVE)
+                    .build());
 
-                // 사용자 -> 참여 채팅방 매핑 데이터 Redis 저장
-                redisTemplate.opsForSet().add(joinChatsKey, String.valueOf(chatRoomId));
+            // 사용자 -> 참여 채팅방 매핑 데이터 Redis 저장
+            redisTemplate.opsForSet().add(joinChatsKey, String.valueOf(chatRoomId));
 
-                // 채팅방 -> 참여 사용자 매핑 데이터 Redis 저장
-                String chatRoomUsersKey = "chatroom:" + chatRoomId + ":users";
-                redisTemplate.opsForSet().add(chatRoomUsersKey, String.valueOf(userId));
+            // 채팅방 -> 참여 사용자 매핑 데이터 Redis 저장
+            String chatRoomUsersKey = "chatroom:" + chatRoomId + ":users";
+            redisTemplate.opsForSet().add(chatRoomUsersKey, String.valueOf(userId));
 
         }
 

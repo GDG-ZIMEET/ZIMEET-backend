@@ -69,6 +69,12 @@ dependencies {
 	implementation platform("org.springframework.cloud:spring-cloud-dependencies:2023.0.1")
 
 	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+
+	// QueryDSL
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
 // plain jar 생성 X 설정
@@ -82,4 +88,8 @@ tasks.named('test') {
 
 tasks.withType(Test) {
 	enabled = true
+}
+
+clean {
+	delete file('src/main/generated')
 }
