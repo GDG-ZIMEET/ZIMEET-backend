@@ -85,6 +85,9 @@ public class UserProfile {
     @Builder.Default
     private Verification verification = Verification.NONE;
 
+    @Column(nullable = false)
+    private boolean fcmSentOneOne = false;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -106,4 +109,6 @@ public class UserProfile {
     public void upLevel() { this.level = Level.PLUS; }
 
     public void setInfiniteTicket() { this.ticket = 99; }
+
+    public void setFcmSentOneOne(boolean fcmSentOneOne) { this.fcmSentOneOne = fcmSentOneOne; }
 }
