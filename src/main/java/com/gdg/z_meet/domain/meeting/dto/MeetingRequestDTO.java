@@ -1,8 +1,9 @@
 package com.gdg.z_meet.domain.meeting.dto;
 
+import com.gdg.z_meet.domain.booth.entity.Category;
 import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
 import com.gdg.z_meet.domain.user.entity.enums.ProfileStatus;
-import com.gdg.z_meet.global.validation.annotation.ValidProfileStatus;
+import com.gdg.z_meet.global.validation.annotation.ValidEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -42,7 +43,7 @@ public class MeetingRequestDTO {
     public static class PatchProfileStatusDTO {
 
         @NotNull
-        @ValidProfileStatus
-        ProfileStatus status;
+        @ValidEnum(enumClass = ProfileStatus.class)
+        String status;
     }
 }

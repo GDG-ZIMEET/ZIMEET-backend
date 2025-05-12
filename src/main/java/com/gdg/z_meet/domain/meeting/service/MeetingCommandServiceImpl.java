@@ -119,12 +119,19 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     @Transactional
     public void patchProfileStatus(Long userId, MeetingRequestDTO.PatchProfileStatusDTO request) {
 
+        ProfileStatus status = ProfileStatus.valueOf(request.getStatus());
+        if (!ProfileStatus.isUpdatable(status)) {
+            throw new BusinessException(Code.INVALID_PROFILE_STATUS);
+        }
+
         User user = userRepository.findByIdWithProfile(userId);
-        ProfileStatus status = request.getStatus();
 
         if (user.getUserProfile().getProfileStatus() == status) {
-            throw new BusinessException(status == ProfileStatus.ACTIVE ? Code.PROFILE_ALREADY_VISIBLE : Code.PROFILE_ALREADY_INVISIBLE);
+            throw new BusinessException(
+                    status == ProfileStatus.ACTIVE ? Code.PROFILE_ALREADY_ACTIVE : Code.PROFILE_ALREADY_INACTIVE
+            );
         }
+
         user.getUserProfile().changeProfileStatus(status);
     }
 
