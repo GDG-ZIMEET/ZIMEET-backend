@@ -47,9 +47,10 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     @Query("SELECT u FROM User u " +
             "WHERE u.createdAt <= :threshold " +
+            "AND u.fcmSendTwoTwo = false " +
             "AND u.id NOT IN (" +
             "   SELECT ut.user.id FROM UserTeam ut " +
-            "   WHERE ut.team.teamType = 'TWO_TO_TWO'" +
+            "   WHERE ut.team.teamType = 'TWO_TO_TWO' AND ut.team.event = :event " +
             ")")
-    List<User> findUsersNotInTwoToTwoTeam(@Param("threshold") LocalDateTime threshold);
+    List<User> findUsersNotInTwoToTwoTeam(@Param("threshold") LocalDateTime threshold, @ Param("event") Event event);
 }

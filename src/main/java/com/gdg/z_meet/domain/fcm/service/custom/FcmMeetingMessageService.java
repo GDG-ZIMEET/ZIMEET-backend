@@ -1,6 +1,7 @@
 package com.gdg.z_meet.domain.fcm.service.custom;
 
 import com.gdg.z_meet.domain.fcm.service.FcmMessageClient;
+import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
@@ -57,7 +58,8 @@ public class FcmMeetingMessageService {
     @Scheduled(fixedRate = 3600000)      // 1시간마다 실행
     public void messagingNoneMeetingTwoTwoUsers() {
         LocalDateTime threshold = LocalDateTime.now().minusHours(24);
-        List<User> users = teamRepository.findUsersNotInTwoToTwoTeam(threshold);
+        Event event = Event.AU_2025;
+        List<User> users = teamRepository.findUsersNotInTwoToTwoTeam(threshold, event);
 
         String title = "👀 아직 2대2 팀을 만들지 않으셨네요!";
         String body = "마음 맞는 친구와 팀을 만들어보세요. 함께하면 매칭 확률이 훨씬 높아져요 🔥";

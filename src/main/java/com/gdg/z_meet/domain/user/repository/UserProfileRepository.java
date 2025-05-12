@@ -33,6 +33,6 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
 
     void deleteByUserId(Long userId);
 
-    @Query("SELECT up FROM UserProfile up WHERE up.profileStatus = 'NONE' AND up.fcmSent = false AND up.user.createdAt <= :threshold")
+    @Query("SELECT up FROM UserProfile up WHERE up.profileStatus = 'NONE' AND up.fcmSendOneOne = false AND up.user.createdAt <= :threshold")
     List<UserProfile> findInactiveUsers(@Param("threshold") LocalDateTime threshold);
 }
