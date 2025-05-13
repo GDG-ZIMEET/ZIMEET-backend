@@ -105,7 +105,7 @@ public class FcmMeetingMessageService {
                 hiQueryService.checkHiList(userId, "Receive");
                 fcmMessageClient.sendFcmMessage(userId, title, body);
             } catch (Exception e) {
-                log.error(" FCM 받은 하이 여부 메시지 전송 실패 userId: {}, message: {}", userId, e.getMessage(), e);
+                log.error("FCM 받은 하이 여부 메시지 전송 실패 userId: {}, message: {}", userId, e.getMessage(), e);
             }
         }
     }

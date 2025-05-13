@@ -89,6 +89,10 @@ public class UserProfile {
     @Builder.Default
     private boolean fcmSendOneOne = false;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private int viewCount = 0;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -112,4 +116,8 @@ public class UserProfile {
     public void setInfiniteTicket() { this.ticket = 99; }
 
     public void setFcmSendOneOne(boolean fcmSendOneOne) { this.fcmSendOneOne = fcmSendOneOne; }
+
+    public int getViewCount() { return viewCount; }
+
+    public void setViewCount(int viewCount) { this.viewCount = viewCount; }
 }

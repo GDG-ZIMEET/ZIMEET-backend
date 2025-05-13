@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.service;
 
+import com.gdg.z_meet.domain.fcm.service.custom.FcmProfileMessageService;
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
@@ -18,8 +19,9 @@ import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,13 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
+
+    @Lazy
+    @Autowired
+    private MeetingQueryServiceImpl self;      // 프록시 객체를 통한 트랜잭션 분리
+
+    private final FcmProfileMessageService fcmProfileMessageService;
+
     private final Event event = Event.NEUL_2025;
 
     @Override
@@ -193,9 +202,25 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<User> userList = userRepository.findAllByIsVisible(userId, gender, PageRequest.of(page, 12));
         Collections.shuffle(userList);
 
+        List<Long> targetUserIds = userList.stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        self.increaseViewCountsAndSendFcm(targetUserIds);
+
         return MeetingConverter.toGetUserGalleryDTO(userList);
     }
 
+    @Transactional
+    public void increaseViewCountsAndSendFcm(List<Long> userIds) {
+        List<UserProfile> profiles = userProfileRepository.findByUserIdIn(userIds);
+
+        for (UserProfile profile : profiles) {
+            profile.setViewCount(profile.getViewCount() + 1);    // 더티 체킹
+        }
+
+        fcmProfileMessageService.messagingProfileViewOneOneUsers(profiles);
+    }
 
 
     private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
