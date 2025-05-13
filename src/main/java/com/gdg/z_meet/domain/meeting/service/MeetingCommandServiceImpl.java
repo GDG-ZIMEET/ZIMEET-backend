@@ -2,7 +2,6 @@ package com.gdg.z_meet.domain.meeting.service;
 
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
-import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
@@ -12,6 +11,7 @@ import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
+import com.gdg.z_meet.domain.user.entity.enums.ProfileStatus;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -113,6 +113,26 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         if (teamRepository.existsByIdAndActiveStatus(teamId)) {
             throw new BusinessException(Code.TEAM_DELETE_FAILED);
         }
+    }
+
+    @Override
+    @Transactional
+    public void patchProfileStatus(Long userId, MeetingRequestDTO.PatchProfileStatusDTO request) {
+
+        ProfileStatus status = ProfileStatus.valueOf(request.getStatus());
+        if (!ProfileStatus.isUpdatable(status)) {
+            throw new BusinessException(Code.INVALID_PROFILE_STATUS);
+        }
+
+        User user = userRepository.findByIdWithProfile(userId);
+
+        if (user.getUserProfile().getProfileStatus() == status) {
+            throw new BusinessException(
+                    status == ProfileStatus.ACTIVE ? Code.PROFILE_ALREADY_ACTIVE : Code.PROFILE_ALREADY_INACTIVE
+            );
+        }
+
+        user.getUserProfile().changeProfileStatus(status);
     }
 
     private void delHi(Long teamId){
