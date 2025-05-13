@@ -89,6 +89,14 @@ public class UserProfile {
     @Builder.Default
     private boolean fcmSendOneOne = false;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private int viewCount = 0;
+
+    @Column(name = "last_notified")
+    @Builder.Default
+    private Integer lastNotified = 0;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -114,5 +122,9 @@ public class UserProfile {
     public void changeProfileStatus(ProfileStatus status) { this.profileStatus = status; }
 
     public void setFcmSendOneOne(boolean fcmSendOneOne) { this.fcmSendOneOne = fcmSendOneOne; }
-  
+
+    public int getViewCount() { return viewCount; }
+
+    public void setViewCount(int viewCount) { this.viewCount = viewCount; }
+
 }

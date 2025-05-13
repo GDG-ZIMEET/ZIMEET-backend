@@ -54,6 +54,14 @@ public class Team extends BaseEntity {
     @Column(nullable = false)
     private Event event;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private int viewCount = 0;
+
+    @Column(name = "last_notified")
+    @Builder.Default
+    private Integer lastNotified = 0;
+
     // hi 값을 변경하는 메서드
     public void decreaseHi() {
         if (this.hi > 0) {
@@ -74,4 +82,10 @@ public class Team extends BaseEntity {
     public void setInfiniteHi() { this.hi = 99; }
 
     public void patchVerification() { this.verification = Verification.COMPLETE; }
+
+    public int getViewCount() { return viewCount; }
+
+    public void setViewCount(int viewCount) { this.viewCount = viewCount; }
+
+    public void setLastNotified(Integer lastNotified) { this.lastNotified = lastNotified; }
 }
