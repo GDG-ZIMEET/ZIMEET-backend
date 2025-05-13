@@ -196,4 +196,16 @@ public class MeetingResponseDTO {
     public static class GetUserGalleryDTO {
         List<GetPreUserDTO> userList;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetPreMyProfileDTO {
+        Long userId;
+        String emoji;
+        String nickname;
+        Integer verification;
+        String profileStatus;
+    }
 }

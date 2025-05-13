@@ -181,4 +181,13 @@ public class MeetingController {
 
         return Response.ok();
     }
+
+    @Operation(summary = "내 프로필 조회")
+    @GetMapping("/myProfile")
+    public Response<MeetingResponseDTO.GetPreMyProfileDTO> getPreMyProfile(@AuthUser Long userId) {
+
+        MeetingResponseDTO.GetPreMyProfileDTO response = meetingQueryService.getPreMyProfile(userId);
+
+        return Response.ok(response);
+    }
 }
