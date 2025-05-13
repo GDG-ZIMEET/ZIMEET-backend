@@ -1,7 +1,7 @@
 package com.gdg.z_meet.domain.user.service;
 
 import com.gdg.z_meet.domain.chat.service.ChatRoomCommandService;
-import com.gdg.z_meet.domain.order.repository.ItemPurchaseRepository;
+import com.gdg.z_meet.domain.fcm.repository.FcmTokenRepository;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Level;
 import com.gdg.z_meet.domain.user.repository.RefreshTokenRepository;
@@ -25,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,8 +36,8 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder encoder;
-    private final ItemPurchaseRepository itemPurchaseRepository;
     private final ChatRoomCommandService chatRoomCommandService;
+    private final FcmTokenRepository fcmTokenRepository;
 
     @Transactional
     public UserRes.SignUpRes signup(UserReq.SignUpReq signUpReq) {
@@ -81,9 +83,6 @@ public class UserService {
                 .build();
         userProfileRepository.save(userProfile);
 
-        // 늘품제용 티켓 무제한 설정
-        userProfile.setNeulTicket();
-
         return UserRes.SignUpRes.builder().message("회원가입 성공!").build();
     }
 
@@ -106,12 +105,17 @@ public class UserService {
         return token;
     }
 
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
+    public void logout(HttpServletRequest request, HttpServletResponse response, String fcmToken) {
         String refreshToken = jwtUtil.getRefreshTokenFromCookie(request);
         if (refreshToken != null) {
             refreshTokenRepository.delete(refreshToken);
         }
         clearRefreshTokenCookie(response);
+
+        // 해당 디바이스의 FCM 토큰만 삭제됨
+        if (fcmToken != null && !fcmToken.isBlank()) {
+            fcmTokenRepository.deleteByToken(fcmToken);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -202,6 +206,8 @@ public class UserService {
 
         chatRoomCommandService.removeUser(userId);
 
+        fcmTokenRepository.deleteAllByUser(user);
+
         user.setIsDeleted(true);
         userRepository.save(user);
 
@@ -236,5 +242,23 @@ public class UserService {
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         log.info("Refresh token cookie cleared");
+    }
+
+    @Transactional
+    public UserRes.UpdatePasswordRes resetPassword(String name, String studentNumber, String phoneNumber, String newPassword, String confirmPassword) {
+        Optional<User> userOpt = userRepository.findByNameAndStudentNumberAndPhoneNumber(name, studentNumber, phoneNumber);
+        if (userOpt.isEmpty()){
+            throw new BusinessException(Code.PROFILE_NOT_FOUND);
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new BusinessException(Code.PASSWORD_MISMATCH);
+        }
+
+        User user = userOpt.get();
+        user.setPassword(encoder.encode(newPassword));
+
+        return UserRes.UpdatePasswordRes.builder()
+                .message("비밀번호가 재설정되었습니다.")
+                .build();
     }
 }

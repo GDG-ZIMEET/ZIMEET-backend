@@ -4,6 +4,7 @@ import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.user.entity.User;
+import com.gdg.z_meet.domain.user.entity.UserProfile;
 
 import java.util.List;
 import java.util.Map;
@@ -138,6 +139,39 @@ public class MeetingConverter {
 
         return MeetingResponseDTO.GetMyDeleteDTO.builder()
                 .leftDelete(user.getUserProfile().getLeftDelete())
+                .build();
+    }
+
+    public static MeetingResponseDTO.GetUserGalleryDTO toGetUserGalleryDTO(List<User> userList){
+
+        List<MeetingResponseDTO.GetPreUserDTO> userDTOS = userList.stream()
+                .map(user -> {
+                    UserProfile profile = user.getUserProfile();
+                    return MeetingResponseDTO.GetPreUserDTO.builder()
+                            .userId(user.getId())
+                            .emoji(profile.getEmoji())
+                            .name(user.getName())
+                            .verification(profile.getVerification() == COMPLETE ? 1 : 0)
+                            .major(profile.getMajor().getShortName())
+                            .age(profile.getAge())
+                            .music(String.valueOf(profile.getMusic()))
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return MeetingResponseDTO.GetUserGalleryDTO.builder()
+                .userList(userDTOS)
+                .build();
+    }
+
+    public static MeetingResponseDTO.GetPreMyProfileDTO toGetPreMyProfileDTO(User user){
+
+        return MeetingResponseDTO.GetPreMyProfileDTO.builder()
+                .userId(user.getId())
+                .emoji(user.getUserProfile().getEmoji())
+                .nickname(user.getUserProfile().getNickname())
+                .verification(user.getUserProfile().getVerification() == COMPLETE ? 1 : 0)
+                .profileStatus(String.valueOf(user.getUserProfile().getProfileStatus()))
                 .build();
     }
 }

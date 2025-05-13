@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.dto;
 
+import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
 import com.gdg.z_meet.domain.user.entity.enums.Major;
 import com.gdg.z_meet.domain.user.entity.enums.Music;
 import lombok.AllArgsConstructor;
@@ -117,6 +118,7 @@ public class MeetingResponseDTO {
         List<UserProfileDto> userProfileDtos;
         Double age;
         String dateTime;
+        HiType type; //USER or TEAM
 
         @Getter
         @AllArgsConstructor
@@ -171,5 +173,47 @@ public class MeetingResponseDTO {
     @AllArgsConstructor
     public static class GetVerificationDTO {
         List<GetVerificationTeamDTO> teamList;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetPreUserDTO {
+        Long userId;
+        String emoji;
+        String name;
+        Integer verification;
+        String major;
+        Integer age;
+        String music;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetUserGalleryDTO {
+        List<GetPreUserDTO> userList;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetPreMyProfileDTO {
+        Long userId;
+        String emoji;
+        String nickname;
+        Integer verification;
+        String profileStatus;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMyHiDTO {
+        Integer hi;
     }
 }

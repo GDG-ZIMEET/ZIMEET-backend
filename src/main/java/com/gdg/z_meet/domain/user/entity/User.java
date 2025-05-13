@@ -1,10 +1,12 @@
 package com.gdg.z_meet.domain.user.entity;
 
+import com.gdg.z_meet.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -15,7 +17,7 @@ import java.util.Collection;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails {
+public class User extends BaseEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="user_id", unique = true, nullable = false)
@@ -39,9 +41,12 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserProfile userProfile;
 
-    public void setIsDeleted(boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
+    @ColumnDefault("false")
+    private boolean pushAgree;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean fcmSendTwoTwo = false;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -77,4 +82,17 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public void setIsDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setPushAgree(boolean pushAgree) { this.pushAgree = pushAgree;}
+
+    public void setFcmSendTwoTwo(boolean fcmSendTwoTwo) {this.fcmSendTwoTwo = fcmSendTwoTwo;}
+
 }

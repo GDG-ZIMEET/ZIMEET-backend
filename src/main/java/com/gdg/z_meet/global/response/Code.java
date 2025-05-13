@@ -48,6 +48,9 @@ public enum Code implements BaseCode {
     RANDOM_MEETING_USER_COUNT(HttpStatus.BAD_REQUEST, "CHAT4005",  "랜덤 미팅에 참여하는 사용자 수는 반드시 6명이어야 합니다."),
     TEAM_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "MEETING4013", "삭제된 팀입니다."),
     MY_TEAM_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEETING4014", "본인 팀이 존재하지 않습니다."),
+    PROFILE_ALREADY_ACTIVE(HttpStatus.BAD_REQUEST, "MEETING4015", "이미 1대1 미팅에 참여했습니다."),
+    PROFILE_ALREADY_INACTIVE(HttpStatus.BAD_REQUEST, "MEETING4016", "이미 1대1 미팅을 취소했습니다."),
+    INVALID_PROFILE_STATUS(HttpStatus.BAD_REQUEST, "MEETING4017", "ACTIVE 또는 INACTIVE만 입력할 수 있습니다."),
 
     //Matching Error
     MATCHING_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "MATCHING4001", "이미 랜덤 매칭중입니다."),
@@ -56,9 +59,10 @@ public enum Code implements BaseCode {
 
     //Hi Error
     HI_COUNT_ZERO(HttpStatus.BAD_REQUEST, "Hi4001","하이의 갯수가 0개 일 경우 하이를 보낼 수 없습니다."),
-    SAME_GENDER(HttpStatus.BAD_REQUEST, "Hi4002", "같은 성별의 팀에게는 하이를 보낼 수 없습니다."),
+    SAME_GENDER(HttpStatus.BAD_REQUEST, "Hi4002", "같은 성별에게는 하이를 보낼 수 없습니다."),
     HI_DUPLICATION(HttpStatus.BAD_REQUEST, "Hi4003", "이미 하이를 보낸 팀입니다."),
     HI_NOT_FOUND(HttpStatus.NOT_FOUND,"Hi4004","하이를 찾을 수 없습니다."),
+    ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND,"HI4005", "해당 팀(유저)를 찾을 수 없습니다."),
 
     // Chat Error
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT4001","채팅방을 찾을 수 없습니다."),
@@ -80,7 +84,16 @@ public enum Code implements BaseCode {
     DUPLICATE_STUDENT_NUMBER(HttpStatus.BAD_REQUEST, "U005", "이미 가입된 학번입니다."),
     DUPLICATE_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "U006", "이미 가입된 전화번호입니다."),
     DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "U007", "이미 가입된 닉네임입니다."),
-    USER_DELETED(HttpStatus.BAD_REQUEST, "U008", "탈퇴한 회원입니다.");
+    USER_DELETED(HttpStatus.BAD_REQUEST, "U008", "탈퇴한 회원입니다."),
+    PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "U009", "비밀번호가 일치하지 않습니다."),
+
+
+    // FCM
+//    FEIGN_CLIENT_ERROR_400(HttpStatus.BAD_REQUEST, "4001", "BAD REQUEST in feign client"),
+//    FEIGN_CLIENT_ERROR_500(HttpStatus.INTERNAL_SERVER_ERROR, "5001", "Inter server Error in feign client"),
+    FCM_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "4002", "FCM 토큰을 찾을 수 없습니다."),
+    FCM_ACCESS_TOKEN_REQUEST_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "5002", "FCM 서버에 AccessToken 요청 상황에서 에러 발생"),
+    FCM_SEND_MESSAGE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "5003", "FCM 서버에 메시지 전송 상황에서 에러 발생");
 
 //    NOT_ACADEMY_EMAIL("EEM-001", "Email is not a university email."),
 //    AUTH_CODE_NOT_MATCH("ATH-001", "Auth code not match."),

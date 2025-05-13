@@ -3,9 +3,9 @@ package com.gdg.z_meet.domain.user.repository;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -44,4 +44,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile WHERE u.name = :name AND u.studentNumber = :studentNumber")
     Optional<User> findByNameAndStudentNumberWithProfile(String name, String studentNumber);
+
+    Optional<User> findByNameAndStudentNumberAndPhoneNumber(String name, String studentNumber, String phoneNumber);
+
+    List<User> findByIdIn(List<Long> userIds);
+
+    @Query("SELECT u FROM User u JOIN FETCH u.userProfile up " +
+            "WHERE u.id != :userId AND up.gender != :gender AND up.profileStatus = 'ACTIVE' AND u.isDeleted = false " +
+            "ORDER BY FUNCTION('RAND')")
+    List<User> findAllByProfileStatus(@Param("userId") Long userId, @Param("gender") Gender gender, Pageable pageable);
+
+    @Query("SELECT u FROM User u JOIN FETCH u.userProfile up " +
+            "WHERE u.id = :userId AND up.profileStatus = 'ACTIVE' AND u.isDeleted = false")
+    Optional<User> findByProfileStatus(@Param("userId") Long userId);
 }

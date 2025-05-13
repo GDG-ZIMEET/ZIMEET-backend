@@ -2,6 +2,7 @@ package com.gdg.z_meet.domain.chat.service;
 
 import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.entity.status.MessageType;
+import com.gdg.z_meet.domain.fcm.service.custom.FcmChatMessageService;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -16,8 +17,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class ChatService {
     private final MessageCommandService messageCommandService;
-    private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
+    private final FcmChatMessageService fcmChatMessageService;
 
     public void handleMessage(ChatMessage message) {
         messageCommandService.processMessage(message);
@@ -35,6 +36,9 @@ public class ChatService {
                 .sendAt(LocalDateTime.now())
                 .emoji(null) // 입장/퇴장 메시지는 이모지 필요 없음
                 .build();
+
+        fcmChatMessageService.messagingOpenChatRoom(user, roomId);
+
         handleMessage(message);
     }
 

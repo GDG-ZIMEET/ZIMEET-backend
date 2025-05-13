@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.repository;
 
+import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,4 +32,13 @@ public interface UserTeamRepository extends JpaRepository<UserTeam, Long> {
 
     @Query("SELECT ut FROM UserTeam ut WHERE ut.user = :user AND ut.team.activeStatus = 'ACTIVE'")
     List<UserTeam> findByUser(@Param("user") User user);
+
+    @Query("SELECT ut.user.id FROM UserTeam ut WHERE ut.team.id = :teamId")
+    List<Long> findUserIdsByTeamId(@Param("teamId") Long teamId);
+
+    @Query("SELECT ut.user.id FROM UserTeam ut WHERE ut.team.id IN :teamIds")
+    List<Long> findUserIdsByTeamIds(@Param("teamIds") List<Long> teamIds);
+
+    @Query("SELECT ut FROM UserTeam ut JOIN FETCH ut.user WHERE ut.team = :team")
+    List<UserTeam> findAllByTeam(@Param("team") Team team);
 }

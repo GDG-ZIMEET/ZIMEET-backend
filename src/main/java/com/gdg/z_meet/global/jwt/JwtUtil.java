@@ -138,6 +138,10 @@ public class JwtUtil {
     }
 
     public Long getUserIdFromToken(String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7).trim();      // user_id 파싱을 위한 Bearer 제거
+        }
+
         return jwtParser.parseClaimsJws(token).getBody().get("user_id", Long.class);
     }
 

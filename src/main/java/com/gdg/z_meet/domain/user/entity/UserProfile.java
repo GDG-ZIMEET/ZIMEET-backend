@@ -1,10 +1,9 @@
 package com.gdg.z_meet.domain.user.entity;
 
+import com.gdg.z_meet.domain.meeting.entity.enums.Verification;
 import com.gdg.z_meet.domain.user.entity.enums.*;
 import jakarta.persistence.*;
 import lombok.*;
-
-import static com.gdg.z_meet.domain.user.entity.enums.Level.LIGHT;
 
 @Entity
 @Getter
@@ -72,6 +71,32 @@ public class UserProfile {
     @Builder.Default
     private int ticket = 2;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private int hi = 2;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ProfileStatus profileStatus = ProfileStatus.NONE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Verification verification = Verification.NONE;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean fcmSendOneOne = false;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private int viewCount = 0;
+
+    @Column(name = "last_notified")
+    @Builder.Default
+    private Integer lastNotified = 0;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -92,5 +117,14 @@ public class UserProfile {
 
     public void upLevel() { this.level = Level.PLUS; }
 
-    public void setNeulTicket() { this.ticket = 99; }
+    public void setInfiniteTicket() { this.ticket = 99; }
+
+    public void changeProfileStatus(ProfileStatus status) { this.profileStatus = status; }
+
+    public void setFcmSendOneOne(boolean fcmSendOneOne) { this.fcmSendOneOne = fcmSendOneOne; }
+
+    public int getViewCount() { return viewCount; }
+
+    public void setViewCount(int viewCount) { this.viewCount = viewCount; }
+
 }

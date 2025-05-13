@@ -3,13 +3,16 @@ package com.gdg.z_meet.domain.meeting.controller;
 import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
+import com.gdg.z_meet.domain.meeting.service.HiCommandService;
 import com.gdg.z_meet.domain.meeting.service.HiQueryService;
 import com.gdg.z_meet.domain.meeting.service.MeetingCommandService;
 import com.gdg.z_meet.domain.meeting.service.MeetingQueryService;
 import com.gdg.z_meet.global.common.AuthenticatedUserUtils;
 import com.gdg.z_meet.global.response.Response;
+import com.gdg.z_meet.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class MeetingController {
     private final MeetingQueryService meetingQueryService;
     private final MeetingCommandService meetingCommandService;
     private final HiQueryService hiQueryService;
+    private final HiCommandService hiCommandService;
 
     @Operation(summary = "팀 갤러리 조회", description = "12팀씩 페이징 됩니다.")
     @GetMapping
@@ -101,15 +105,15 @@ public class MeetingController {
 
     @Operation(summary = "하이 보내기")
     @PostMapping("/hi/send")
-    public Response<String> sendHi(@RequestBody MeetingRequestDTO.hiDto hiDto){
-        hiQueryService.sendHi(hiDto);
+    public Response<String> sendHi(@RequestBody MeetingRequestDTO.HiDto hiDto){
+        hiCommandService.sendHi(hiDto);
         return Response.ok(hiDto.getToId() +"팀에게 하이가 보내졌습니다. ");
     }
 
     @Operation(summary = "하이 거절하기")
     @PatchMapping("/hi/refuse")
-    public Response<String> refuseHi(@RequestBody MeetingRequestDTO.hiDto hiDto){
-        hiQueryService.refuseHi(hiDto);
+    public Response<String> refuseHi(@RequestBody MeetingRequestDTO.HiDto hiDto){
+        hiCommandService.refuseHi(hiDto);
         return Response.ok(hiDto.getFromId() +"팀이 보낸 하이가 거절되었습니다. ");
     }
 
@@ -156,6 +160,42 @@ public class MeetingController {
 
         Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         MeetingResponseDTO.GetMyDeleteDTO response = meetingQueryService.getMyDelete(userId);
+
+        return Response.ok(response);
+    }
+
+    @Operation(summary = "1대1 갤러리 조회", description = "12명씩 페이징 됩니다.")
+    @GetMapping("/ONE_TO_ONE")
+    public Response<MeetingResponseDTO.GetUserGalleryDTO> getUserGallery(@AuthUser Long userId, @RequestParam(name = "page") Integer page) {
+
+        MeetingResponseDTO.GetUserGalleryDTO response = meetingQueryService.getUserGallery(userId, page);
+
+        return Response.ok(response);
+    }
+
+    @Operation(summary = "1대1 미팅 참여")
+    @PatchMapping("/ONE_TO_ONE")
+    public Response<Void> patchProfileStatus(@AuthUser Long userId, @Valid @RequestBody MeetingRequestDTO.PatchProfileStatusDTO request) {
+
+        meetingCommandService.patchProfileStatus(userId, request);
+
+        return Response.ok();
+    }
+
+    @Operation(summary = "내 프로필 조회")
+    @GetMapping("/myProfile")
+    public Response<MeetingResponseDTO.GetPreMyProfileDTO> getPreMyProfile(@AuthUser Long userId) {
+
+        MeetingResponseDTO.GetPreMyProfileDTO response = meetingQueryService.getPreMyProfile(userId);
+
+        return Response.ok(response);
+    }
+
+    @Operation(summary = "내 하이 개수")
+    @GetMapping("/myProfile/hi")
+    public Response<MeetingResponseDTO.GetMyHiDTO> getMyHi(@AuthUser Long userId) {
+
+        MeetingResponseDTO.GetMyHiDTO response = meetingQueryService.getMyHi(userId);
 
         return Response.ok(response);
     }

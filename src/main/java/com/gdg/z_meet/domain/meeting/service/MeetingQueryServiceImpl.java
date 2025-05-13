@@ -1,22 +1,27 @@
 package com.gdg.z_meet.domain.meeting.service;
 
+import com.gdg.z_meet.domain.fcm.service.custom.FcmProfileMessageService;
 import com.gdg.z_meet.domain.meeting.converter.MeetingConverter;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.enums.ActiveStatus;
 import com.gdg.z_meet.domain.meeting.entity.enums.Event;
+import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
+import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +44,13 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
+
+    @Lazy
+    @Autowired
+    private MeetingQueryServiceImpl self;      // 프록시 객체를 통한 트랜잭션 분리
+
+    private final FcmProfileMessageService fcmProfileMessageService;
+
     private final Event event = Event.NEUL_2025;
 
     @Override
@@ -49,12 +61,23 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<Team> teamList = teamRepository.findAllByTeamType(userId, gender, teamType, event, PageRequest.of(page, 12));
         Collections.shuffle(teamList);
 
+        self.increaseTeamViewCountsAndSendFcm(teamList);
+
         Map<Long, List<String>> emojiList = collectEmoji(teamList);
         Map<Long, List<String>> majorList = collectMajor(teamList);
         Map<Long, Double> age = collectAge(teamList);
         Map<Long, List<String>> musicList = collectMusic(teamList);
 
         return MeetingConverter.toGetTeamGalleryDTO(teamList, emojiList, majorList, age, musicList);
+    }
+
+    @Transactional
+    public void increaseTeamViewCountsAndSendFcm(List<Team> teamList) {
+        for (Team team : teamList) {
+            team.setViewCount(team.getViewCount() + 1);
+        }
+
+        fcmProfileMessageService.messagingProfileViewTwoTwoUsers(teamList);
     }
 
     @Override
@@ -80,7 +103,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         Team myTeam = teamRepository.findByTeamType(userId, team.getTeamType(), event)
                 .orElseThrow(() -> new BusinessException(Code.MY_TEAM_NOT_FOUND));
-        Boolean hi = hiRepository.existsByFromAndTo(myTeam, team);
+        Boolean hi = hiRepository.existsByFromIdAndToIdAndHiType(myTeam.getId(), team.getId(), HiType.TEAM);
 
         return MeetingConverter.toGetTeamDTO(user, team, users, hi);
     }
@@ -178,6 +201,65 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         return MeetingConverter.toGetMyDeleteDTO(user);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetUserGalleryDTO getUserGallery(Long userId, Integer page) {
+
+        UserProfile userProfile = userProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(Code.USER_PROFILE_NOT_FOUND));
+
+        Gender gender = userProfile.getGender();
+        List<User> userList = userRepository.findAllByProfileStatus(userId, gender, PageRequest.of(page, 12));
+        Collections.shuffle(userList);
+
+        List<Long> targetUserIds = userList.stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        self.increaseViewCountsAndSendFcm(targetUserIds);
+
+        return MeetingConverter.toGetUserGalleryDTO(userList);
+    }
+
+    @Transactional
+    public void increaseViewCountsAndSendFcm(List<Long> userIds) {
+        List<UserProfile> profiles = userProfileRepository.findByUserIdIn(userIds);
+
+        for (UserProfile profile : profiles) {
+            profile.setViewCount(profile.getViewCount() + 1);    // 더티 체킹
+        }
+
+        fcmProfileMessageService.messagingProfileViewOneOneUsers(profiles);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetPreMyProfileDTO getPreMyProfile(Long userId) {
+
+        Optional<User> userOptional = userRepository.findByProfileStatus(userId);
+        if (userOptional.isEmpty()) {
+            return null;
+        }
+
+        User user = userOptional.get();
+
+        return MeetingConverter.toGetPreMyProfileDTO(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetMyHiDTO getMyHi(Long userId) {
+
+        Integer hi = userProfileRepository.findHiByUserId(userId)
+                .orElseThrow(() -> new BusinessException(Code.USER_PROFILE_NOT_FOUND));
+
+        return MeetingResponseDTO.GetMyHiDTO.builder()
+                .hi(hi)
+                .build();
+    }
+
+
 
     private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
 

@@ -1,6 +1,7 @@
 package com.gdg.z_meet.domain.meeting.entity;
 
 import com.gdg.z_meet.domain.meeting.entity.enums.HiStatus;
+import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
 import com.gdg.z_meet.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,16 +22,26 @@ public class Hi extends BaseEntity {
     @Column(nullable = false)
     private HiStatus hiStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "from_id")
-    private Team from;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private HiType hiType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "to_id")
-    private Team to;
+    @Column(name = "from_id")
+    private Long fromId;
+
+    @Column(name = "to_id")
+    private Long toId;
+
+    @Column(nullable = false)
+    @Builder.Default
+    boolean fcmSendHiToUser = false;
+
+    @Column(nullable = false)
+    @Builder.Default
+    boolean fcmSendHiToTeam = false;
 
     // hi Status 변경
-    public void changeStatus(HiStatus hiStatus) {
+    public void setChangeStatus(HiStatus hiStatus) {
        this.hiStatus=hiStatus;
     }
 

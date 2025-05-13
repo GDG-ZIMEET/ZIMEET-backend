@@ -9,6 +9,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,4 +32,12 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     boolean existsByNickname(String nickname);
 
     void deleteByUserId(Long userId);
+
+    @Query("SELECT up FROM UserProfile up WHERE up.profileStatus = 'NONE' AND up.fcmSendOneOne = false AND up.user.createdAt <= :threshold")
+    List<UserProfile> findInactiveUsers(@Param("threshold") LocalDateTime threshold);
+
+    List<UserProfile> findByUserIdIn(List<Long> userIds);
+
+    @Query("SELECT up.hi FROM UserProfile up WHERE up.user.id = :userId AND up.user.isDeleted = false")
+    Optional<Integer> findHiByUserId(@Param("userId") Long userId);
 }
