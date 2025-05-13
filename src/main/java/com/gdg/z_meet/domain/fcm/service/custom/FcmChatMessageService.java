@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.fcm.service.custom;
 
+import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.entity.JoinChat;
 import com.gdg.z_meet.domain.chat.entity.TeamChatRoom;
@@ -16,9 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.gdg.z_meet.global.response.Code;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -33,24 +34,72 @@ public class FcmChatMessageService {
     private final JoinChatRepository joinChatRepository;
 
 
-    // 1. (1대1) 상대 닉네임 / (2대2) 상대 팀 / (랜덤) 채팅방 이름
-    //    본문 : 채팅 메시지
     @Transactional
-    public void messagingChat() {
+    public void messagingChat(ChatMessage chatMessage) {
+        Long roomId = chatMessage.getRoomId();
+        Long senderId = chatMessage.getSenderId();
 
+        String body = chatMessage.getContent();    // 채팅 내용 그대로 전달
+
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
 
         String title = "";
-        String body = "";
+        List<User> recipients = new ArrayList<>();
 
-        try {
-            fcmMessageClient.sendFcmMessage(user.getId(), title, body);
-        } catch (Exception e) {
-            log.error("FCM 채팅 메시지 전송 실패 - userId: {}, error: {}", user.getId(), e.getMessage(), e);
+        switch (chatRoom.getChatType()) {
+            case USER: {
+                List<JoinChat> joins = joinChatRepository.findByChatRoomId(roomId);
+
+                recipients = joins.stream()
+                        .map(JoinChat::getUser)
+                        .filter(u -> !u.getId().equals(senderId))
+                        .collect(Collectors.toList());
+
+                User opponent = recipients.stream().findFirst().orElse(null);
+                if (opponent != null) {
+                    title = opponent.getUserProfile().getNickname() + " 님이 메시지를 보냈어요 💬";
+                }
+                break;
+            }
+
+            case TEAM: {
+                Optional<Team> opponentTeamOpt = teamChatRoomRepository.findOtherTeamInChatRoom(roomId, senderId);
+                String teamName = opponentTeamOpt.map(Team::getName).orElse(null);
+
+                title = teamName + " 팀과의 채팅방에 메시지가 도착했어요 💬";
+
+                recipients = joinChatRepository.findByChatRoomId(roomId).stream()
+                        .map(JoinChat::getUser)
+                        .filter(u -> !u.getId().equals(senderId))
+                        .collect(Collectors.toList());
+                break;
+            }
+
+            case RANDOM: {
+                TeamChatRoom teamChatRoom = teamChatRoomRepository.findFirstByChatRoomId(roomId)
+                        .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
+
+                title = "[" + teamChatRoom.getName() + "] 채팅방에 메시지가 도착했어요 💬";
+
+                recipients = joinChatRepository.findByChatRoomId(roomId).stream()
+                        .map(JoinChat::getUser)
+                        .filter(u -> !u.getId().equals(senderId))
+                        .collect(Collectors.toList());
+                break;
+            }
+        }
+
+        for (User user : recipients) {
+            try {
+                fcmMessageClient.sendFcmMessage(user.getId(), title, body);
+            } catch (Exception e) {
+                log.error("FCM 메시지 전송 실패 - userId: {}, error: {}", user.getId(), e.getMessage(), e);
+            }
         }
     }
 
 
-    // 2. [ (1대1) 상대 닉네임 / (2대2) 상대 팀 / (랜덤) 채팅방 이름 ] 채팅방이 열렸어요! 🤗
     @Transactional
     public void messagingOpenChatRoom(User user, Long roomId) {
 
