@@ -77,7 +77,6 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
             team.setViewCount(team.getViewCount() + 1);
         }
 
-        teamRepository.saveAll(teamList);
         fcmProfileMessageService.messagingProfileViewTwoTwoUsers(teamList);
     }
 
