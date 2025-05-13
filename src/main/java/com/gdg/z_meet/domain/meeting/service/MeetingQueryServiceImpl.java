@@ -247,6 +247,18 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         return MeetingConverter.toGetPreMyProfileDTO(user);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetMyHiDTO getMyHi(Long userId) {
+
+        Integer hi = userProfileRepository.findHiByUserId(userId)
+                .orElseThrow(() -> new BusinessException(Code.USER_PROFILE_NOT_FOUND));
+
+        return MeetingResponseDTO.GetMyHiDTO.builder()
+                .hi(hi)
+                .build();
+    }
+
 
 
     private Map<Long, List<String>> collectEmoji(List<Team> teamList) {

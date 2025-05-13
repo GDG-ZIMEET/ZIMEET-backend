@@ -208,4 +208,12 @@ public class MeetingResponseDTO {
         Integer verification;
         String profileStatus;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMyHiDTO {
+        Integer hi;
+    }
 }
