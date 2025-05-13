@@ -190,4 +190,13 @@ public class MeetingController {
 
         return Response.ok(response);
     }
+
+    @Operation(summary = "내 하이 개수")
+    @GetMapping("/myProfile/hi")
+    public Response<MeetingResponseDTO.GetMyHiDTO> getMyHi(@AuthUser Long userId) {
+
+        MeetingResponseDTO.GetMyHiDTO response = meetingQueryService.getMyHi(userId);
+
+        return Response.ok(response);
+    }
 }
