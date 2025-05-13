@@ -32,8 +32,16 @@ public class Hi extends BaseEntity {
     @Column(name = "to_id")
     private Long toId;
 
+    @Column(nullable = false)
+    @Builder.Default
+    boolean fcmSendHiToUser = false;
+
+    @Column(nullable = false)
+    @Builder.Default
+    boolean fcmSendHiToTeam = false;
+
     // hi Status 변경
-    public void changeStatus(HiStatus hiStatus) {
+    public void setChangeStatus(HiStatus hiStatus) {
        this.hiStatus=hiStatus;
     }
 

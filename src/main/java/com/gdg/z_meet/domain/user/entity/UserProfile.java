@@ -78,12 +78,16 @@ public class UserProfile {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private ProfileStatus profileStatus = ProfileStatus.NONE ;
+    private ProfileStatus profileStatus = ProfileStatus.NONE;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
     private Verification verification = Verification.NONE;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean fcmSendOneOne = false;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -106,4 +110,9 @@ public class UserProfile {
     public void upLevel() { this.level = Level.PLUS; }
 
     public void setInfiniteTicket() { this.ticket = 99; }
+
+    public void changeProfileStatus(ProfileStatus status) { this.profileStatus = status; }
+
+    public void setFcmSendOneOne(boolean fcmSendOneOne) { this.fcmSendOneOne = fcmSendOneOne; }
+  
 }
