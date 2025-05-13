@@ -61,12 +61,24 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<Team> teamList = teamRepository.findAllByTeamType(userId, gender, teamType, event, PageRequest.of(page, 12));
         Collections.shuffle(teamList);
 
+        self.increaseTeamViewCountsAndSendFcm(teamList);
+
         Map<Long, List<String>> emojiList = collectEmoji(teamList);
         Map<Long, List<String>> majorList = collectMajor(teamList);
         Map<Long, Double> age = collectAge(teamList);
         Map<Long, List<String>> musicList = collectMusic(teamList);
 
         return MeetingConverter.toGetTeamGalleryDTO(teamList, emojiList, majorList, age, musicList);
+    }
+
+    @Transactional
+    public void increaseTeamViewCountsAndSendFcm(List<Team> teamList) {
+        for (Team team : teamList) {
+            team.setViewCount(team.getViewCount() + 1);
+        }
+
+        teamRepository.saveAll(teamList);
+        fcmProfileMessageService.messagingProfileViewTwoTwoUsers(teamList);
     }
 
     @Override
