@@ -211,7 +211,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .orElseThrow(() -> new BusinessException(Code.USER_PROFILE_NOT_FOUND));
 
         Gender gender = userProfile.getGender();
-        List<User> userList = userRepository.findAllByIsVisible(userId, gender, PageRequest.of(page, 12));
+        List<User> userList = userRepository.findAllByProfileStatus(userId, gender, PageRequest.of(page, 12));
         Collections.shuffle(userList);
 
         List<Long> targetUserIds = userList.stream()
@@ -233,6 +233,21 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         fcmProfileMessageService.messagingProfileViewOneOneUsers(profiles);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetPreMyProfileDTO getPreMyProfile(Long userId) {
+
+        Optional<User> userOptional = userRepository.findByProfileStatus(userId);
+        if (userOptional.isEmpty()) {
+            return null;
+        }
+
+        User user = userOptional.get();
+
+        return MeetingConverter.toGetPreMyProfileDTO(user);
+    }
+
 
 
     private Map<Long, List<String>> collectEmoji(List<Team> teamList) {

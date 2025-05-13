@@ -4,6 +4,7 @@ import com.gdg.z_meet.global.response.Code;
 import com.gdg.z_meet.global.response.Response;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.UnsatisfiedDependencyException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -55,7 +57,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Response.fail(Code.BAD_REQUEST, errors));
+    }
 
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Response.fail(Code.BAD_REQUEST, ex.getMessage()));
+    }
+
+
+    @ExceptionHandler(BeanCreationException.class)
+    public ResponseEntity<Object> handleBeanCreationException(BeanCreationException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Response.fail(Code.INTERNAL_SERVER_ERROR, ex.getMessage()));
     }
 
     @ExceptionHandler(ClassCastException.class)

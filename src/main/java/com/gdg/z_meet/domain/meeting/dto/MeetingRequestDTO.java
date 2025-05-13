@@ -1,6 +1,8 @@
 package com.gdg.z_meet.domain.meeting.dto;
 
 import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
+import com.gdg.z_meet.domain.user.entity.enums.ProfileStatus;
+import com.gdg.z_meet.global.validation.annotation.ValidEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -13,7 +15,6 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 public class MeetingRequestDTO {
-
 
     @Builder
     @Getter
@@ -37,4 +38,11 @@ public class MeetingRequestDTO {
         List<Long> teamMember;
     }
 
+    @Getter
+    public static class PatchProfileStatusDTO {
+
+        @NotNull
+        @ValidEnum(enumClass = ProfileStatus.class)
+        String status;
+    }
 }

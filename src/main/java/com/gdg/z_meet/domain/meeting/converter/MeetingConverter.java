@@ -163,4 +163,15 @@ public class MeetingConverter {
                 .userList(userDTOS)
                 .build();
     }
+
+    public static MeetingResponseDTO.GetPreMyProfileDTO toGetPreMyProfileDTO(User user){
+
+        return MeetingResponseDTO.GetPreMyProfileDTO.builder()
+                .userId(user.getId())
+                .emoji(user.getUserProfile().getEmoji())
+                .nickname(user.getUserProfile().getNickname())
+                .verification(user.getUserProfile().getVerification() == COMPLETE ? 1 : 0)
+                .profileStatus(String.valueOf(user.getUserProfile().getProfileStatus()))
+                .build();
+    }
 }

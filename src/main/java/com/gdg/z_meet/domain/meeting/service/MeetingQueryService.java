@@ -17,4 +17,5 @@ public interface MeetingQueryService {
     MeetingResponseDTO.GetMyDeleteDTO getMyDelete(Long userId);
 
     MeetingResponseDTO.GetUserGalleryDTO getUserGallery(Long userId, Integer page);
+    MeetingResponseDTO.GetPreMyProfileDTO getPreMyProfile(Long userId);
 }

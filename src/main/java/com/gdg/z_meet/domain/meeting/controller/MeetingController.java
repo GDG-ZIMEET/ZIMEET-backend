@@ -12,6 +12,7 @@ import com.gdg.z_meet.global.response.Response;
 import com.gdg.z_meet.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
@@ -168,6 +169,24 @@ public class MeetingController {
     public Response<MeetingResponseDTO.GetUserGalleryDTO> getUserGallery(@AuthUser Long userId, @RequestParam(name = "page") Integer page) {
 
         MeetingResponseDTO.GetUserGalleryDTO response = meetingQueryService.getUserGallery(userId, page);
+
+        return Response.ok(response);
+    }
+
+    @Operation(summary = "1대1 미팅 참여")
+    @PatchMapping("/ONE_TO_ONE")
+    public Response<Void> patchProfileStatus(@AuthUser Long userId, @Valid @RequestBody MeetingRequestDTO.PatchProfileStatusDTO request) {
+
+        meetingCommandService.patchProfileStatus(userId, request);
+
+        return Response.ok();
+    }
+
+    @Operation(summary = "내 프로필 조회")
+    @GetMapping("/myProfile")
+    public Response<MeetingResponseDTO.GetPreMyProfileDTO> getPreMyProfile(@AuthUser Long userId) {
+
+        MeetingResponseDTO.GetPreMyProfileDTO response = meetingQueryService.getPreMyProfile(userId);
 
         return Response.ok(response);
     }

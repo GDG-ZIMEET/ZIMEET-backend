@@ -48,6 +48,9 @@ public enum Code implements BaseCode {
     RANDOM_MEETING_USER_COUNT(HttpStatus.BAD_REQUEST, "CHAT4005",  "랜덤 미팅에 참여하는 사용자 수는 반드시 6명이어야 합니다."),
     TEAM_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "MEETING4013", "삭제된 팀입니다."),
     MY_TEAM_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEETING4014", "본인 팀이 존재하지 않습니다."),
+    PROFILE_ALREADY_ACTIVE(HttpStatus.BAD_REQUEST, "MEETING4015", "이미 1대1 미팅에 참여했습니다."),
+    PROFILE_ALREADY_INACTIVE(HttpStatus.BAD_REQUEST, "MEETING4016", "이미 1대1 미팅을 취소했습니다."),
+    INVALID_PROFILE_STATUS(HttpStatus.BAD_REQUEST, "MEETING4017", "ACTIVE 또는 INACTIVE만 입력할 수 있습니다."),
 
     //Matching Error
     MATCHING_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "MATCHING4001", "이미 랜덤 매칭중입니다."),

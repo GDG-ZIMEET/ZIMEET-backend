@@ -78,7 +78,7 @@ public class UserProfile {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private ProfileStatus profileStatus = ProfileStatus.NONE ;
+    private ProfileStatus profileStatus = ProfileStatus.NONE;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -115,9 +115,12 @@ public class UserProfile {
 
     public void setInfiniteTicket() { this.ticket = 99; }
 
+    public void changeProfileStatus(ProfileStatus status) { this.profileStatus = status; }
+
     public void setFcmSendOneOne(boolean fcmSendOneOne) { this.fcmSendOneOne = fcmSendOneOne; }
 
     public int getViewCount() { return viewCount; }
 
     public void setViewCount(int viewCount) { this.viewCount = viewCount; }
+
 }
