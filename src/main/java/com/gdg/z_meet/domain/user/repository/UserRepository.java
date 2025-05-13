@@ -1,14 +1,11 @@
 package com.gdg.z_meet.domain.user.repository;
 
-import com.gdg.z_meet.domain.meeting.entity.Team;
-import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -53,9 +50,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByIdIn(List<Long> userIds);
 
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile up " +
-            "WHERE u.id != :userId AND up.gender != :gender AND up.profileStatus = 'ACTIVE' " +
+            "WHERE u.id != :userId AND up.gender != :gender AND up.profileStatus = 'ACTIVE' AND u.isDeleted = false " +
             "ORDER BY FUNCTION('RAND')")
-    List<User> findAllByIsVisible(@Param("userId") Long userId, @Param("gender") Gender gender, Pageable pageable);
+    List<User> findAllByProfileStatus(@Param("userId") Long userId, @Param("gender") Gender gender, Pageable pageable);
 
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile up " +
             "WHERE u.id = :userId AND up.profileStatus = 'ACTIVE' AND u.isDeleted = false")
