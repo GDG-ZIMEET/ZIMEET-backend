@@ -7,6 +7,7 @@ import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.entity.Message;
 import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
 import com.gdg.z_meet.domain.chat.repository.mongo.MongoMessageRepository;
+import com.gdg.z_meet.domain.fcm.service.custom.FcmChatMessageService;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -19,7 +20,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,10 +40,13 @@ public class MessageCommandService {
     private static final String CHAT_ROOM_LATEST_MESSAGE_TIME_KEY = "chatroom:%s:latestMessageTime";
     private static final int MAX_REDIS_MESSAGES = 30; // 최신 30개만 Redis에 유지
 
+    private final FcmChatMessageService fcmChatMessageService;
+
     @Transactional
     public void processMessage(ChatMessage chatMessage) {
         saveMessage(chatMessage);
         broadcastMessage(chatMessage);
+        fcmChatMessageService.messagingChat(chatMessage);         // 앱이 백그라운드일 때를 위한 FCM 알림
     }
 
     @Transactional
