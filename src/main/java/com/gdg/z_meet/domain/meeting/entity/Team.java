@@ -58,6 +58,10 @@ public class Team extends BaseEntity {
     @Builder.Default
     private int viewCount = 0;
 
+    @Column(name = "last_notified")
+    @Builder.Default
+    private Integer lastNotified = 0;
+
     // hi 값을 변경하는 메서드
     public void decreaseHi() {
         if (this.hi > 0) {
@@ -82,4 +86,6 @@ public class Team extends BaseEntity {
     public int getViewCount() { return viewCount; }
 
     public void setViewCount(int viewCount) { this.viewCount = viewCount; }
+
+    public void setLastNotified(Integer lastNotified) { this.lastNotified = lastNotified; }
 }

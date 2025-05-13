@@ -93,6 +93,10 @@ public class UserProfile {
     @Builder.Default
     private int viewCount = 0;
 
+    @Column(name = "last_notified")
+    @Builder.Default
+    private Integer lastNotified = 0;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

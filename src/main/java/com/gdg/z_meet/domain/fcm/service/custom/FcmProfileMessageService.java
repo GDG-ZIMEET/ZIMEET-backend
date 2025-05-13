@@ -4,7 +4,6 @@ import com.gdg.z_meet.domain.fcm.service.FcmMessageClient;
 import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
-import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,12 +35,26 @@ public class FcmProfileMessageService {
 
         for (UserProfile profile : profiles) {
             int viewCount = profile.getViewCount();
+            int lastNotified = profile.getLastNotified();
             Long userId = profile.getUser().getId();
 
-            if (messageTitles.containsKey(viewCount)) {
-                String title = messageTitles.get(viewCount);
+            int maxMilestone = -1;
+            String titleToSend = null;
+
+            for (Map.Entry<Integer, String> entry : messageTitles.entrySet()) {
+                int milestone = entry.getKey();
+                if (viewCount >= milestone && milestone > lastNotified) {
+                    if (milestone > maxMilestone) {
+                        maxMilestone = milestone;
+                        titleToSend = entry.getValue();
+                    }
+                }
+            }
+
+            if (titleToSend != null) {    // 중복 발송을 막기 위함
                 try {
-                    fcmMessageClient.sendFcmMessage(userId, title, body);
+                    fcmMessageClient.sendFcmMessage(userId, titleToSend, body);
+                    profile.setLastNotified(maxMilestone);
                 } catch (Exception e) {
                     log.error("FCM 프로필 조회 수 알림 전송 실패 - userId: {}, message: {}", userId, e.getMessage(), e);
                 }
@@ -64,19 +77,32 @@ public class FcmProfileMessageService {
 
         for (Team team : teams) {
             int viewCount = team.getViewCount();
+            int lastNotified = team.getLastNotified();
 
-            if (messageTitles.containsKey(viewCount)) {
-                String title = messageTitles.get(viewCount);
+            int maxMilestone = -1;
+            String titleToSend = null;
 
+            for (Map.Entry<Integer, String> entry : messageTitles.entrySet()) {
+                int milestone = entry.getKey();
+                if (viewCount >= milestone && milestone > lastNotified) {
+                    if (milestone > maxMilestone) {
+                        maxMilestone = milestone;
+                        titleToSend = entry.getValue();
+                    }
+                }
+            }
+
+            if (titleToSend != null) {   // 중복 발송을 막기 위함
                 List<UserTeam> userTeams = userTeamRepository.findAllByTeam(team);
                 for (UserTeam userTeam : userTeams) {
                     Long userId = userTeam.getUser().getId();
                     try {
-                        fcmMessageClient.sendFcmMessage(userId, title, body);
+                        fcmMessageClient.sendFcmMessage(userId, titleToSend, body);
                     } catch (Exception e) {
                         log.error("FCM 팀 조회 수 알림 전송 실패 - userId: {}, teamId: {}, message: {}", userId, team.getId(), e.getMessage(), e);
                     }
                 }
+                team.setLastNotified(maxMilestone);  // 마지막 알림 milestone 기록
             }
         }
     }
