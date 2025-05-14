@@ -26,7 +26,6 @@ public class FCMInitializer {
 
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl(databaseUrl)
                     .build();
 
             // 중복 초기화 방지
