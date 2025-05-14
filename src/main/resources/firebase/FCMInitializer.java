@@ -30,8 +30,10 @@ public class FCMInitializer {
 
             // 중복 초기화 방지
             if (FirebaseApp.getApps().isEmpty()) {
-                System.out.println("Firebase 초기화");
                 FirebaseApp.initializeApp(options);
+                System.out.println("Firebase 초기화 완료");
+            } else {
+                System.out.println("이미 Firebase 초기화됨");
             }
         } catch (IOException e) {
             e.printStackTrace();
