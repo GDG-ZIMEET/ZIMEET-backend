@@ -20,6 +20,7 @@ public class FCMInitializer {
 
     @PostConstruct
     public void initialize() {
+        System.out.println("🔥 FCMInitializer: initialize() 시작됨");
         try {
             InputStream serviceAccount =
                     new ClassPathResource(serviceAccountFile).getInputStream();
