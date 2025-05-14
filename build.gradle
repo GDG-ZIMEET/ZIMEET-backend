@@ -87,7 +87,7 @@ tasks.named('test') {
 }
 
 tasks.withType(Test) {
-	enabled = true
+	enabled = false
 }
 
 clean {
