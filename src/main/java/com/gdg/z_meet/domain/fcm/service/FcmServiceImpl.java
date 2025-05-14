@@ -66,14 +66,22 @@ public class FcmServiceImpl implements FcmService {
 
         log.info("받은 FCM 토큰 값 : " + fcmToken);
 
+        String title = "ZI-MEET FCM 알림 테스트입니다.";
+        String body = "테스트 성공했나요?";
+
+        Notification notification = Notification.builder()
+                .setTitle(title)
+                .setBody(body)
+                .build();
+
         Message message = Message.builder()
                 .setToken(fcmToken)
-                .setNotification(
-                        Notification.builder()
-                                .setTitle("ZI-MEET FCM 알림 테스트입니다.")
-                                .setBody("테스트 성공했나요?")
-                                .build())
+                .setNotification(notification)
                 .build();
+
+        log.info("📨 FCM 메시지 제목: {}", title);
+        log.info("📨 FCM 메시지 내용: {}", body);
+
         try {
             String response = FirebaseMessaging.getInstance().send(message);
             log.info("FCM 응답: {}", response);
