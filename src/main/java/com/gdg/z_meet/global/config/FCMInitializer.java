@@ -1,4 +1,4 @@
-package firebase;
+package com.gdg.z_meet.global.config;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
