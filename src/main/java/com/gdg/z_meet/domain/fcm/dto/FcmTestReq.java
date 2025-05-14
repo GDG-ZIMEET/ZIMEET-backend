@@ -1,10 +1,15 @@
 package com.gdg.z_meet.domain.fcm.dto;
 
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@RequiredArgsConstructor
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FcmTestReq {
-    private final String token;
+    private  String fcmToken;
+
+    public FcmTestReq(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
 }
