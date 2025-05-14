@@ -47,7 +47,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build Docker image
-        run: docker build -f Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server .
+        run : |
+          docker images --filter=reference='${{ secrets.DOCKERHUB_USERNAME }}/gdg-server' --format "→ {{.Repository}}:{{.Tag}} (ID: {{.ID}}, Size: {{.Size}}, Created: {{.CreatedSince}})"
+        # run: docker build -f Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server .
 
       - name: Check built Docker image
         run: |
@@ -82,7 +84,7 @@ jobs:
             echo "📥 최신 Docker 이미지 Pull: ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest"
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest
             
-            echo "🚀 Docker Compose로 컨테이너 재기동"
+            echo "🚀 Docker Compose로 컨테이너 재가동"
             sudo docker-compose up --build -d
             
             sudo docker image prune -f
