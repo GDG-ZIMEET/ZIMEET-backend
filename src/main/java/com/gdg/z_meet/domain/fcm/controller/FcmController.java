@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.fcm.controller;
 
+import com.gdg.z_meet.domain.fcm.dto.FcmBroadcastReq;
 import com.gdg.z_meet.domain.fcm.dto.FcmTestReq;
 import com.gdg.z_meet.domain.fcm.service.FcmService;
 import com.gdg.z_meet.domain.user.dto.UserReq;
@@ -44,6 +45,13 @@ public class FcmController {
     public Response<Long> syncFcmToken(@AuthUser Long userId, @RequestBody UserReq.saveFcmTokenReq req) {
         fcmService.syncFcmToken(userId, req);
         return Response.ok(userId);
+    }
+
+    @Operation(summary = "FCM 전체 공지용 메시지 발송", description = "제목과 본문을 받아 모든 사용자에게 FCM 을 보냅니다.")
+    @PostMapping("/broadcast")
+    public Response<String> broadcastMessage(@RequestBody FcmBroadcastReq req) {
+        fcmService.broadcastToAllUsers(req.getTitle(), req.getBody());
+        return Response.ok("FCM broadcast initiated");
     }
 
 

@@ -3,6 +3,7 @@ package com.gdg.z_meet.domain.fcm.repository;
 import com.gdg.z_meet.domain.fcm.entity.FcmToken;
 import com.gdg.z_meet.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,4 +17,8 @@ public interface FcmTokenRepository extends JpaRepository<FcmToken, Long> {
     List<FcmToken> findAllByUser(User user);
 
     void deleteByToken(String token);
+
+    @Query(" SELECT ft FROM FcmToken ft JOIN FETCH ft.user u WHERE u.pushAgree = true")
+    List<FcmToken> findAllByUserPushAgreeTrue();
+
 }
