@@ -38,33 +38,15 @@ jobs:
 
       - name: Build with Gradle without tests
         run: ./gradlew clean bootJar -x test
-        shell: bash
 
-      - name: Docker login
-        uses: docker/login-action@v2
+      - name: Copy JAR to EC2
+        uses: appleboy/scp-action@master
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Build Docker image
-        run: docker build -f Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server .
-
-      - name: ✅ Check built Docker image
-        run: |
-          echo "✅ 빌드된 이미지 정보:"
-          docker images --filter=reference='${{ secrets.DOCKERHUB_USERNAME }}/gdg-server' \
-            --format "→ {{.Repository}}:{{.Tag}} (ID: {{.ID}}, Size: {{.Size}}, Created: {{.CreatedSince}})"
-
-      - name: Check built Docker image
-        run: |
-          echo "✅ 현재 빌드된 이미지 목록:"
-          docker images
-
-      - name: Push Docker image to DockerHub
-        run: |
-          echo "🚀 Docker 이미지 DockerHub에 Push 시작..."
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest
-          echo "✅ Docker 이미지 Push 완료!"
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "build/libs/*.jar"
+          target: "/home/ubuntu/ZIMEET-backend/build/libs/"
 
   CD:
     needs: CI
@@ -79,19 +61,15 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/ZIMEET-backend
+            
+            git pull origin --no-rebase main
+            
             sudo docker-compose down
             if [ "$(sudo docker ps -qa)" ]; then
               sudo docker ps -qa | xargs -r sudo docker rm -f
             fi
             sudo docker rmi $(sudo docker images -q) || true
             
-            echo "📥 최신 Docker 이미지 Pull: ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest"
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest
-      
-            echo "🔍 Pull된 gdg-server 이미지 상세 확인:"
-            sudo docker images --digests | grep gdg-server
-      
-            echo "🚀 Docker Compose로 컨테이너 재가동"
             sudo docker-compose up --build -d
-            
+
             sudo docker image prune -f
