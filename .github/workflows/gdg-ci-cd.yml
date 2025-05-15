@@ -30,14 +30,14 @@ jobs:
         run: chmod +x ./gradlew
         shell: bash
 
-      - name: Build with Gradle without tests
-        run: ./gradlew clean bootJar -x test
-        shell: bash
-
       - name: Create application.yml
         run: |
           cd ./src/main/resources
           echo "${{ secrets.APPLICATION }}" > ./application-prod.yml
+        shell: bash
+
+      - name: Build with Gradle without tests
+        run: ./gradlew clean bootJar -x test
         shell: bash
 
       - name: Docker login
@@ -49,8 +49,22 @@ jobs:
       - name: Build Docker image
         run: docker build -f Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server .
 
+      - name: ✅ Check built Docker image
+        run: |
+          echo "✅ 빌드된 이미지 정보:"
+          docker images --filter=reference='${{ secrets.DOCKERHUB_USERNAME }}/gdg-server' \
+            --format "→ {{.Repository}}:{{.Tag}} (ID: {{.ID}}, Size: {{.Size}}, Created: {{.CreatedSince}})"
+
+      - name: Check built Docker image
+        run: |
+          echo "✅ 현재 빌드된 이미지 목록:"
+          docker images
+
       - name: Push Docker image to DockerHub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest
+        run: |
+          echo "🚀 Docker 이미지 DockerHub에 Push 시작..."
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest
+          echo "✅ Docker 이미지 Push 완료!"
 
   CD:
     needs: CI
