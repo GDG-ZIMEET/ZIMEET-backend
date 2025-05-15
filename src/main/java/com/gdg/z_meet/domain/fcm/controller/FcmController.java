@@ -47,7 +47,7 @@ public class FcmController {
         return Response.ok(userId);
     }
 
-    @Operation(summary = "FCM 전체 공지용 메시지 발송", description = "제목과 본문을 받아 모든 사용자에게 FCM 을 보냅니다.")
+    @Operation(summary = "FCM 전체 공지용 메시지를 발송 API", description = "제목과 본문을 받아 모든 사용자에게 FCM 을 보냅니다.")
     @PostMapping("/broadcast")
     public Response<Void> broadcastMessage(@RequestBody FcmBroadcastReq req) {
         fcmService.broadcastToAllUsers(req.getTitle(), req.getBody());
@@ -55,7 +55,7 @@ public class FcmController {
     }
 
 
-    @Operation(summary = "FCM 테스트 API", description = "테스트용 API 입니다.!!")
+    @Operation(summary = "FCM 테스트 API", description = "테스트용 API 입니다.")
     @PostMapping("/test")
     public Response<Void> testFCM(@AuthUser Long userId, @RequestBody FcmTestReq req) {
         fcmService.testFcmService(userId, req.getFcmToken());
