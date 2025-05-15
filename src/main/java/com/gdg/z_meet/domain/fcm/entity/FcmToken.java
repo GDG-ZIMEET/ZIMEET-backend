@@ -16,8 +16,9 @@ public class FcmToken extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User user;         // 하나의 유저에 연결되어 있는 다수의 디바이스 푸시 알림 고려
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
 
     @Column(unique = true)
     private String token;
@@ -32,4 +33,8 @@ public class FcmToken extends BaseEntity {
         this.token = newToken;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+        user.setFcmToken(this);
+    }
 }
