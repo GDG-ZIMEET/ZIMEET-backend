@@ -37,48 +37,43 @@ public class FcmMessageClient {
             return;
         }
 
-        List<FcmToken> tokens = fcmTokenRepository.findAllByUser(user);
-        if (tokens.isEmpty()) {
-            log.warn("FCM 토큰 없음: userId={}", userId);
+        FcmToken userToken = fcmTokenRepository.findByUser(user).orElse(null);
+
+        if (userToken == null || userToken.getToken() == null || userToken.getToken().isBlank()) {
+            log.warn("FCM 토큰 없음 또는 유효하지 않음: userId={}", userId);
             return;
         }
 
-        // 유저 당 디바이스는 많아야 3개로 예상되므로 , for 문으로 순차 처리
-        for (FcmToken deviceToken : tokens) {
-            String token = deviceToken.getToken();
-            log.info("FCM 전송 대상 토큰: {}", token);
+        String token = userToken.getToken();
 
-            Message message = Message.builder()
-                    .setToken(token)
-                    .setNotification(Notification.builder()
-                            .setTitle(title)
-                            .setBody(body)
-                            .build())
-                    .build();
+        Message message = Message.builder()
+                .setToken(token)
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .build();
 
-            try {
-                String response = FirebaseMessaging.getInstance().send(message);   // FCM 서버에 메시지 전송
-                log.info("FCM 전송 성공: {}", response);
-            } catch (FirebaseMessagingException e) {
-                log.warn("FCM 전송 실패: {}", e.getMessage(), e);
+        try {
+            String response = FirebaseMessaging.getInstance().send(message);   // FCM 서버에 메시지 전송
+            log.info("FCM 전송 성공: userId={},  response={}", userId, response);
+        } catch (FirebaseMessagingException e) {
+            log.warn("FCM 전송 실패: userId={}, error={}", userId, e.getMessage(), e);
 
-                Set<String> deletableErrorCodes = Set.of(
-                        "UNREGISTERED",
-                        "INVALID_ARGUMENT", "INVALID_ARGUMENTS",
-                        "registration-token-not-registered",
-                        "invalid-argument",
-                        "messaging/invalid-registration-token",
-                        "unregistered"
-                );
+            Set<String> deletableErrorCodes = Set.of(
+                    "UNREGISTERED",
+                    "INVALID_ARGUMENT", "INVALID_ARGUMENTS",
+                    "registration-token-not-registered",
+                    "invalid-argument",
+                    "messaging/invalid-registration-token",
+                    "unregistered"
+            );
 
-                // 해당 에러 코드일 경우 토큰 삭제
-                String errorCode = String.valueOf(e.getErrorCode());
-                if (errorCode != null && deletableErrorCodes.contains(errorCode.toUpperCase())) {
-                    fcmTokenRepository.delete(deviceToken);
-                    log.warn("무효한 FCM 토큰 삭제: token={}, userId={}", token, user.getId());
-                }
-
-                // 예외 throw 하지 않으므로, 하나 전송 실패해도 계속해서 나머지 토큰에는 알림 발송
+            // 해당 에러 코드일 경우 토큰 삭제
+            String errorCode = String.valueOf(e.getErrorCode());
+            if (errorCode != null && deletableErrorCodes.contains(errorCode.toUpperCase())) {
+                fcmTokenRepository.delete(userToken);
+                log.warn("무효한 FCM 토큰 삭제: token={}, userId={}", token, user.getId());
             }
         }
     }

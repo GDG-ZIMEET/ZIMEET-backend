@@ -99,6 +99,11 @@ public class User extends BaseEntity implements UserDetails {
 
     public void setFcmSendTwoTwo(boolean fcmSendTwoTwo) {this.fcmSendTwoTwo = fcmSendTwoTwo;}
 
-    public void setFcmToken(FcmToken fcmToken) {this.fcmToken = fcmToken;}
+    public void setFcmToken(FcmToken fcmToken) {
+        this.fcmToken = fcmToken;
+        if (fcmToken.getUser() != this) {
+            fcmToken.setUser(this);
+        }
+    }
 
 }

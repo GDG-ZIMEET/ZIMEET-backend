@@ -36,7 +36,7 @@ public class FcmServiceImpl implements FcmService {
                 .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
 
         user.setPushAgree(req.isPushAgree());
-        return user.isPushAgree();
+        return true;
     }
 
     @Override
@@ -46,16 +46,25 @@ public class FcmServiceImpl implements FcmService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
 
-        // 기기 변경 시, 토큰이 변경되므로 기존 토큰을 덮어쓰는 방식 필요 => 기존에 있었다면 갱신
-        boolean exists = fcmTokenRepository.existsByUserAndToken(user, req.getFcmToken());
+        if (!user.isPushAgree()) { throw new BusinessException(Code.FCM_PUSH_NOT_AGREED);}
 
-        if (!exists) {
+        String newToken = req.getFcmToken();
+        FcmToken token = fcmTokenRepository.findByUser(user).orElse(null);
+
+        if (token == null) {
             fcmTokenRepository.save(FcmToken.builder()
                     .user(user)
-                    .token(req.getFcmToken())
+                    .token(newToken)
                     .build());
+            return;
+        }
+
+        // 토큰이 다를 때만 갱신
+        if (!newToken.equals(token.getToken())) {
+            token.setToken(newToken);
         }
     }
+
 
     @Transactional
     public void broadcastToAllUsers(String title, String body) {
@@ -64,9 +73,10 @@ public class FcmServiceImpl implements FcmService {
 
         for (FcmToken tokenEntity : tokens) {
             String token = tokenEntity.getToken();
+            Long userId = tokenEntity.getUser().getId();
 
             if (token == null || token.isBlank() || "null".equalsIgnoreCase(token)) {
-                log.warn("FCM 브로드캐스트 대상 토큰이 비어 있음 또는 'null' 문자열: tokenEntityId={}", tokenEntity.getId());
+                log.warn("FCM 브로드캐스트 대상 토큰이 비어 있음 또는 'null' 문자열: tokenEntityId={},  userId={}", tokenEntity.getId(), userId);
                 continue;
             }
 
@@ -80,14 +90,14 @@ public class FcmServiceImpl implements FcmService {
 
             try {
                 String response = FirebaseMessaging.getInstance().send(message);
-                log.info("FCM 전송 성공 (브로드캐스트): {}", response);
+                log.info("FCM 전송 성공 (브로드캐스트): userId={}, response={}", userId, response);
             } catch (FirebaseMessagingException e) {
-                log.warn("FCM 전송 실패 (브로드캐스트): {}", e.getMessage(), e);
+                log.warn("FCM 전송 실패 (브로드캐스트): userId={}, error={}", userId, e.getMessage(), e);
 
                 String errorCode = String.valueOf(e.getErrorCode());
                 if ("UNREGISTERED".equalsIgnoreCase(errorCode) || "INVALID_ARGUMENT".equalsIgnoreCase(errorCode)) {
                     fcmTokenRepository.delete(tokenEntity);
-                    log.warn("무효한 FCM 토큰 삭제: {}", token);
+                    log.warn("무효한 FCM 토큰 삭제: userId={}, token={}", userId, token);
                 }
             }
         }
