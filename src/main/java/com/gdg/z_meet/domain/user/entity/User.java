@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.user.entity;
 
+import com.gdg.z_meet.domain.fcm.entity.FcmToken;
 import com.gdg.z_meet.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -48,6 +49,9 @@ public class User extends BaseEntity implements UserDetails {
     @Builder.Default
     private boolean fcmSendTwoTwo = false;
 
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    private FcmToken fcmToken;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
@@ -94,5 +98,12 @@ public class User extends BaseEntity implements UserDetails {
     public void setPushAgree(boolean pushAgree) { this.pushAgree = pushAgree;}
 
     public void setFcmSendTwoTwo(boolean fcmSendTwoTwo) {this.fcmSendTwoTwo = fcmSendTwoTwo;}
+
+    public void setFcmToken(FcmToken fcmToken) {
+        this.fcmToken = fcmToken;
+        if (fcmToken.getUser() != this) {
+            fcmToken.setUser(this);
+        }
+    }
 
 }
