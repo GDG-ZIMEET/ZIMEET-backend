@@ -57,6 +57,38 @@ public class FcmServiceImpl implements FcmService {
         }
     }
 
+    @Transactional
+    public void broadcastToAllUsers(String title, String body) {
+
+        List<FcmToken> tokens = fcmTokenRepository.findAllByUserPushAgreeTrue();  // 푸시 수신 동의 사용자만
+
+        for (FcmToken tokenEntity : tokens) {
+            String token = tokenEntity.getToken();
+
+            Message message = Message.builder()
+                    .setToken(token)
+                    .setNotification(Notification.builder()
+                            .setTitle(title)
+                            .setBody(body)
+                            .build())
+                    .build();
+
+            try {
+                String response = FirebaseMessaging.getInstance().send(message);
+                log.info("FCM 전송 성공 (브로드캐스트): {}", response);
+            } catch (FirebaseMessagingException e) {
+                log.warn("FCM 전송 실패 (브로드캐스트): {}", e.getMessage(), e);
+
+                String errorCode = String.valueOf(e.getErrorCode());
+                if ("UNREGISTERED".equalsIgnoreCase(errorCode) || "INVALID_ARGUMENT".equalsIgnoreCase(errorCode)) {
+                    fcmTokenRepository.delete(tokenEntity);
+                    log.warn("무효한 FCM 토큰 삭제: {}", token);
+                }
+            }
+        }
+    }
+
+
 
     @Override
     public void testFcmService(Long userId, String fcmToken) {
