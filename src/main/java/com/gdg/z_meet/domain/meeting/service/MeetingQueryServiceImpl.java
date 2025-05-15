@@ -217,7 +217,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         List<Long> userIdList = getCachedUserIds(userId, gender, now);
 
-        int pageSize = 4;
+        int pageSize = 12;
         int fromIndex = page * pageSize;
         int toIndex = Math.min(fromIndex + pageSize, userIdList.size());
 
