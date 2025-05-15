@@ -49,9 +49,9 @@ public class FcmController {
 
     @Operation(summary = "FCM 전체 공지용 메시지 발송", description = "제목과 본문을 받아 모든 사용자에게 FCM 을 보냅니다.")
     @PostMapping("/broadcast")
-    public Response<String> broadcastMessage(@RequestBody FcmBroadcastReq req) {
+    public Response<Void> broadcastMessage(@RequestBody FcmBroadcastReq req) {
         fcmService.broadcastToAllUsers(req.getTitle(), req.getBody());
-        return Response.ok("FCM broadcast initiated");
+        return Response.ok();
     }
 
 
