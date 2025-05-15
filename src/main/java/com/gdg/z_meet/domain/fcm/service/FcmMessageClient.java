@@ -63,6 +63,8 @@ public class FcmMessageClient {
                 log.warn("FCM 전송 실패: {}", e.getMessage(), e);
 
                 Set<String> deletableErrorCodes = Set.of(
+                        "UNREGISTERED",
+                        "INVALID_ARGUMENT", "INVALID_ARGUMENTS",
                         "registration-token-not-registered",
                         "invalid-argument",
                         "messaging/invalid-registration-token",
@@ -70,7 +72,8 @@ public class FcmMessageClient {
                 );
 
                 // 해당 에러 코드일 경우 토큰 삭제
-                if (deletableErrorCodes.contains(e.getErrorCode())) {
+                String errorCode = String.valueOf(e.getErrorCode());
+                if (errorCode != null && deletableErrorCodes.contains(errorCode.toUpperCase())) {
                     fcmTokenRepository.delete(deviceToken);
                     log.warn("무효한 FCM 토큰 삭제: token={}, userId={}", token, user.getId());
                 }

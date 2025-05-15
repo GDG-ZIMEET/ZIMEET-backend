@@ -11,5 +11,7 @@ public interface FcmService {
 
     void syncFcmToken(Long userId, UserReq.saveFcmTokenReq req);
 
+    void broadcastToAllUsers(String title, String body);
+
     void testFcmService(Long userId, String fcmToken);
 }
