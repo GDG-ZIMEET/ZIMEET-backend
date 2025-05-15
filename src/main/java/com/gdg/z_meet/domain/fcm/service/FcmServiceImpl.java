@@ -65,6 +65,11 @@ public class FcmServiceImpl implements FcmService {
         for (FcmToken tokenEntity : tokens) {
             String token = tokenEntity.getToken();
 
+            if (token == null || token.isBlank() || "null".equalsIgnoreCase(token)) {
+                log.warn("FCM 브로드캐스트 대상 토큰이 비어 있음 또는 'null' 문자열: tokenEntityId={}", tokenEntity.getId());
+                continue;
+            }
+
             Message message = Message.builder()
                     .setToken(token)
                     .setNotification(Notification.builder()
