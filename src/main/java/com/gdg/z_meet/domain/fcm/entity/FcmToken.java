@@ -20,7 +20,7 @@ public class FcmToken extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String token;
 
 
@@ -32,6 +32,8 @@ public class FcmToken extends BaseEntity {
     public void updateToken(String newToken) {
         this.token = newToken;
     }
+
+    public void setToken(String newToken) {this.token = token;}
 
     public void setUser(User user) {
         this.user = user;
