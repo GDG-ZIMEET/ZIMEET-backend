@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import java.util.stream.Collectors;
@@ -44,6 +45,8 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
+    private final Map<Long, CachedUserList> randomUserCache = new ConcurrentHashMap<>();
+
 
     @Lazy
     @Autowired
@@ -210,16 +213,22 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .orElseThrow(() -> new BusinessException(Code.USER_PROFILE_NOT_FOUND));
 
         Gender gender = userProfile.getGender();
-        List<User> userList = userRepository.findAllByProfileStatus(userId, gender, PageRequest.of(page, 12));
-        Collections.shuffle(userList);
+        long now = System.currentTimeMillis();
 
-        List<Long> targetUserIds = userList.stream()
-                .map(User::getId)
-                .collect(Collectors.toList());
+        List<Long> userIdList = getCachedUserIds(userId, gender, now);
 
-        self.increaseViewCountsAndSendFcm(targetUserIds);
+        int pageSize = 4;
+        int fromIndex = page * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, userIdList.size());
 
-        return MeetingConverter.toGetUserGalleryDTO(userList);
+        if (fromIndex >= userIdList.size()) {
+            return MeetingConverter.toGetUserGalleryDTO(Collections.emptyList());
+        }
+
+        List<Long> pagedIdList = userIdList.subList(fromIndex, toIndex);
+        List<User> users = userRepository.findByIdInWithProfile(pagedIdList);
+
+        return MeetingConverter.toGetUserGalleryDTO(users);
     }
 
     @Transactional
@@ -320,5 +329,26 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         }
     }
 
+    private List<Long> getCachedUserIds(Long userId, Gender gender, long now) {
 
+        // Key: 로그인한 유저 id, Value: 랜덤 정렬한 유저 id 리스트, timestamp
+        return randomUserCache.compute(userId, (id, cached) -> {
+            if (cached == null || now - cached.timestamp > 10 * 60 * 1000) {
+                List<Long> ids = userRepository.findAllByProfileStatus(userId, gender);
+                Collections.shuffle(ids);
+                return new CachedUserList(ids, now);
+            }
+            return cached;
+        }).userIds;
+    }
+
+    private static class CachedUserList {
+        List<Long> userIds;
+        long timestamp;
+
+        CachedUserList(List<Long> userIds, long timestamp) {
+            this.userIds = userIds;
+            this.timestamp = timestamp;
+        }
+    }
 }
