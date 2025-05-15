@@ -61,12 +61,4 @@ public class FcmController {
         fcmService.testFcmService(userId, req.getFcmToken());
         return Response.ok();
     }
-
-    // 프론트에서 메시지 구성 시, 사용 예정
-//    @Operation(summary = "FCM 메시지 전송 API", description = "FCM ")
-//    @PostMapping("/send-alarm")
-//    public Response<Void> pushMessage(@AuthUser User user) throws IOException {
-//        fcmService.sendFcmMessage(user);
-//        return Response.ok();
-//    }
 }
