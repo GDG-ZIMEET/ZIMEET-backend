@@ -55,7 +55,7 @@ public class FcmController {
     }
 
 
-    @Operation(summary = "FCM 테스트 API", description = "테스트용 API 입니다.")
+    @Operation(summary = "FCM 테스트 API", description = "테스트용 API 입니다.!!")
     @PostMapping("/test")
     public Response<Void> testFCM(@AuthUser Long userId, @RequestBody FcmTestReq req) {
         fcmService.testFcmService(userId, req.getFcmToken());
