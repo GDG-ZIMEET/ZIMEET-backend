@@ -120,7 +120,9 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         user.getUserProfile().increaseTicket(1);
 
         List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(queue.getGroupId());
-        messageMatching(queue.getGroupId(), queueList);
+        boolean isComplete = isMatchingComplete(queueList);
+
+        messageMatching(queue.getGroupId(), queueList, isComplete);
     }
 
     private void messageMatching(String groupId, List<MatchingQueue> queueList, boolean isComplete) {
