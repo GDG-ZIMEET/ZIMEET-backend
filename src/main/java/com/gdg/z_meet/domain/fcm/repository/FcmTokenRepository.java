@@ -12,7 +12,6 @@ public interface FcmTokenRepository extends JpaRepository<FcmToken, Long> {
 
     void deleteAllByUser(User user);
 
-    boolean existsByUserAndToken(User user, String token);
 
     List<FcmToken> findAllByUser(User user);
 
@@ -21,4 +20,7 @@ public interface FcmTokenRepository extends JpaRepository<FcmToken, Long> {
     @Query(" SELECT ft FROM FcmToken ft JOIN FETCH ft.user u WHERE u.pushAgree = true")
     List<FcmToken> findAllByUserPushAgreeTrue();
 
+    void deleteByUser(User user);
+
+    Optional<FcmToken> findByUser(User user);
 }
