@@ -6,8 +6,9 @@ import com.gdg.z_meet.domain.chat.service.ChatRoomCommandService;
 import com.gdg.z_meet.domain.meeting.converter.RandomConverter;
 import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Matching;
+import com.gdg.z_meet.domain.meeting.entity.MatchingQueue;
 import com.gdg.z_meet.domain.meeting.entity.UserMatching;
-import com.gdg.z_meet.domain.meeting.entity.enums.MatchingStatus;
+import com.gdg.z_meet.domain.meeting.repository.MatchingQueueRepository;
 import com.gdg.z_meet.domain.meeting.repository.MatchingRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserMatchingRepository;
 import com.gdg.z_meet.domain.user.entity.User;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +36,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     private final RedisTemplate<String, String> matchingRedisTemplate;
     private final MatchingRepository matchingRepository;
     private final UserMatchingRepository userMatchingRepository;
+    private final MatchingQueueRepository matchingQueueRepository;
     private final UserRepository userRepository;
     private final ChatRoomCommandService chatRoomCommandService;
 
@@ -46,53 +49,35 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     public void joinMatching(Long userId) {
 
         User user = userRepository.findByIdWithProfile(userId);
+
         if (user.getUserProfile().getTicket() == 0) {
             throw new BusinessException(Code.TICKET_LIMIT_EXCEEDED);
         }
 
-        user.getUserProfile().decreaseTicket(1);
-
-        // 진행중인 매칭 확인
-        if (matchingRepository.existsByWaitingMatching(userId)) {
+        if (matchingQueueRepository.existsByUserId(userId)) {
             throw new BusinessException(Code.MATCHING_ALREADY_EXIST);
         }
 
+        String groupId = matchingQueueRepository.findJoinableGroupId()
+                .orElse(UUID.randomUUID().toString());
         Gender gender = user.getUserProfile().getGender();
-        Matching matching = matchingRepository.findFirstWaitingMatching(userId)
-                .filter(m -> {
-                    List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(m.getId());
-                    long genderCount = userMatchings.stream()
-                            .filter(userMatching -> userMatching.getUser().getUserProfile().getGender() == gender)
-                            .count();
-                    return genderCount < 3;
-                })
-                .orElseGet(() -> matchingRepository.save(Matching.builder().build()));
 
-        UserMatching userMatching = UserMatching.builder()
+        MatchingQueue queue = MatchingQueue.builder()
+                .groupId(groupId)
+                .gender(gender)
                 .user(user)
-                .matching(matching)
                 .build();
-        userMatchingRepository.save(userMatching);
+        matchingQueueRepository.save(queue);
 
-        List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
+        user.getUserProfile().decreaseTicket(1);
 
-        validateMatching(matching, userMatchings);
-        RandomResponseDTO.MatchingDTO matchingDTO = messageMatching(matching, userMatchings);
-
-        List<Long> userIds = userMatchings.stream()
-                .map(um -> um.getUser().getId())
-                .collect(Collectors.toList());
-
-        if (matching.getMatchingStatus() == MatchingStatus.COMPLETE) {
-            chatRoomCommandService.addRandomUserJoinChat(userIds);
-        }
+        createMatching(groupId);
     }
 
     @Override
     @Transactional
     public void cancelMatching(Long userId) {
 
-        // 완료된 매칭은 취소 불가
         Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
                 .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
 
@@ -133,23 +118,33 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         return matchingDTO;
     }
 
-    private void validateMatching(Matching matching, List<UserMatching> userMatchings) {
+    @Transactional
+    public void createMatching(String groupId) {
 
-        matchingLockService.lock(matching.getId());
+        List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(groupId);
 
-        try {
-            long male = userMatchings.stream()
-                    .filter(user -> user.getUser().getUserProfile().getGender() == Gender.MALE)
-                    .count();
-            long female = userMatchings.stream()
-                    .filter(user -> user.getUser().getUserProfile().getGender() == Gender.FEMALE)
-                    .count();
+        long male = queueList.stream().filter(q -> q.getGender() == Gender.MALE).count();
+        long female = queueList.stream().filter(q -> q.getGender() == Gender.FEMALE).count();
 
-            if (male == 3 && female == 3) {
-                matching.setMatchingStatus(MatchingStatus.COMPLETE);
-            }
-        } finally {
-            matchingLockService.unlock(matching.getId());
+        if (male == 2 && female == 2) {
+
+            Matching matching = matchingRepository.save(Matching.builder().build());
+
+            queueList.forEach(queue -> {
+                userMatchingRepository.save(UserMatching.builder()
+                        .user(queue.getUser())
+                        .matching(matching)
+                        .build());
+                matchingQueueRepository.delete(queue);
+            });
+
+            List<UserMatching> userMatchingList = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
+            messageMatching(matching, userMatchingList);
+
+            List<Long> userIds = userMatchingList.stream()
+                    .map(um -> um.getUser().getId())
+                    .collect(Collectors.toList());
+            chatRoomCommandService.addRandomUserJoinChat(userIds);
         }
     }
 }

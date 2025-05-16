@@ -2,6 +2,7 @@ package com.gdg.z_meet.domain.meeting.converter;
 
 import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Matching;
+import com.gdg.z_meet.domain.meeting.entity.enums.MatchingStatus;
 import com.gdg.z_meet.domain.user.entity.User;
 
 import java.util.List;
@@ -29,7 +30,6 @@ public class RandomConverter {
         return RandomResponseDTO.MatchingDTO.builder()
                 .matchingId(matching.getId())
                 .userList(userMatchingDTOS)
-                .matchingStatus(String.valueOf(matching.getMatchingStatus()))
                 .build();
     }
 }
