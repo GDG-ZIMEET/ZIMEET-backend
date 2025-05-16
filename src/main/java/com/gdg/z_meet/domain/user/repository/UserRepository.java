@@ -49,10 +49,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByIdIn(List<Long> userIds);
 
-    @Query("SELECT u FROM User u JOIN FETCH u.userProfile up " +
-            "WHERE u.id != :userId AND up.gender != :gender AND up.profileStatus = 'ACTIVE' AND u.isDeleted = false " +
-            "ORDER BY FUNCTION('RAND')")
-    List<User> findAllByProfileStatus(@Param("userId") Long userId, @Param("gender") Gender gender, Pageable pageable);
+    @Query("SELECT u.id FROM User u JOIN u.userProfile up " +
+            "WHERE u.id != :userId AND up.gender != :gender AND up.profileStatus = 'ACTIVE' AND u.isDeleted = false")
+    List<Long> findAllByProfileStatus(@Param("userId") Long userId, @Param("gender") Gender gender);
+
+    @Query("SELECT u FROM User u JOIN FETCH u.userProfile WHERE u.id IN :ids")
+    List<User> findByIdInWithProfile(@Param("ids") List<Long> ids);
 
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile up " +
             "WHERE u.id = :userId AND up.profileStatus = 'ACTIVE' AND u.isDeleted = false")
