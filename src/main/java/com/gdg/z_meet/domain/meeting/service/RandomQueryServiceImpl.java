@@ -3,7 +3,10 @@ package com.gdg.z_meet.domain.meeting.service;
 import com.gdg.z_meet.domain.meeting.converter.RandomConverter;
 import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Matching;
+import com.gdg.z_meet.domain.meeting.entity.MatchingQueue;
 import com.gdg.z_meet.domain.meeting.entity.UserMatching;
+import com.gdg.z_meet.domain.meeting.entity.enums.MatchingStatus;
+import com.gdg.z_meet.domain.meeting.repository.MatchingQueueRepository;
 import com.gdg.z_meet.domain.meeting.repository.MatchingRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserMatchingRepository;
 import com.gdg.z_meet.domain.user.entity.User;
@@ -24,6 +27,7 @@ public class RandomQueryServiceImpl implements RandomQueryService {
     private final MatchingRepository matchingRepository;
     private final UserMatchingRepository userMatchingRepository;
     private final UserRepository userRepository;
+    private final MatchingQueueRepository matchingQueueRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -38,19 +42,19 @@ public class RandomQueryServiceImpl implements RandomQueryService {
     @Transactional(readOnly = true)
     public RandomResponseDTO.MatchingDTO getMatching(Long userId) {
 
-        Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
+        MatchingQueue queue = matchingQueueRepository.findByUserIdWithLock(userId)
                 .orElse(null);
 
-        if (matching == null) {
-            matching = matchingRepository.findCompleteMatchingByUserId(userId)
-                    .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
-        }
+        String groupId = queue.getGroupId();
 
-        List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfileReadOnly(matching.getId());
-        List<User> users = userMatchings.stream()
-                .map(UserMatching::getUser)
+        List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(groupId);
+
+        List<User> users = queueList.stream()
+                .map(MatchingQueue::getUser)
                 .collect(Collectors.toList());
 
-        return RandomConverter.toMatchingDTO(matching, users);
+        MatchingStatus matchingStatus = queueList.size() == 4 ? MatchingStatus.COMPLETE : MatchingStatus.WAITING;
+
+        return RandomConverter.toMatchingDTO(groupId, users, matchingStatus);
     }
 }

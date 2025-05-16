@@ -18,7 +18,7 @@ public class RandomConverter {
                 .build();
     }
 
-    public static RandomResponseDTO.MatchingDTO toMatchingDTO(String groupId, List<User> users){
+    public static RandomResponseDTO.MatchingDTO toMatchingDTO(String groupId, List<User> users, MatchingStatus matchingStatus){
 
         List<RandomResponseDTO.UserMatchingDTO> userMatchingDTOS = users.stream()
                 .map(user -> RandomResponseDTO.UserMatchingDTO.builder()
@@ -31,6 +31,7 @@ public class RandomConverter {
         return RandomResponseDTO.MatchingDTO.builder()
                 .groupId(groupId)
                 .userList(userMatchingDTOS)
+                .matchingStatus(matchingStatus)
                 .build();
     }
 }

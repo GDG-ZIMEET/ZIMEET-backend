@@ -8,6 +8,7 @@ import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Matching;
 import com.gdg.z_meet.domain.meeting.entity.MatchingQueue;
 import com.gdg.z_meet.domain.meeting.entity.UserMatching;
+import com.gdg.z_meet.domain.meeting.entity.enums.MatchingStatus;
 import com.gdg.z_meet.domain.meeting.repository.MatchingQueueRepository;
 import com.gdg.z_meet.domain.meeting.repository.MatchingRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserMatchingRepository;
@@ -21,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -121,7 +121,9 @@ public class RandomCommandServiceImpl implements RandomCommandService {
                 .map(MatchingQueue::getUser)
                 .collect(Collectors.toList());
 
-        RandomResponseDTO.MatchingDTO matchingDTO = RandomConverter.toMatchingDTO(groupId, users);
+        MatchingStatus matchingStatus = queueList.size() == 4 ? MatchingStatus.COMPLETE : MatchingStatus.WAITING;
+
+        RandomResponseDTO.MatchingDTO matchingDTO = RandomConverter.toMatchingDTO(groupId, users, matchingStatus);
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
