@@ -64,8 +64,9 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
         List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(groupId); // 매칭 전에 락 획득!
 
-        createMatching(queueList);
-        messageMatching(groupId, queueList);
+        boolean isComplete = isMatchingComplete(queueList);
+        messageMatching(groupId, queueList, isComplete);
+        if (isComplete) createMatching(queueList);
     }
 
     private User validateUser(Long userId) {
@@ -98,6 +99,13 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         return Optional.empty();
     }
 
+    private boolean isMatchingComplete(List<MatchingQueue> queueList) {
+
+        long male = queueList.stream().filter(q -> q.getGender() == Gender.MALE).count();
+        long female = queueList.stream().filter(q -> q.getGender() == Gender.FEMALE).count();
+
+        return queueList.size() == 4 && male == 2 && female == 2;
+    }
 
     @Override
     @Transactional
@@ -115,13 +123,13 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         messageMatching(queue.getGroupId(), queueList);
     }
 
-    private void messageMatching(String groupId, List<MatchingQueue> queueList) {
+    private void messageMatching(String groupId, List<MatchingQueue> queueList, boolean isComplete) {
 
         List<User> users = queueList.stream()
                 .map(MatchingQueue::getUser)
                 .collect(Collectors.toList());
 
-        MatchingStatus matchingStatus = queueList.size() == 4 ? MatchingStatus.COMPLETE : MatchingStatus.WAITING;
+        MatchingStatus matchingStatus = isComplete ? MatchingStatus.COMPLETE : MatchingStatus.WAITING;
 
         RandomResponseDTO.MatchingDTO matchingDTO = RandomConverter.toMatchingDTO(groupId, users, matchingStatus);
 
@@ -139,21 +147,15 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     @Transactional
     public void createMatching(List<MatchingQueue> queueList) {
 
-        long male = queueList.stream().filter(q -> q.getGender() == Gender.MALE).count();
-        long female = queueList.stream().filter(q -> q.getGender() == Gender.FEMALE).count();
+        Matching matching = matchingRepository.save(Matching.builder().build());
 
-        if (queueList.size() == 4 && male == 2 && female == 2) {
-
-            Matching matching = matchingRepository.save(Matching.builder().build());
-
-            queueList.forEach(queue -> {
-                userMatchingRepository.save(UserMatching.builder()
-                        .user(queue.getUser())
-                        .matching(matching)
-                        .build());
-                matchingQueueRepository.delete(queue);
-            });
-        }
+        queueList.forEach(queue -> {
+            userMatchingRepository.save(UserMatching.builder()
+                    .user(queue.getUser())
+                    .matching(matching)
+                    .build());
+            matchingQueueRepository.delete(queue);
+        });
 
         List<Long> userIds = queueList.stream()
                 .map(q -> q.getUser().getId())
