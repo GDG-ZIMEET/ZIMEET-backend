@@ -15,9 +15,13 @@ public interface MatchingQueueRepository extends JpaRepository<MatchingQueue, Lo
     boolean existsByUserId(Long userId);
 
     @Query("SELECT q.groupId FROM MatchingQueue q GROUP BY q.groupId HAVING COUNT(q) < 4 ORDER BY MIN(q.createdAt)")
-    Optional<String> findJoinableGroupId();
+    List<String> findAllJoinableGroupIds();
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT q FROM MatchingQueue q WHERE q.groupId = :groupId")
     List<MatchingQueue> findByGroupIdWithLock(@Param("groupId") String groupId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT q FROM MatchingQueue q WHERE q.user.id = :userId")
+    Optional<MatchingQueue> findByUserIdWithLock(@Param("userId") Long userId);
 }

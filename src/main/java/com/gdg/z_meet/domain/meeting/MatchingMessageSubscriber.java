@@ -23,7 +23,7 @@ public class MatchingMessageSubscriber {
             RandomResponseDTO.MatchingDTO matchingDTO =
                     objectMapper.readValue(message, RandomResponseDTO.MatchingDTO.class);
 
-            String destination = "/topic/matching/" + matchingDTO.getMatchingId();
+            String destination = "/topic/matching/" + matchingDTO.getGroupId();
             messagingTemplate.convertAndSend(destination, matchingDTO);
         } catch (Exception e) {
             e.printStackTrace();

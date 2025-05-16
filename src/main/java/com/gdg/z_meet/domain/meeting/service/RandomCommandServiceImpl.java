@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -48,19 +49,11 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     @Transactional
     public void joinMatching(Long userId) {
 
-        User user = userRepository.findByIdWithProfile(userId);
-
-        if (user.getUserProfile().getTicket() == 0) {
-            throw new BusinessException(Code.TICKET_LIMIT_EXCEEDED);
-        }
-
-        if (matchingQueueRepository.existsByUserId(userId)) {
-            throw new BusinessException(Code.MATCHING_ALREADY_EXIST);
-        }
-
-        String groupId = matchingQueueRepository.findJoinableGroupId()
-                .orElse(UUID.randomUUID().toString());
+        User user = validateUser(userId);
         Gender gender = user.getUserProfile().getGender();
+
+        String groupId = findJoinableGroupId(gender)
+                .orElse(UUID.randomUUID().toString());
 
         MatchingQueue queue = MatchingQueue.builder()
                 .groupId(groupId)
@@ -69,64 +62,85 @@ public class RandomCommandServiceImpl implements RandomCommandService {
                 .build();
         matchingQueueRepository.save(queue);
 
+        List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(groupId); // 매칭 전에 락 획득!
+
+        createMatching(queueList);
+        messageMatching(groupId, queueList);
+    }
+
+    private User validateUser(Long userId) {
+
+        User user = userRepository.findByIdWithProfile(userId);
+
+        if (user.getUserProfile().getTicket() == 0) {
+            throw new BusinessException(Code.TICKET_LIMIT_EXCEEDED);
+        }
+        if (matchingQueueRepository.existsByUserId(userId)) {
+            throw new BusinessException(Code.MATCHING_ALREADY_EXIST);
+        }
         user.getUserProfile().decreaseTicket(1);
 
-        createMatching(groupId);
+        return user;
     }
+
+    private Optional<String> findJoinableGroupId(Gender gender) {
+        List<String> groupIds = matchingQueueRepository.findAllJoinableGroupIds();
+
+        for (String groupId : groupIds) {
+            List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(groupId);
+            long genderCount = queueList.stream().filter(q -> q.getGender() == gender).count();
+
+            if (queueList.size() < 4 && genderCount < 2) {
+                return Optional.of(groupId);
+            }
+        }
+
+        return Optional.empty();
+    }
+
 
     @Override
     @Transactional
     public void cancelMatching(Long userId) {
 
-        Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
+        MatchingQueue queue = matchingQueueRepository.findByUserIdWithLock(userId)
                 .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
 
-        userMatchingRepository.findByUserIdForUpdate(userId).ifPresent(this::safeDeleteUserMatching);
+        matchingQueueRepository.delete(queue);
 
         User user = userRepository.findByIdWithProfile(userId);
-
         user.getUserProfile().increaseTicket(1);
 
-        List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
-        messageMatching(matching, userMatchings);
+        List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(queue.getGroupId());
+        messageMatching(queue.getGroupId(), queueList);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void safeDeleteUserMatching(UserMatching userMatching) {
-        userMatchingRepository.findById(userMatching.getId()).ifPresent(userMatchingRepository::delete);
-    }
+    private void messageMatching(String groupId, List<MatchingQueue> queueList) {
 
-
-    private RandomResponseDTO.MatchingDTO messageMatching(Matching matching, List<UserMatching> userMatchings) {
-
-        List<User> users = userMatchings.stream()
-                .map(UserMatching::getUser)
+        List<User> users = queueList.stream()
+                .map(MatchingQueue::getUser)
                 .collect(Collectors.toList());
 
-        RandomResponseDTO.MatchingDTO matchingDTO = RandomConverter.toMatchingDTO(matching, users);
+        RandomResponseDTO.MatchingDTO matchingDTO = RandomConverter.toMatchingDTO(groupId, users);
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String jsonMessage = objectMapper.writeValueAsString(matchingDTO);
 
-            String channel = "matching." + matchingDTO.getMatchingId();
+            String channel = "matching." + groupId;
             matchingRedisTemplate.convertAndSend(channel, jsonMessage);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-
-        return matchingDTO;
     }
 
     @Transactional
-    public void createMatching(String groupId) {
-
-        List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(groupId);
+    public void createMatching(List<MatchingQueue> queueList) {
 
         long male = queueList.stream().filter(q -> q.getGender() == Gender.MALE).count();
         long female = queueList.stream().filter(q -> q.getGender() == Gender.FEMALE).count();
 
-        if (male == 2 && female == 2) {
+        if (queueList.size() == 4 && male == 2 && female == 2) {
 
             Matching matching = matchingRepository.save(Matching.builder().build());
 
@@ -137,14 +151,11 @@ public class RandomCommandServiceImpl implements RandomCommandService {
                         .build());
                 matchingQueueRepository.delete(queue);
             });
-
-            List<UserMatching> userMatchingList = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
-            messageMatching(matching, userMatchingList);
-
-            List<Long> userIds = userMatchingList.stream()
-                    .map(um -> um.getUser().getId())
-                    .collect(Collectors.toList());
-            chatRoomCommandService.addRandomUserJoinChat(userIds);
         }
+
+        List<Long> userIds = queueList.stream()
+                .map(q -> q.getUser().getId())
+                .collect(Collectors.toList());
+        chatRoomCommandService.addRandomUserJoinChat(userIds);
     }
 }

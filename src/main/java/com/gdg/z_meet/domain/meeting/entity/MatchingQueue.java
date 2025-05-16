@@ -24,18 +24,9 @@ public class MatchingQueue extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Builder.Default
-    private MatchingStatus matchingStatus = MatchingStatus.WAITING;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Gender gender;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-    public void setMatchingStatus(MatchingStatus matchingStatus) {
-        this.matchingStatus = matchingStatus;
-    }
 }

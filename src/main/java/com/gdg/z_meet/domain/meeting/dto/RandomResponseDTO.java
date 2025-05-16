@@ -32,8 +32,7 @@ public class RandomResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MatchingDTO {
-        Long matchingId;
+        String groupId;
         List<UserMatchingDTO> userList;
-        String matchingStatus;
     }
 }
