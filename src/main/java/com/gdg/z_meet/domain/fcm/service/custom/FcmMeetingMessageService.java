@@ -34,32 +34,31 @@ public class FcmMeetingMessageService {
 
     private final FcmMessageClient fcmMessageClient;
     private final HiQueryService hiQueryService;
+    private final UserRepository userRepository;
 
-    @Transactional
     @Scheduled(fixedRate = 3600000)      // 1시간마다 실행
     public void messagingNoneMeetingOneOneUsers() {
         LocalDateTime threshold = LocalDateTime.now().minusHours(24);
         List<UserProfile> users = userProfileRepository.findInactiveUsers(threshold);
 
         String title = "👀 아직 내 프로필이 활성화되지 않았어요.";
-        String body = "‘1대1 참여하기’ 버튼으로 내 프로필을 활성화해야 이성이 볼 수 있어요!";
+        String body = "‘1대1 참여하기’ 버튼으로 내 프로필을 활성화해야 상대방이 볼 수 있어요!";
 
         for (UserProfile user : users) {
             try {
                 fcmMessageClient.sendFcmMessage(user.getId(), title, body);
                 user.setFcmSendOneOne(true);
+                userProfileRepository.save(user);
             } catch (Exception e) {
                 log.error("1:1 FCM 메시지 전송 실패 - userId: {}, error: {}", user.getId(), e.getMessage(), e);
             }
         }
     }
 
-    @Transactional
     @Scheduled(fixedRate = 3600000)      // 1시간마다 실행
     public void messagingNoneMeetingTwoTwoUsers() {
         LocalDateTime threshold = LocalDateTime.now().minusHours(24);
-        Event event = Event.AU_2025;
-        List<User> users = teamRepository.findUsersNotInTwoToTwoTeam(threshold, event);
+        List<User> users = teamRepository.findUsersNotInTwoToTwoTeam(threshold);
 
         String title = "👀 아직 2대2 팀을 만들지 않으셨네요!";
         String body = "마음 맞는 친구와 팀을 만들어보세요. 함께하면 매칭 확률이 훨씬 높아져요 🔥";
@@ -68,6 +67,7 @@ public class FcmMeetingMessageService {
             try {
                 fcmMessageClient.sendFcmMessage(user.getId(), title, body);
                 user.setFcmSendTwoTwo(true);
+                userRepository.save(user);
             } catch (Exception e) {
                 log.error("2:2 FCM 메시지 전송 실패 - userId: {}, error: {}", user.getId(), e.getMessage(), e);
             }
