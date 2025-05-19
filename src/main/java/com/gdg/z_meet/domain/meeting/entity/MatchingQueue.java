@@ -26,7 +26,16 @@ public class MatchingQueue extends BaseEntity {
     @Column(nullable = false)
     private Gender gender;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private MatchingStatus matchingStatus = MatchingStatus.WAITING;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public void setComplete() {
+        this.matchingStatus = MatchingStatus.COMPLETE;
+    }
 }

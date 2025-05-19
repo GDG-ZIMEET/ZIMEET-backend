@@ -76,7 +76,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         if (user.getUserProfile().getTicket() == 0) {
             throw new BusinessException(Code.TICKET_LIMIT_EXCEEDED);
         }
-        if (matchingQueueRepository.existsByUserId(userId)) {
+        if (matchingQueueRepository.existsWaitingByUserId(userId)) {
             throw new BusinessException(Code.MATCHING_ALREADY_EXIST);
         }
         user.getUserProfile().decreaseTicket(1);
@@ -111,15 +111,17 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     @Transactional
     public void cancelMatching(Long userId) {
 
-        MatchingQueue queue = matchingQueueRepository.findByUserIdWithLock(userId)
+        MatchingQueue queue = matchingQueueRepository.findWaitingByUserIdWithLock(userId)
                 .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
+
+        String groupId = queue.getGroupId();
 
         matchingQueueRepository.delete(queue);
 
         User user = userRepository.findByIdWithProfile(userId);
         user.getUserProfile().increaseTicket(1);
 
-        List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(queue.getGroupId());
+        List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(groupId);
         boolean isComplete = isMatchingComplete(queueList);
 
         messageMatching(queue.getGroupId(), queueList, isComplete);
@@ -156,7 +158,7 @@ public class RandomCommandServiceImpl implements RandomCommandService {
                     .user(queue.getUser())
                     .matching(matching)
                     .build());
-            matchingQueueRepository.delete(queue);
+            queue.setComplete();
         });
 
         List<Long> userIds = queueList.stream()

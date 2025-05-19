@@ -12,7 +12,9 @@ import java.util.Optional;
 
 public interface MatchingQueueRepository extends JpaRepository<MatchingQueue, Long> {
 
-    boolean existsByUserId(Long userId);
+    @Query("SELECT CASE WHEN COUNT(q) > 0 THEN true ELSE false END FROM MatchingQueue q " +
+            "WHERE q.user.id = :userId AND q.matchingStatus = 'WAITING'")
+    boolean existsWaitingByUserId(@Param("userId") Long userId);
 
     @Query("SELECT q.groupId FROM MatchingQueue q GROUP BY q.groupId HAVING COUNT(q) < 4 ORDER BY MIN(q.createdAt)")
     List<String> findAllJoinableGroupIds();
@@ -22,6 +24,11 @@ public interface MatchingQueueRepository extends JpaRepository<MatchingQueue, Lo
     List<MatchingQueue> findByGroupIdWithLock(@Param("groupId") String groupId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT q FROM MatchingQueue q WHERE q.user.id = :userId")
-    Optional<MatchingQueue> findByUserIdWithLock(@Param("userId") Long userId);
+    @Query("SELECT q FROM MatchingQueue q WHERE q.user.id = :userId AND q.matchingStatus = 'WAITING'")
+    Optional<MatchingQueue> findWaitingByUserIdWithLock(@Param("userId") Long userId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT q FROM MatchingQueue q WHERE q.user.id = :userId " +
+            "ORDER BY q.id DESC")
+    List<MatchingQueue> findByUserIdWithLock(@Param("userId") Long userId);
 }

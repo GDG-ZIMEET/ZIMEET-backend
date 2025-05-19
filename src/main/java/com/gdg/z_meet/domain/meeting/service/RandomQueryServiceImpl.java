@@ -43,7 +43,8 @@ public class RandomQueryServiceImpl implements RandomQueryService {
     public RandomResponseDTO.MatchingDTO getMatching(Long userId) {
 
         MatchingQueue queue = matchingQueueRepository.findByUserIdWithLock(userId)
-                .orElse(null);
+                .stream().findFirst()
+                .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
 
         String groupId = queue.getGroupId();
 
