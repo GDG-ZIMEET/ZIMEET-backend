@@ -39,7 +39,7 @@ public class RandomQueryServiceImpl implements RandomQueryService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public RandomResponseDTO.MatchingDTO getMatching(Long userId) {
 
         MatchingQueue queue = matchingQueueRepository.findByUserIdWithLock(userId)
