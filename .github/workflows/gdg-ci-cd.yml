@@ -30,9 +30,15 @@ jobs:
         run: chmod +x ./gradlew
         shell: bash
 
-      - name: Build with Gradle without tests
-        run: ./gradlew clean bootJar -x test
-        shell: bash
+      - name: Gradle Caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
 
       - name: Create application.yml
         run: |
@@ -40,17 +46,17 @@ jobs:
           echo "${{ secrets.APPLICATION }}" > ./application-prod.yml
         shell: bash
 
-      - name: Docker login
-        uses: docker/login-action@v2
+      - name: Build with Gradle without tests
+        run: ./gradlew clean bootJar -x test
+
+      - name: Copy JAR to EC2
+        uses: appleboy/scp-action@master
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Build Docker image
-        run: docker build -f Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server .
-
-      - name: Push Docker image to DockerHub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "build/libs/*.jar"
+          target: "/home/ubuntu/ZIMEET-backend/build/libs/"
 
   CD:
     needs: CI
@@ -65,11 +71,17 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/ZIMEET-backend
+            
             sudo docker-compose down
+            
+            git pull --no-rebase origin main
+            
+            ./gradlew clean bootjar
+            
             if [ "$(sudo docker ps -qa)" ]; then
               sudo docker ps -qa | xargs -r sudo docker rm -f
             fi
             sudo docker rmi $(sudo docker images -q) || true
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gdg-server:latest
-            sudo docker-compose up -d
+            
+            sudo docker-compose up --build -d
             sudo docker image prune -f
