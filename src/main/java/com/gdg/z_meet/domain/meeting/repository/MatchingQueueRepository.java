@@ -4,9 +4,11 @@ import com.gdg.z_meet.domain.meeting.entity.MatchingQueue;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,4 +33,8 @@ public interface MatchingQueueRepository extends JpaRepository<MatchingQueue, Lo
     @Query("SELECT q FROM MatchingQueue q WHERE q.user.id = :userId " +
             "ORDER BY q.id DESC")
     List<MatchingQueue> findByUserIdWithLock(@Param("userId") Long userId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true) // 벌크 연산
+    @Query("DELETE FROM MatchingQueue q WHERE q.matchingStatus = 'COMPLETE' AND q.updatedAt < :time")
+    void deleteByUpdatedBefore(@Param("time") LocalDateTime time);
 }
