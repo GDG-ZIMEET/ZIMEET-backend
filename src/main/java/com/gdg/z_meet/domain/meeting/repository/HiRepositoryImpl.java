@@ -30,7 +30,8 @@ public class HiRepositoryImpl implements HiRepositoryCustom {
                         hi.hiType.eq(HiType.USER),
                         hi.hiStatus.eq(HiStatus.NONE),
                         hi.fcmSendHiToUser.eq(false),
-                        hi.createdAt.between(fourHoursAgoToMinute, fourHoursAgoToMinute.plusMinutes(1))
+                        hi.createdAt.goe(fourHoursAgoToMinute),
+                        hi.createdAt.lt(fourHoursAgoToMinute.plusMinutes(1))
                 )
                 .distinct()
                 .fetch();
@@ -51,7 +52,8 @@ public class HiRepositoryImpl implements HiRepositoryCustom {
                         hi.hiType.eq(HiType.TEAM),
                         hi.hiStatus.eq(HiStatus.NONE),
                         hi.fcmSendHiToTeam.eq(false),
-                        hi.createdAt.between(fourHoursAgoToMinute, fourHoursAgoToMinute.plusMinutes(1))
+                        hi.createdAt.goe(fourHoursAgoToMinute),
+                        hi.createdAt.lt(fourHoursAgoToMinute.plusMinutes(1))
                 )
                 .distinct()
                 .fetch();

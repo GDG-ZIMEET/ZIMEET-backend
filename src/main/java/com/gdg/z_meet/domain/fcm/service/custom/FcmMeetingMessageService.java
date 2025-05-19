@@ -1,6 +1,7 @@
 package com.gdg.z_meet.domain.fcm.service.custom;
 
 import com.gdg.z_meet.domain.fcm.service.FcmMessageClient;
+import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.repository.HiRepository;
 import com.gdg.z_meet.domain.meeting.repository.TeamRepository;
@@ -93,69 +94,70 @@ public class FcmMeetingMessageService {
     }
 
 
-    @Scheduled(fixedRate = 60000)    // 1분 마다
+    @Scheduled(fixedRate = 600000)    // 10분 마다
     public void messagingNotAcceptHiToUser() {
-        List<Long> userIds = hiRepository.findUserIdsToNotGetHi();
 
+        List<Long> userIds = hiRepository.findUserIdsToNotGetHi();
         if (userIds.isEmpty()) return;
 
         String title = "혹시 받은 하이를 잊으셨나요? 🥺";
         String body = "받은 하이는 ⏰5시간 후에 사라지니 빠르게 확인해보세요!";
 
         for (Long userId : userIds) {
-            try {
-                hiQueryService.checkHiList(userId, "Receive");
-                fcmMessageClient.sendFcmMessage(userId, title, body);
-            } catch (Exception e) {
-                log.error("FCM 받은 하이 여부 메시지 전송 실패 userId: {}, message: {}", userId, e.getMessage(), e);
+            List<MeetingResponseDTO.hiListDto> pendingHiList =  hiQueryService.checkHiList(userId, "Receive");
+
+            if (pendingHiList.isEmpty()) {
+                continue;       // 받은 하이가 없음 → FCM 전송 스킵
+            }
+
+            boolean success = fcmMessageClient.sendFcmMessage(userId, title, body);
+            if(!success) {
+                log.warn("FCM 받은 하이 여부 메시지 전송 실패 userId: {}", userId);
             }
         }
     }
 
     ////////////////
 
-
     // 하이 보내기 호출 시, 실행되므로 스케줄링 적용 하지 않음
-    public void messagingHiToTeam(Long teamId) {
-        if (teamId == null) { return ;}
+    public void messagingHiToTeam(Long targetTeamId) {
+        if (targetTeamId == null) { return ;}
 
-        List<Long> userIds = userTeamRepository.findUserIdsByTeamId(teamId);
+        List<Long> userIds = userTeamRepository.findUserIdsByTeamId(targetTeamId);
 
         String title = "❤️우리 팀에게 하이가 도착했어요! 💌";
         String body = "ZI밋에서 어떤 팀에게 하이가 왔는지 확인해보세요! ";
 
         for (Long userId : userIds) {
-            try {
-                fcmMessageClient.sendFcmMessage(userId, title, body);
-            } catch (Exception e) {
-                log.error("FCM 하이(팀) 메시지 전송 실패 - userId: {}, error: {}", userId, e.getMessage(), e);
+            boolean success = fcmMessageClient.sendFcmMessage(userId, title, body);
+            if(!success) {
+                log.warn("FCM 하이(팀) 메시지 전송 실패 - userId: {}", userId);
             }
         }
     }
 
-    @Transactional
-    @Scheduled(fixedRate = 60000)  // 1분 마다
+    @Scheduled(fixedRate = 600000)  // 10분 마다
     public void messagingNotAcceptHiToTeam() {
 
         List<Long> teamIds = hiRepository.findTeamIdToNotGetHi();
-
         if (teamIds.isEmpty()) return;
 
         List<Long> userIds = userTeamRepository.findUserIdsByTeamIds(teamIds);
 
-        for (Long userId : userIds) {
-            try {
-                hiQueryService.checkHiList(userId, "Receive");
+        String title = "혹시 받은 하이를 잊으셨나요? 🥺";
+        String body = "받은 하이는 ⏰5시간 후에 사라지니 빠르게 확인해보세요!";
 
-                String title = "혹시 받은 하이를 잊으셨나요? 🥺";
-                String body = "받은 하이는 ⏰5시간 후에 사라지니 빠르게 확인해보세요!";
-                fcmMessageClient.sendFcmMessage(userId, title, body);
-            } catch (Exception e) {
-                log.error(" FCM 받은 하이 여부 메시지 전송 실패 userId: {}, message: {}", userId, e.getMessage(), e);
+        for (Long userId : userIds) {
+            List<MeetingResponseDTO.hiListDto> pendingHiList = hiQueryService.checkHiList(userId, "Receive");
+
+            if (pendingHiList.isEmpty()) {
+                continue;       // 받은 하이가 없음 → FCM 전송 스킵
+            }
+
+            boolean success = fcmMessageClient.sendFcmMessage(userId, title, body);
+            if(!success) {
+                log.warn(" FCM 받은 하이 여부 메시지 전송 실패 userId: {}", userId);
             }
         }
-
     }
-
-
 }
