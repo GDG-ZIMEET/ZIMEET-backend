@@ -27,21 +27,21 @@ public class FcmMessageClient {
     private final FcmTokenRepository fcmTokenRepository;
 
     @Transactional
-    public void sendFcmMessage(Long userId, String title, String body ) {
+    public boolean sendFcmMessage(Long userId, String title, String body ) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
 
         if (!user.isPushAgree()) {
             log.info("푸시 알림 비동의 상태: userId={}", userId);
-            return;
+            return false;
         }
 
         FcmToken userToken = fcmTokenRepository.findByUser(user).orElse(null);
 
         if (userToken == null || userToken.getToken() == null || userToken.getToken().isBlank()) {
             log.warn("FCM 토큰 없음 또는 유효하지 않음: userId={}", userId);
-            return;
+            return false;
         }
 
         String token = userToken.getToken();
@@ -57,6 +57,7 @@ public class FcmMessageClient {
         try {
             String response = FirebaseMessaging.getInstance().send(message);   // FCM 서버에 메시지 전송
             log.info("FCM 전송 성공: userId={},  response={}", userId, response);
+            return true;
         } catch (FirebaseMessagingException e) {
             log.warn("FCM 전송 실패: userId={}, error={}", userId, e.getMessage(), e);
 
@@ -71,7 +72,9 @@ public class FcmMessageClient {
             if (errorCode != null && deletableErrorCodes.contains(errorCode.toLowerCase())) {
                 fcmTokenRepository.delete(userToken);
                 log.warn("무효한 FCM 토큰 삭제: token={}, userId={}", token, user.getId());
+                return false;
             }
+            return false;
         }
     }
 }

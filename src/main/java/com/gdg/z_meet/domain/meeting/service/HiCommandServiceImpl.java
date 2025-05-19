@@ -133,7 +133,11 @@ public class HiCommandServiceImpl implements HiCommandService {
                 .hiType(HiType.USER)
                 .build();
         hiRepository.save(hi);
-        sendFcmGetHiUser(hiDto);
+    }
+
+    public void sendUserHiAndNotify(MeetingRequestDTO.HiDto hiDto) {
+        sendUserHi(hiDto);
+        sendFcmGetHiUser(hiDto); // 트랜잭션 외부에서 실행
     }
 
     private void sendFcmGetHiUser(MeetingRequestDTO.HiDto hiDto) {
