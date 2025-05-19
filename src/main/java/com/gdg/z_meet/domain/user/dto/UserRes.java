@@ -161,4 +161,11 @@ public class UserRes {
     public static class UpdatePasswordRes {
         private String message;
     }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class IncreaseRes {
+        private String message;
+    }
 }

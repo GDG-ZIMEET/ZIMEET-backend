@@ -129,4 +129,10 @@ public class UserController {
         );
         return Response.ok(updatePasswordRes);
     }
+
+    @PostMapping("/increase/{nickname}")
+    @Operation(summary = "하이, 티켓 개수 증가", description = "하이, 티켓 개수 증가")
+    public Response<UserRes.IncreaseRes> increaseHiTicket(@PathVariable String nickname) {
+        return Response.ok(userService.increaseHiTicket(nickname));
+    }
 }
