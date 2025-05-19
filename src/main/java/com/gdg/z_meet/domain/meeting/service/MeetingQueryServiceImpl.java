@@ -228,6 +228,8 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<Long> pagedIdList = userIdList.subList(fromIndex, toIndex);
         List<User> users = userRepository.findByIdInWithProfile(pagedIdList);
 
+        increaseViewCountsAndSendFcm(pagedIdList);
+
         return MeetingConverter.toGetUserGalleryDTO(users);
     }
 
