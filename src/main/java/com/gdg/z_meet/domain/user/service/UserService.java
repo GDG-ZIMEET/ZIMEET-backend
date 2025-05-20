@@ -261,4 +261,17 @@ public class UserService {
                 .message("비밀번호가 재설정되었습니다.")
                 .build();
     }
+
+    @Transactional
+    public UserRes.IncreaseRes increaseHiTicket(String nickname) {
+        UserProfile userProfile = userProfileRepository.findByNickname(nickname)
+                .orElseThrow(() -> new BusinessException(Code.PROFILE_NOT_FOUND));
+
+        userProfile.setTicket(99);
+        userProfile.setHi(99);
+
+        return UserRes.IncreaseRes.builder()
+                .message(String.format("%s님의 하이와 티켓 수가 증가되었습니다.", nickname))
+                .build();
+    }
 }

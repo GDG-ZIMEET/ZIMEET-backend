@@ -199,4 +199,13 @@ public class MeetingController {
 
         return Response.ok(response);
     }
+
+    @Operation(summary = "프로필 상세 조회", description = "본인 프로필은 조회가 불가능합니다.")
+    @GetMapping("/ONE_TO_ONE/{profileId}")
+    public Response<MeetingResponseDTO.GetProfileDTO> getTeam(@AuthUser Long userId, @PathVariable @Positive Long profileId) {
+
+        MeetingResponseDTO.GetProfileDTO response = meetingQueryService.getProfile(userId, profileId);
+
+        return Response.ok(response);
+    }
 }
