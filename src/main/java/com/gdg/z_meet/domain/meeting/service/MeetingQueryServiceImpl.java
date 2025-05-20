@@ -46,7 +46,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
     private final Map<Long, CachedUserList> randomUserCache = new ConcurrentHashMap<>();
-
+    private final Map<Long, CachedTeamList> randomTeamCache = new ConcurrentHashMap<>();
 
     @Lazy
     @Autowired
@@ -61,8 +61,20 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     public MeetingResponseDTO.GetTeamGalleryDTO getTeamGallery(Long userId, TeamType teamType, Integer page) {
 
         Gender gender = userProfileRepository.findByUserId(userId).get().getGender();
-        List<Team> teamList = teamRepository.findAllByTeamType(userId, gender, teamType, event, PageRequest.of(page, 12));
-        Collections.shuffle(teamList);
+
+        long now = System.currentTimeMillis();
+        List<Long> teamIdList = getCachedTeamIds(userId, gender, teamType, now);
+
+        int pageSize = 12;
+        int fromIndex = page * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, teamIdList.size());
+
+        if (fromIndex >= teamIdList.size()) {
+            return null;
+        }
+
+        List<Long> pagedIdList = teamIdList.subList(fromIndex, toIndex);
+        List<Team> teamList = teamRepository.findByIdIn(pagedIdList);
 
         self.increaseTeamViewCountsAndSendFcm(teamList);
 
@@ -350,6 +362,28 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         CachedUserList(List<Long> userIds, long timestamp) {
             this.userIds = userIds;
+            this.timestamp = timestamp;
+        }
+    }
+
+    private List<Long> getCachedTeamIds(Long userId, Gender gender, TeamType teamType, long now) {
+
+        return randomTeamCache.compute(userId, (id, cached) -> {
+            if (cached == null || now - cached.timestamp > 10 * 60 * 1000) {
+                List<Long> ids = teamRepository.findAllByTeamType(gender, teamType, event);
+                Collections.shuffle(ids);
+                return new CachedTeamList(ids, now);
+            }
+            return cached;
+        }).teamIds;
+    }
+
+    private static class CachedTeamList {
+        List<Long> teamIds;
+        long timestamp;
+
+        CachedTeamList(List<Long> teamIds, long timestamp) {
+            this.teamIds = teamIds;
             this.timestamp = timestamp;
         }
     }
