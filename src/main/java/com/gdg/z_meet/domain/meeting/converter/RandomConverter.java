@@ -2,6 +2,8 @@ package com.gdg.z_meet.domain.meeting.converter;
 
 import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Matching;
+import com.gdg.z_meet.domain.meeting.entity.MatchingQueue;
+import com.gdg.z_meet.domain.meeting.entity.enums.MatchingStatus;
 import com.gdg.z_meet.domain.user.entity.User;
 
 import java.util.List;
@@ -16,7 +18,7 @@ public class RandomConverter {
                 .build();
     }
 
-    public static RandomResponseDTO.MatchingDTO toMatchingDTO(Matching matching, List<User> users){
+    public static RandomResponseDTO.MatchingDTO toMatchingDTO(String groupId, List<User> users, MatchingStatus matchingStatus){
 
         List<RandomResponseDTO.UserMatchingDTO> userMatchingDTOS = users.stream()
                 .map(user -> RandomResponseDTO.UserMatchingDTO.builder()
@@ -27,9 +29,9 @@ public class RandomConverter {
                 .collect(Collectors.toList());
 
         return RandomResponseDTO.MatchingDTO.builder()
-                .matchingId(matching.getId())
+                .groupId(groupId)
                 .userList(userMatchingDTOS)
-                .matchingStatus(String.valueOf(matching.getMatchingStatus()))
+                .matchingStatus(matchingStatus)
                 .build();
     }
 }
