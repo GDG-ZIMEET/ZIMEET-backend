@@ -150,7 +150,7 @@ public class MeetingConverter {
                     return MeetingResponseDTO.GetPreUserDTO.builder()
                             .userId(user.getId())
                             .emoji(profile.getEmoji())
-                            .name(user.getName())
+                            .nickname(profile.getNickname())
                             .verification(profile.getVerification() == COMPLETE ? 1 : 0)
                             .major(profile.getMajor().getShortName())
                             .age(profile.getAge())

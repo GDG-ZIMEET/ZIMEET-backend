@@ -182,7 +182,7 @@ public class MeetingResponseDTO {
     public static class GetPreUserDTO {
         Long userId;
         String emoji;
-        String name;
+        String nickname;
         Integer verification;
         String major;
         Integer age;
