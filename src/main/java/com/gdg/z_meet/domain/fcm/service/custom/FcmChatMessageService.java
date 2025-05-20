@@ -99,51 +99,50 @@ public class FcmChatMessageService {
     }
 
 
-    @Transactional
     public void messagingOpenChatRoom(User user, Long roomId) {
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
 
-        String title = "";
+        String title = generateOpenChatTitle(user, chatRoom);
+        String body = "두근두근💗 새로운 사람들과 인사부터 시작해보세요!";
+
+        boolean success = fcmMessageClient.sendFcmMessage(user.getId(), title, body);
+        if (!success) {
+            log.warn("FCM 채팅방 열림 관련 메시지 전송 실패 - userId: {}}", user.getId());
+        }
+    }
+
+    private String generateOpenChatTitle(User user, ChatRoom chatRoom) {
         switch (chatRoom.getChatType()) {
             case USER -> {
                 List<JoinChat> joinChats = joinChatRepository.findByChatRoomId(chatRoom.getId());
 
-                User other = joinChats.stream()
+                return joinChats.stream()
                         .map(JoinChat::getUser)
                         .filter(u -> !u.getId().equals(user.getId()))
                         .findFirst()
-                        .orElse(null);
-
-                title = (other != null)
-                        ? other.getUserProfile().getNickname() + " 님과의 채팅방이 열렸어요! 🤗"
-                        : "채팅방이 열렸어요! 🤗";
+                        .map(u -> u.getUserProfile().getNickname() + " 님과의 채팅방이 열렸어요! 🤗")
+                        .orElse("채팅방이 열렸어요! 🤗");
             }
 
             case TEAM -> {
-                Team otherTeam = teamChatRoomRepository
+                return teamChatRoomRepository
                         .findOtherTeamInChatRoom(chatRoom.getId(), user.getId())
-                        .orElse(null);
-
-                title = (otherTeam != null)
-                        ? otherTeam.getName()  + " 팀과의 채팅방이 열렸어요! 🤗"
-                        : "채팅방이 열렸어요! 🤗";
+                        .map(team -> team.getName() + " 팀과의 채팅방이 열렸어요! 🤗")
+                        .orElse("채팅방이 열렸어요! 🤗");
             }
 
             case RANDOM -> {
-                TeamChatRoom otherteamChatRoom = teamChatRoomRepository.findFirstByChatRoomId(chatRoom.getId())
-                        .orElseThrow(() -> new BusinessException(Code.CHATROOM_NOT_FOUND));
-                title = (otherteamChatRoom != null)
-                        ? otherteamChatRoom.getName() + " 채팅방이 열렸어요! 🤗"
-                        : "채팅방이 열렸어요! 🤗";
+                return teamChatRoomRepository.findFirstByChatRoomId(chatRoom.getId())
+                        .map(tcr -> tcr.getName() + " 채팅방이 열렸어요! 🤗")
+                        .orElse("채팅방이 열렸어요! 🤗");
+            }
+
+            default -> {
+                return "채팅방이 열렸어요! 🤗";
             }
         }
-            String body = "두근두근💗 새로운 사람들과 인사부터 시작해보세요!";
-        try {
-            fcmMessageClient.sendFcmMessage(user.getId(), title, body);
-        } catch (Exception e) {
-            log.error("FCM 채팅방 열림 관련 메시지 전송 실패 - userId: {}, error: {}", user.getId(), e.getMessage(), e);
-        }
     }
+
 }
