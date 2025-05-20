@@ -15,6 +15,7 @@ import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
+import com.gdg.z_meet.domain.user.entity.enums.Level;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -282,6 +283,25 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetProfileDTO getProfile(Long userId, Long profileId) {
+
+        User user = userRepository.findByIdWithProfile(userId);
+
+        if (userId.equals(profileId)) {
+            throw new BusinessException(Code.INVALID_MY_PROFILE_ACCESS);
+        }
+
+        Gender gender = user.getUserProfile().getGender();
+        User findUser = userRepository.findByGenderAndProfileStatus(profileId, gender)
+                .orElseThrow(() -> new BusinessException(Code.USER_PROFILE_NOT_FOUND));
+
+        Boolean hi = hiRepository.existsByFromIdAndToIdAndHiType(userId, profileId, HiType.USER);
+        Level level = user.getUserProfile().getLevel();
+
+        return MeetingConverter.toGetProfileDTO(findUser, hi, level);
+    }
 
 
     private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
