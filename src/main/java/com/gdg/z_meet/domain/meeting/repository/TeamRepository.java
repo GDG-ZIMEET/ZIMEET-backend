@@ -23,15 +23,16 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
             "AND t.teamType = :teamType AND t.event = :event AND t.activeStatus = 'ACTIVE'")
     Optional<Team> findByTeamType(@Param("userId") Long userId, @Param("teamType") TeamType teamType, @Param("event") Event event);
 
-    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Team t WHERE t.name = :name AND t.activeStatus = 'ACTIVE'")
-    Boolean existsByName(@Param("name") String name);
+    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Team t " +
+            "WHERE t.name = :name AND t.activeStatus = 'ACTIVE' AND t.event = :event")
+    Boolean existsByName(@Param("name") String name, @Param("event") Event event);
 
     List<Team> findByIdIn(List<Long> teamIds);
 
     @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Team t " +
             "JOIN UserTeam ut ON ut.team = t " +
-            "WHERE ut.user.id IN :userIds AND t.teamType = :teamType AND t.activeStatus = 'ACTIVE'")
-    Boolean existsAnyMemberByTeamType(@Param("userIds") List<Long> userIds, @Param("teamType") TeamType teamType);
+            "WHERE ut.user.id IN :userIds AND t.teamType = :teamType AND t.activeStatus = 'ACTIVE' AND t.event = :event")
+    Boolean existsAnyMemberByTeamType(@Param("userIds") List<Long> userIds, @Param("teamType") TeamType teamType, @Param("event") Event event);
 
     @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Team t " +
             "WHERE t.id = :teamId AND t.activeStatus = 'ACTIVE'")

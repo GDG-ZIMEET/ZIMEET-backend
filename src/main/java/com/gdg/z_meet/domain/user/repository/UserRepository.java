@@ -1,9 +1,9 @@
 package com.gdg.z_meet.domain.user.repository;
 
+import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,14 +27,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile up WHERE up.gender = :gender " +
             "AND up.nickname LIKE :nickname% AND u.id != :userId AND u.isDeleted = false " +
             "AND NOT EXISTS (SELECT 1 FROM Team t JOIN UserTeam ut ON ut.team = t " +
-            "WHERE ut.user = u AND t.teamType = :teamType AND t.activeStatus = 'ACTIVE')")
-    List<User> findAllByNicknameWithProfile(@Param("gender") Gender gender, @Param("nickname") String nickname, @Param("userId") Long userId, @Param("teamType") TeamType teamType);
+            "WHERE ut.user = u AND t.teamType = :teamType AND t.activeStatus = 'ACTIVE' AND t.event = :event)")
+    List<User> findAllByNicknameWithProfile(@Param("gender") Gender gender, @Param("nickname") String nickname,
+                                            @Param("userId") Long userId, @Param("teamType") TeamType teamType,
+                                            @Param("event") Event event);
 
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile up WHERE up.gender = :gender " +
             "AND u.phoneNumber LIKE :phoneNumber% AND u.id != :userId AND u.isDeleted = false " +
             "AND NOT EXISTS (SELECT 1 FROM Team t JOIN UserTeam ut ON ut.team = t " +
-            "WHERE ut.user = u AND t.teamType = :teamType AND t.activeStatus = 'ACTIVE')")
-    List<User> findAllByPhoneNumberWithProfile(@Param("gender") Gender gender, @Param("phoneNumber") String phoneNumber, @Param("userId") Long userId, @Param("teamType") TeamType teamType);
+            "WHERE ut.user = u AND t.teamType = :teamType AND t.activeStatus = 'ACTIVE' AND t.event = :event)")
+    List<User> findAllByPhoneNumberWithProfile(@Param("gender") Gender gender, @Param("phoneNumber") String phoneNumber,
+                                               @Param("userId") Long userId, @Param("teamType") TeamType teamType,
+                                               @Param("event") Event event);
 
     boolean existsByStudentNumber(String studentNumber);
     boolean existsByPhoneNumber(String phoneNumber);

@@ -44,8 +44,8 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         Set<Long> memberIds = new HashSet<>(request.getTeamMember());
         memberIds.add(userId);
 
-        // 닉네임 중복 확인
-        if (teamRepository.existsByName(request.getName())) {
+        // 팀명 중복 확인
+        if (teamRepository.existsByName(request.getName(), event)) {
             throw new BusinessException(Code.NAME_ALREADY_EXIST);
         }
 
@@ -58,7 +58,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         }
 
         // 팀 존재하는지 확인
-        if (teamRepository.existsAnyMemberByTeamType(new ArrayList<>(memberIds), teamType)) {
+        if (teamRepository.existsAnyMemberByTeamType(new ArrayList<>(memberIds), teamType, event)) {
             throw new BusinessException(Code.TEAM_ALREADY_EXIST);
         }
 
@@ -101,7 +101,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
         List<User> teamMembers = userRepository.findAllByIdWithProfile(new ArrayList<>(users));
 
         if (teamMembers.stream()
-                .anyMatch(user -> user.getUserProfile().getLeftDelete() == 0)) {
+                .anyMatch(user -> user.getUserProfile().getLeftDelete() <= 0)) {
             throw new BusinessException(Code.DELETE_LIMIT_EXCEEDED);
         }
 
