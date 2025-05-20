@@ -35,6 +35,10 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
     @Qualifier("matchingRedisTemplate")
     private final RedisTemplate<String, String> matchingRedisTemplate;
+
+    @Autowired
+    private final ObjectMapper objectMapper;
+
     private final MatchingRepository matchingRepository;
     private final UserMatchingRepository userMatchingRepository;
     private final MatchingQueueRepository matchingQueueRepository;
@@ -138,13 +142,11 @@ public class RandomCommandServiceImpl implements RandomCommandService {
         RandomResponseDTO.MatchingDTO matchingDTO = RandomConverter.toMatchingDTO(groupId, users, matchingStatus);
 
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             String jsonMessage = objectMapper.writeValueAsString(matchingDTO);
-
             String channel = "matching." + groupId;
             matchingRedisTemplate.convertAndSend(channel, jsonMessage);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new BusinessException(Code.MESSAGE_PROCESSING_ERROR);
         }
     }
 
