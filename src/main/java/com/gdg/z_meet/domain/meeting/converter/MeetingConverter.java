@@ -5,6 +5,7 @@ import com.gdg.z_meet.domain.meeting.entity.Team;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
+import com.gdg.z_meet.domain.user.entity.enums.Level;
 
 import java.util.List;
 import java.util.Map;
@@ -172,6 +173,28 @@ public class MeetingConverter {
                 .nickname(user.getUserProfile().getNickname())
                 .verification(user.getUserProfile().getVerification() == COMPLETE ? 1 : 0)
                 .profileStatus(String.valueOf(user.getUserProfile().getProfileStatus()))
+                .build();
+    }
+
+    public static MeetingResponseDTO.GetProfileDTO toGetProfileDTO(User findUser, Boolean hi, Level level){
+        UserProfile profile = findUser.getUserProfile();
+
+        return MeetingResponseDTO.GetProfileDTO.builder()
+                .userId(findUser.getId())
+                .emoji(profile.getEmoji())
+                .nickname(profile.getNickname())
+                .verification(profile.getVerification() == COMPLETE ? 1 : 0)
+                .gender(profile.getGender())
+                .age(profile.getAge())
+                .studentNumber(findUser.getStudentNumber().substring(2, 4))
+                .major(profile.getMajor().getDisplayName())
+                .music(profile.getMusic())
+                .mbti(profile.getMbti())
+                .style(profile.getStyle())
+                .idealType(profile.getIdealType())
+                .idealAge(profile.getIdealAge())
+                .hi(hi)
+                .level(level)
                 .build();
     }
 }

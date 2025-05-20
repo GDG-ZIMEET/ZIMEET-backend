@@ -19,4 +19,5 @@ public interface MeetingQueryService {
     MeetingResponseDTO.GetUserGalleryDTO getUserGallery(Long userId, Integer page);
     MeetingResponseDTO.GetPreMyProfileDTO getPreMyProfile(Long userId);
     MeetingResponseDTO.GetMyHiDTO getMyHi(Long userId);
+    MeetingResponseDTO.GetProfileDTO getProfile(Long userId, Long profileId);
 }
