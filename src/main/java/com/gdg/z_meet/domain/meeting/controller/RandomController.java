@@ -3,10 +3,10 @@ package com.gdg.z_meet.domain.meeting.controller;
 import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
 import com.gdg.z_meet.domain.meeting.service.RandomCommandService;
 import com.gdg.z_meet.domain.meeting.service.RandomQueryService;
-import com.gdg.z_meet.global.common.AuthenticatedUserUtils;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;
+import com.gdg.z_meet.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +33,8 @@ public class RandomController {
 
     @Operation(summary = "남은 티켓 개수")
     @GetMapping("/ticket")
-    public Response<RandomResponseDTO.GetTicketDTO> getTicket() {
+    public Response<RandomResponseDTO.GetTicketDTO> getTicket(@AuthUser Long userId) {
 
-        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         RandomResponseDTO.GetTicketDTO response = randomQueryService.getTicket(userId);
 
         return Response.ok(response);
@@ -79,9 +78,8 @@ public class RandomController {
 
     @Operation(summary = "매칭 참여 후 현황 조회")
     @GetMapping("/matching")
-    public Response<RandomResponseDTO.MatchingDTO> getMatching() {
+    public Response<RandomResponseDTO.MatchingDTO> getMatching(@AuthUser Long userId) {
 
-        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
         RandomResponseDTO.MatchingDTO response = randomQueryService.getMatching(userId);
 
         return Response.ok(response);
