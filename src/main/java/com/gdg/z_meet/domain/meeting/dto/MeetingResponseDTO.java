@@ -1,8 +1,7 @@
 package com.gdg.z_meet.domain.meeting.dto;
 
 import com.gdg.z_meet.domain.meeting.entity.enums.HiType;
-import com.gdg.z_meet.domain.user.entity.enums.Major;
-import com.gdg.z_meet.domain.user.entity.enums.Music;
+import com.gdg.z_meet.domain.user.entity.enums.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -182,7 +181,7 @@ public class MeetingResponseDTO {
     public static class GetPreUserDTO {
         Long userId;
         String emoji;
-        String name;
+        String nickname;
         Integer verification;
         String major;
         Integer age;
@@ -215,5 +214,27 @@ public class MeetingResponseDTO {
     @AllArgsConstructor
     public static class GetMyHiDTO {
         Integer hi;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetProfileDTO {
+        Long userId;
+        String emoji;
+        String nickname;
+        Integer verification;
+        Gender gender;
+        Integer age;
+        String studentNumber;
+        String major;
+        Music music;
+        MBTI mbti;
+        Style style;
+        IdealType idealType;
+        IdealAge idealAge;
+        Boolean hi;
+        Level level;
     }
 }

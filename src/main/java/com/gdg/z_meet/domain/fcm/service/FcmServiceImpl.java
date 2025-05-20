@@ -36,7 +36,7 @@ public class FcmServiceImpl implements FcmService {
                 .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
 
         user.setPushAgree(req.isPushAgree());
-        return true;
+        return req.isPushAgree();
     }
 
     @Override
@@ -71,12 +71,12 @@ public class FcmServiceImpl implements FcmService {
 
         List<FcmToken> tokens = fcmTokenRepository.findAllByUserPushAgreeTrue();  // 푸시 수신 동의 사용자만
 
-        for (FcmToken tokenEntity : tokens) {
-            String token = tokenEntity.getToken();
-            Long userId = tokenEntity.getUser().getId();
+        for (FcmToken userToken : tokens) {
+            String token = userToken.getToken();
+            Long userId = userToken.getUser().getId();
 
             if (token == null || token.isBlank() || "null".equalsIgnoreCase(token)) {
-                log.warn("FCM 브로드캐스트 대상 토큰이 비어 있음 또는 'null' 문자열: tokenEntityId={},  userId={}", tokenEntity.getId(), userId);
+                log.warn("FCM 브로드캐스트 대상 토큰이 비어 있음 또는 'null' 문자열: tokenEntityId={},  userId={}", userToken.getId(), userId);
                 continue;
             }
 
@@ -94,10 +94,17 @@ public class FcmServiceImpl implements FcmService {
             } catch (FirebaseMessagingException e) {
                 log.warn("FCM 전송 실패 (브로드캐스트): userId={}, error={}", userId, e.getMessage(), e);
 
+                Set<String> deletableErrorCodes = Set.of(
+                        "unregistered",
+                        "invalid_argument", "invalid_arguments",
+                        "registration-token-not-registered",
+                        "messaging/invalid-registration-token"
+                );
+
                 String errorCode = String.valueOf(e.getErrorCode());
-                if ("UNREGISTERED".equalsIgnoreCase(errorCode) || "INVALID_ARGUMENT".equalsIgnoreCase(errorCode)) {
-                    fcmTokenRepository.delete(tokenEntity);
-                    log.warn("무효한 FCM 토큰 삭제: userId={}, token={}", userId, token);
+                if (errorCode != null && deletableErrorCodes.contains(errorCode.toLowerCase())) {
+                    fcmTokenRepository.delete(userToken);
+                    log.warn("무효한 FCM 토큰 삭제: token={}, userId={}", token, userId);
                 }
             }
         }

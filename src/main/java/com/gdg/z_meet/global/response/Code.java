@@ -23,6 +23,7 @@ public enum Code implements BaseCode {
     MEMBER_PASSWORD_UNAVAILABLE(HttpStatus.BAD_REQUEST, "MEM-004", "Password cannot used."),
     MEMBER_ALREADY_ON_PROCESS(HttpStatus.BAD_REQUEST, "MEM-999", "Member is already on process."),
     USER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "PROF-001", "Profile not found."),
+    INVALID_MY_PROFILE_ACCESS(HttpStatus.BAD_REQUEST, "PROF-002", "본인 프로필은 조회할 수 없습니다."),
 
     SESSION_EXPIRED(HttpStatus.INTERNAL_SERVER_ERROR, "PAY-000", "Session expired."),
     SESSION_STORAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PAY-001", "Session storage failed."),
@@ -56,6 +57,7 @@ public enum Code implements BaseCode {
     MATCHING_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "MATCHING4001", "이미 랜덤 매칭중입니다."),
     MATCHING_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCHING4002", "진행중인 매칭을 찾을 수 없습니다."),
     TICKET_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "MATCHING4003", "티켓이 부족합니다."),
+    MESSAGE_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "MATCHING4004", "매칭 메시지 변환이 실패했습니다."),
 
     //Hi Error
     HI_COUNT_ZERO(HttpStatus.BAD_REQUEST, "Hi4001","하이의 갯수가 0개 일 경우 하이를 보낼 수 없습니다."),

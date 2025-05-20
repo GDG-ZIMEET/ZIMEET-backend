@@ -15,6 +15,7 @@ import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.UserProfile;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
+import com.gdg.z_meet.domain.user.entity.enums.Level;
 import com.gdg.z_meet.domain.user.repository.UserProfileRepository;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
@@ -46,7 +47,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
     private final Map<Long, CachedUserList> randomUserCache = new ConcurrentHashMap<>();
-
+    private final Map<Long, CachedTeamList> randomTeamCache = new ConcurrentHashMap<>();
 
     @Lazy
     @Autowired
@@ -61,8 +62,20 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     public MeetingResponseDTO.GetTeamGalleryDTO getTeamGallery(Long userId, TeamType teamType, Integer page) {
 
         Gender gender = userProfileRepository.findByUserId(userId).get().getGender();
-        List<Team> teamList = teamRepository.findAllByTeamType(userId, gender, teamType, event, PageRequest.of(page, 12));
-        Collections.shuffle(teamList);
+
+        long now = System.currentTimeMillis();
+        List<Long> teamIdList = getCachedTeamIds(userId, gender, teamType, now);
+
+        int pageSize = 12;
+        int fromIndex = page * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, teamIdList.size());
+
+        if (fromIndex >= teamIdList.size()) {
+            return null;
+        }
+
+        List<Long> pagedIdList = teamIdList.subList(fromIndex, toIndex);
+        List<Team> teamList = teamRepository.findByIdIn(pagedIdList);
 
         self.increaseTeamViewCountsAndSendFcm(teamList);
 
@@ -228,6 +241,8 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<Long> pagedIdList = userIdList.subList(fromIndex, toIndex);
         List<User> users = userRepository.findByIdInWithProfile(pagedIdList);
 
+        increaseViewCountsAndSendFcm(pagedIdList);
+
         return MeetingConverter.toGetUserGalleryDTO(users);
     }
 
@@ -268,6 +283,25 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public MeetingResponseDTO.GetProfileDTO getProfile(Long userId, Long profileId) {
+
+        User user = userRepository.findByIdWithProfile(userId);
+
+        if (userId.equals(profileId)) {
+            throw new BusinessException(Code.INVALID_MY_PROFILE_ACCESS);
+        }
+
+        Gender gender = user.getUserProfile().getGender();
+        User findUser = userRepository.findByGenderAndProfileStatus(profileId, gender)
+                .orElseThrow(() -> new BusinessException(Code.USER_PROFILE_NOT_FOUND));
+
+        Boolean hi = hiRepository.existsByFromIdAndToIdAndHiType(userId, profileId, HiType.USER);
+        Level level = user.getUserProfile().getLevel();
+
+        return MeetingConverter.toGetProfileDTO(findUser, hi, level);
+    }
 
 
     private Map<Long, List<String>> collectEmoji(List<Team> teamList) {
@@ -348,6 +382,28 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
         CachedUserList(List<Long> userIds, long timestamp) {
             this.userIds = userIds;
+            this.timestamp = timestamp;
+        }
+    }
+
+    private List<Long> getCachedTeamIds(Long userId, Gender gender, TeamType teamType, long now) {
+
+        return randomTeamCache.compute(userId, (id, cached) -> {
+            if (cached == null || now - cached.timestamp > 10 * 60 * 1000) {
+                List<Long> ids = teamRepository.findAllByTeamType(gender, teamType, event);
+                Collections.shuffle(ids);
+                return new CachedTeamList(ids, now);
+            }
+            return cached;
+        }).teamIds;
+    }
+
+    private static class CachedTeamList {
+        List<Long> teamIds;
+        long timestamp;
+
+        CachedTeamList(List<Long> teamIds, long timestamp) {
+            this.teamIds = teamIds;
             this.timestamp = timestamp;
         }
     }

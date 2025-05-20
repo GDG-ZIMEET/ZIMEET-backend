@@ -6,8 +6,10 @@ import com.gdg.z_meet.domain.chat.service.ChatRoomCommandService;
 import com.gdg.z_meet.domain.meeting.converter.RandomConverter;
 import com.gdg.z_meet.domain.meeting.dto.RandomResponseDTO;
 import com.gdg.z_meet.domain.meeting.entity.Matching;
+import com.gdg.z_meet.domain.meeting.entity.MatchingQueue;
 import com.gdg.z_meet.domain.meeting.entity.UserMatching;
 import com.gdg.z_meet.domain.meeting.entity.enums.MatchingStatus;
+import com.gdg.z_meet.domain.meeting.repository.MatchingQueueRepository;
 import com.gdg.z_meet.domain.meeting.repository.MatchingRepository;
 import com.gdg.z_meet.domain.meeting.repository.UserMatchingRepository;
 import com.gdg.z_meet.domain.user.entity.User;
@@ -20,10 +22,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,8 +35,13 @@ public class RandomCommandServiceImpl implements RandomCommandService {
 
     @Qualifier("matchingRedisTemplate")
     private final RedisTemplate<String, String> matchingRedisTemplate;
+
+    @Autowired
+    private final ObjectMapper objectMapper;
+
     private final MatchingRepository matchingRepository;
     private final UserMatchingRepository userMatchingRepository;
+    private final MatchingQueueRepository matchingQueueRepository;
     private final UserRepository userRepository;
     private final ChatRoomCommandService chatRoomCommandService;
 
@@ -45,111 +53,119 @@ public class RandomCommandServiceImpl implements RandomCommandService {
     @Transactional
     public void joinMatching(Long userId) {
 
+        User user = validateUser(userId);
+        Gender gender = user.getUserProfile().getGender();
+
+        String groupId = findJoinableGroupId(gender)
+                .orElse(UUID.randomUUID().toString());
+
+        MatchingQueue queue = MatchingQueue.builder()
+                .groupId(groupId)
+                .gender(gender)
+                .user(user)
+                .build();
+        matchingQueueRepository.save(queue);
+
+        List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(groupId); // 매칭 전에 락 획득!
+
+        boolean isComplete = isMatchingComplete(queueList);
+        messageMatching(groupId, queueList, isComplete);
+        if (isComplete) createMatching(queueList);
+    }
+
+    private User validateUser(Long userId) {
+
         User user = userRepository.findByIdWithProfile(userId);
+
         if (user.getUserProfile().getTicket() == 0) {
             throw new BusinessException(Code.TICKET_LIMIT_EXCEEDED);
         }
-
-        user.getUserProfile().decreaseTicket(1);
-
-        // 진행중인 매칭 확인
-        if (matchingRepository.existsByWaitingMatching(userId)) {
+        if (matchingQueueRepository.existsWaitingByUserId(userId)) {
             throw new BusinessException(Code.MATCHING_ALREADY_EXIST);
         }
+        user.getUserProfile().decreaseTicket(1);
 
-        Gender gender = user.getUserProfile().getGender();
-        Matching matching = matchingRepository.findFirstWaitingMatching(userId)
-                .filter(m -> {
-                    List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(m.getId());
-                    long genderCount = userMatchings.stream()
-                            .filter(userMatching -> userMatching.getUser().getUserProfile().getGender() == gender)
-                            .count();
-                    return genderCount < 3;
-                })
-                .orElseGet(() -> matchingRepository.save(Matching.builder().build()));
+        return user;
+    }
 
-        UserMatching userMatching = UserMatching.builder()
-                .user(user)
-                .matching(matching)
-                .build();
-        userMatchingRepository.save(userMatching);
+    private Optional<String> findJoinableGroupId(Gender gender) {
+        List<String> groupIds = matchingQueueRepository.findAllJoinableGroupIds();
 
-        List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
+        for (String groupId : groupIds) {
+            List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(groupId);
+            long genderCount = queueList.stream().filter(q -> q.getGender() == gender).count();
 
-        validateMatching(matching, userMatchings);
-        RandomResponseDTO.MatchingDTO matchingDTO = messageMatching(matching, userMatchings);
-
-        List<Long> userIds = userMatchings.stream()
-                .map(um -> um.getUser().getId())
-                .collect(Collectors.toList());
-
-        if (matching.getMatchingStatus() == MatchingStatus.COMPLETE) {
-            chatRoomCommandService.addRandomUserJoinChat(userIds);
+            if (queueList.size() < 4 && genderCount < 2) {
+                return Optional.of(groupId);
+            }
         }
+
+        return Optional.empty();
+    }
+
+    private boolean isMatchingComplete(List<MatchingQueue> queueList) {
+
+        long male = queueList.stream().filter(q -> q.getGender() == Gender.MALE).count();
+        long female = queueList.stream().filter(q -> q.getGender() == Gender.FEMALE).count();
+
+        return queueList.size() == 4 && male == 2 && female == 2;
     }
 
     @Override
     @Transactional
     public void cancelMatching(Long userId) {
 
-        // 완료된 매칭은 취소 불가
-        Matching matching = matchingRepository.findWaitingMatchingByUserId(userId)
+        MatchingQueue queue = matchingQueueRepository.findWaitingByUserIdWithLock(userId)
                 .orElseThrow(() -> new BusinessException(Code.MATCHING_NOT_FOUND));
 
-        userMatchingRepository.findByUserIdForUpdate(userId).ifPresent(this::safeDeleteUserMatching);
+        String groupId = queue.getGroupId();
+
+        matchingQueueRepository.delete(queue);
 
         User user = userRepository.findByIdWithProfile(userId);
-
         user.getUserProfile().increaseTicket(1);
 
-        List<UserMatching> userMatchings = userMatchingRepository.findAllByMatchingIdWithUserProfile(matching.getId());
-        messageMatching(matching, userMatchings);
+        List<MatchingQueue> queueList = matchingQueueRepository.findByGroupIdWithLock(groupId);
+        boolean isComplete = isMatchingComplete(queueList);
+
+        messageMatching(queue.getGroupId(), queueList, isComplete);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void safeDeleteUserMatching(UserMatching userMatching) {
-        userMatchingRepository.findById(userMatching.getId()).ifPresent(userMatchingRepository::delete);
-    }
+    private void messageMatching(String groupId, List<MatchingQueue> queueList, boolean isComplete) {
 
-
-    private RandomResponseDTO.MatchingDTO messageMatching(Matching matching, List<UserMatching> userMatchings) {
-
-        List<User> users = userMatchings.stream()
-                .map(UserMatching::getUser)
+        List<User> users = queueList.stream()
+                .map(MatchingQueue::getUser)
                 .collect(Collectors.toList());
 
-        RandomResponseDTO.MatchingDTO matchingDTO = RandomConverter.toMatchingDTO(matching, users);
+        MatchingStatus matchingStatus = isComplete ? MatchingStatus.COMPLETE : MatchingStatus.WAITING;
+
+        RandomResponseDTO.MatchingDTO matchingDTO = RandomConverter.toMatchingDTO(groupId, users, matchingStatus);
 
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             String jsonMessage = objectMapper.writeValueAsString(matchingDTO);
-
-            String channel = "matching." + matchingDTO.getMatchingId();
+            String channel = "matching." + groupId;
             matchingRedisTemplate.convertAndSend(channel, jsonMessage);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new BusinessException(Code.MESSAGE_PROCESSING_ERROR);
         }
-
-        return matchingDTO;
     }
 
-    private void validateMatching(Matching matching, List<UserMatching> userMatchings) {
+    @Transactional
+    public void createMatching(List<MatchingQueue> queueList) {
 
-        matchingLockService.lock(matching.getId());
+        Matching matching = matchingRepository.save(Matching.builder().build());
 
-        try {
-            long male = userMatchings.stream()
-                    .filter(user -> user.getUser().getUserProfile().getGender() == Gender.MALE)
-                    .count();
-            long female = userMatchings.stream()
-                    .filter(user -> user.getUser().getUserProfile().getGender() == Gender.FEMALE)
-                    .count();
+        queueList.forEach(queue -> {
+            userMatchingRepository.save(UserMatching.builder()
+                    .user(queue.getUser())
+                    .matching(matching)
+                    .build());
+            queue.setComplete();
+        });
 
-            if (male == 3 && female == 3) {
-                matching.setMatchingStatus(MatchingStatus.COMPLETE);
-            }
-        } finally {
-            matchingLockService.unlock(matching.getId());
-        }
+        List<Long> userIds = queueList.stream()
+                .map(q -> q.getUser().getId())
+                .collect(Collectors.toList());
+        chatRoomCommandService.addRandomUserJoinChat(userIds);
     }
 }

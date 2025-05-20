@@ -5,7 +5,6 @@ import com.gdg.z_meet.domain.meeting.entity.enums.Event;
 import com.gdg.z_meet.domain.meeting.entity.enums.TeamType;
 import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.entity.enums.Gender;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,9 +15,9 @@ import java.util.Optional;
 
 public interface TeamRepository extends JpaRepository<Team, Long> {
 
-    @Query("SELECT t FROM Team t WHERE t.id NOT IN (SELECT ut.team.id FROM UserTeam ut WHERE ut.user.id = :userId) " +
-            "AND t.gender != :gender AND t.teamType = :teamType AND t.event = :event AND t.activeStatus = 'ACTIVE'")
-    List<Team> findAllByTeamType(@Param("userId") Long userId, @Param("gender") Gender gender, @Param("teamType") TeamType teamType, @Param("event") Event event, Pageable pageable);
+    @Query("SELECT t.id FROM Team t WHERE t.gender != :gender " +
+            "AND t.teamType = :teamType AND t.event = :event AND t.activeStatus = 'ACTIVE'")
+    List<Long> findAllByTeamType(@Param("gender") Gender gender, @Param("teamType") TeamType teamType, @Param("event") Event event);
 
     @Query("SELECT t FROM Team t WHERE t.id IN (SELECT ut.team.id FROM UserTeam ut WHERE ut.user.id = :userId) " +
             "AND t.teamType = :teamType AND t.event = :event AND t.activeStatus = 'ACTIVE'")
@@ -45,12 +44,14 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     List<Team> findAllByUser(@Param("user") User user, @Param("event") Event event);
 
 
-    @Query("SELECT u FROM User u " +
-            "WHERE u.createdAt <= :threshold " +
-            "AND u.fcmSendTwoTwo = false " +
-            "AND u.id NOT IN (" +
-            "   SELECT ut.user.id FROM UserTeam ut " +
-            "   WHERE ut.team.teamType = 'TWO_TO_TWO' AND ut.team.event = :event " +
-            ")")
-    List<User> findUsersNotInTwoToTwoTeam(@Param("threshold") LocalDateTime threshold, @ Param("event") Event event);
+    @Query("""
+        SELECT u FROM User u
+        WHERE u.createdAt <= :threshold
+        AND u.fcmSendTwoTwo = false
+        AND NOT EXISTS (
+            SELECT 1 FROM UserTeam ut
+            WHERE ut.user.id = u.id AND ut.team.teamType = 'TWO_TO_TWO'
+        )
+    """)
+    List<User> findUsersNotInTwoToTwoTeam(@Param("threshold") LocalDateTime threshold);
 }
