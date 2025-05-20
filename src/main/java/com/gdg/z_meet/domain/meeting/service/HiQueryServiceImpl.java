@@ -68,6 +68,7 @@ public class HiQueryServiceImpl implements HiQueryService{
                 User otherUser = userRepository.findById(teamId).orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
 
                 UserProfile userProfile = otherUser.getUserProfile();
+
                 if (userProfile == null) { throw new BusinessException(Code.USER_PROFILE_NOT_FOUND); }
 
                 otherName = userProfile.getNickname();
