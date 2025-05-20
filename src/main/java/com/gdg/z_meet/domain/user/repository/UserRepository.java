@@ -59,4 +59,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u JOIN FETCH u.userProfile up " +
             "WHERE u.id = :userId AND up.profileStatus = 'ACTIVE' AND u.isDeleted = false")
     Optional<User> findByProfileStatus(@Param("userId") Long userId);
+
+    @Query("SELECT u FROM User u JOIN FETCH u.userProfile up " +
+            "WHERE u.id = :userId AND up.gender != :gender AND up.profileStatus = 'ACTIVE' AND u.isDeleted = false")
+    Optional<User> findByGenderAndProfileStatus(@Param("userId") Long userId, @Param("gender") Gender gender);
 }

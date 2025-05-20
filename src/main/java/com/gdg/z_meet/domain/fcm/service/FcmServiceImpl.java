@@ -36,7 +36,7 @@ public class FcmServiceImpl implements FcmService {
                 .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
 
         user.setPushAgree(req.isPushAgree());
-        return true;
+        return req.isPushAgree();
     }
 
     @Override
