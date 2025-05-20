@@ -16,3 +16,4 @@ create table matching_queue
 );
 
 ALTER TABLE Club MODIFY COLUMN category ENUM('DATE', 'FOOD', 'GOODS', 'EVENT', 'OTHERS');
+ALTER TABLE Club MODIFY COLUMN place ENUM('S_LEFT', 'S_RIGHT', 'A', 'F', 'S', 'K', 'G');
