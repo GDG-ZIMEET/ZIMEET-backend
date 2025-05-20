@@ -7,6 +7,7 @@ import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
 import com.gdg.z_meet.global.common.AuthenticatedUserUtils;
 import com.gdg.z_meet.global.jwt.JwtUtil;
 import com.gdg.z_meet.global.response.Response;
+import com.gdg.z_meet.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -69,8 +70,8 @@ public class ChatRoomController {
 
     @Operation(summary = "사용자 참여 채팅방 조회", description = "사용자가 현재 참여 중인 채팅방 목록을 조회합니다.")
     @GetMapping("/users")
-    public Response<List<ChatRoomDto.chatRoomListDto>> getUserChatRooms() {
-        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+    public Response<List<ChatRoomDto.chatRoomListDto>> getUserChatRooms(@AuthUser Long userId) {
+
         List<ChatRoomDto.chatRoomListDto> chatRooms = chatRoomQueryService.getChatRoomsByUser(userId); // 참여 중인 채팅방 조회
         return Response.ok(chatRooms); // 채팅방 목록 반환
     }
@@ -78,19 +79,21 @@ public class ChatRoomController {
     @Operation(summary = "채팅방 사용자 조회 ", description = "특정 채팅방에 있는 사용자들을 조회합니다. ")
     @GetMapping("/{roomId}")
     public Response<List<ChatRoomDto.chatRoomUserList>> sendMessage(
+            @AuthUser Long userId,
             @PathVariable Long roomId) {
-        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+
         return Response.ok(chatRoomQueryService.getUserByRoomId(userId, roomId)); // 성공 응답 반환
     }
 
     @Operation(summary = "메시지 조회", description = "지정된 채팅방의 메시지를 페이지네이션을 사용하여 조회합니다.")
     @GetMapping("/{roomId}/messages")
     public ResponseEntity<List<ChatMessage>> getMessages(
+            @AuthUser Long userId,
             @PathVariable Long roomId,
             @RequestParam(defaultValue = "0") int page, // 페이지 번호 (기본값: 0)
             @RequestParam(defaultValue = "15") int size // 페이지 크기 (기본값: 20)
     ) {
-        Long userId = AuthenticatedUserUtils.getAuthenticatedUserId();
+
         List<ChatMessage> messages = messageQueryService.getMessagesByChatRoom(roomId,userId, page, size);
         return ResponseEntity.ok(messages);
     }

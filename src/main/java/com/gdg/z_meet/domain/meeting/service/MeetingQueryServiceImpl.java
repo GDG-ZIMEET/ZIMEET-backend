@@ -23,7 +23,6 @@ import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +54,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
     private final FcmProfileMessageService fcmProfileMessageService;
 
-    private final Event event = Event.NEUL_2025;
+    private final Event event = Event.AU_2025;
 
     @Override
     @Transactional(readOnly = true)

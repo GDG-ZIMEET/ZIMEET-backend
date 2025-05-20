@@ -34,7 +34,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
     private final UserProfileRepository userProfileRepository;
     private final TeamRepository teamRepository;
     private final UserTeamRepository userTeamRepository;
-    private final Event event = Event.NEUL_2025;
+    private final Event event = Event.AU_2025;
     private final HiRepository hiRepository;
 
     @Override
@@ -74,7 +74,7 @@ public class MeetingCommandServiceImpl implements MeetingCommandService {
                 .teamType(teamType)
                 .name(request.getName())
                 .gender(gender)
-                .event(Event.NEUL_2025)
+                .event(event)
                 .build();
         teamRepository.save(newTeam);
 
