@@ -14,6 +14,7 @@ import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MessageCommandService {
 
     private final RedisTemplate<String, Object> redisTemplate;
@@ -46,7 +48,15 @@ public class MessageCommandService {
     public void processMessage(ChatMessage chatMessage) {
         saveMessage(chatMessage);
         broadcastMessage(chatMessage);
-        fcmChatMessageService.messagingChat(chatMessage);         // 앱이 백그라운드일 때를 위한 FCM 알림
+        notifyBackgroundUser(chatMessage);
+    }
+
+    public void notifyBackgroundUser(ChatMessage chatMessage) {
+        try {
+            fcmChatMessageService.messagingChat(chatMessage);
+        } catch (Exception e) {
+            log.warn("FCM 전송 실패 - chatRoomId={}, senderId={}", chatMessage.getRoomId(), chatMessage.getSenderId(), e);
+        }
     }
 
     @Transactional

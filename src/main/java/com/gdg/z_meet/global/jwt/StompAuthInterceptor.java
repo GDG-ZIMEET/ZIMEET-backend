@@ -24,6 +24,10 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             String token = accessor.getFirstNativeHeader("Authorization");
 
             if (token == null) {
+                token = accessor.getFirstNativeHeader("authorization");
+            }
+
+            if (token == null) {
                 throw new IllegalArgumentException("Missing Token");
             }
 

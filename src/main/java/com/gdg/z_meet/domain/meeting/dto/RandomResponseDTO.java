@@ -1,5 +1,6 @@
 package com.gdg.z_meet.domain.meeting.dto;
 
+import com.gdg.z_meet.domain.meeting.entity.enums.MatchingStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,8 +33,8 @@ public class RandomResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MatchingDTO {
-        Long matchingId;
+        String groupId;
         List<UserMatchingDTO> userList;
-        String matchingStatus;
+        MatchingStatus matchingStatus;
     }
 }

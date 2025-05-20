@@ -25,7 +25,7 @@ public class EventService {
 
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
-    private final Event event = Event.NEUL_2025;
+    private final Event event = Event.AU_2025;
 
     @Transactional
     public MeetingResponseDTO.GetMyDeleteDTO patchMyDelete(String name, String phoneNumber) {

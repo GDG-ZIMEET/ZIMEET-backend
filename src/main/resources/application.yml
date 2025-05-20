@@ -62,3 +62,6 @@ kakao:
     cid: TC0ONETIME
     ready-url: https://open-api.kakaopay.com/online/v1/payment/ready
     approve-url: https://open-api.kakaopay.com/online/v1/payment/approve
+
+firebase:
+  admin-sdk: firebase/zi-meet-firebase-adminsdk-fbsvc-f026a2abf0.json
