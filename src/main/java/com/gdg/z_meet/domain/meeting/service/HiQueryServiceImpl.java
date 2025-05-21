@@ -81,7 +81,7 @@ public class HiQueryServiceImpl implements HiQueryService{
             List<UserProfile> userProfiles;
 
             if(hi.getHiType()== HiType.USER) {
-                UserProfile profile = userProfileRepository.findByUserId(userId)
+                UserProfile profile = userProfileRepository.findByUserId(teamId)
                         .orElseThrow(() -> new BusinessException(Code.USER_PROFILE_NOT_FOUND));
                 userProfiles = List.of(profile);
             }
