@@ -64,40 +64,32 @@ public class MessageQueryService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());  // page를 0으로
         List<Message> dbMessages = mongoMessageRepository.findByChatRoomId(chatRoomId.toString(), pageable);
 
-        // Redis에서 가져온 메시지가 부족하면 DB에서 추가로 가져오기
-//        if (chatMessages.size() < size) {
-//            Pageable pageable = PageRequest.of(page, size - chatMessages.size(), Sort.by("createdAt").descending());
-//            List<Message> dbMessages = mongoMessageRepository.findByChatRoomId(String.valueOf(chatRoomId), pageable);
-
 
         List<ChatMessage> dbChatMessages = dbMessages.stream()
+                .filter(msg -> msg.getId() != null && !redisMessageIds.contains(msg.getId()))
                 .map(message -> {
                     // MySQL에서 userId를 기반으로 User 객체를 조회
                     User user = userRepository.findById(Long.parseLong(message.getUserId()))
                             .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
-
 
                     return ChatMessage.builder()
                             .id(message.getId())
                             .type(MessageType.CHAT)
                             .roomId(Long.parseLong(message.getChatRoomId()))  // MongoDB의 chatRoomId는 String이므로 Long으로 변환
                             .senderId(Long.parseLong(message.getUserId()))  // MongoDB의 userId는 String이므로 Long으로 변환
-                            .senderName(user.getName())  // MySQL에서 가져온 user의 name 사용
+                            .senderName(user.getName())
                             .content(message.getContent())
                             .sendAt(message.getCreatedAt())
-                            .emoji(user.getUserProfile().getEmoji())  // MySQL에서 가져온 user의 emoji 사용
+                            .emoji(user.getUserProfile().getEmoji())
                             .build();
                 })
-                // Redis에 이미 존재하는 메시지는 UUID 기준으로 필터링
-                .filter(msg -> msg.getId() != null && !redisMessageIds.contains(msg.getId()))
                 .limit(Math.max(0, size - chatMessages.size()))  // 부족한 만큼만 보충
                 .collect(Collectors.toList());
 
         chatMessages.addAll(dbChatMessages);
-        chatMessages = chatMessages.stream()
+
+        return chatMessages.stream()
                 .sorted(Comparator.comparing(ChatMessage::getSendAt).reversed())
                 .collect(Collectors.toList());
-
-        return chatMessages;
     }
 }

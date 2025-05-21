@@ -110,7 +110,7 @@ public class MessageCommandService {
             List<ChatMessage> chatMessages = messages.stream()
                     .map(obj -> objectMapper.convertValue(obj, ChatMessage.class))
                     .filter(chatMessage -> chatMessage.getSenderId() != null)
-                    .collect(Collectors.toList());
+                    .toList();
 
             List<Message> messageList = chatMessages.stream()
                     .map(chatMessage -> {
@@ -119,7 +119,7 @@ public class MessageCommandService {
                         LocalDateTime now = LocalDateTime.now();
 
                         return Message.builder()
-                                .id(chatMessage.getId().toString())
+                                .id(chatMessage.getId())
                                 .chatRoomId(chatRoomId.toString())
                                 .userId(user.getId().toString())
                                 .content(chatMessage.getContent())
@@ -129,8 +129,14 @@ public class MessageCommandService {
                     })
                     .collect(Collectors.toList());
 
-            mongoMessageRepository.saveAll(messageList);
+            log.info("Redis 메시지 수: {}", chatMessages.size());
+            log.info("MongoDB 저장할 메시지 수: {}", messageList.size());
 
+            try {
+                mongoMessageRepository.saveAll(messageList);
+            } catch (Exception e) {
+                log.error("Mongo 저장 실패", e);
+            }
              //레디스에서 최신 n개의 메시지를 제외하고 모두 저장
             if (totalMessages > MAX_REDIS_MESSAGES) {
                 redisTemplate.opsForList().trim(chatRoomMessagesKey, -MAX_REDIS_MESSAGES, -1);
