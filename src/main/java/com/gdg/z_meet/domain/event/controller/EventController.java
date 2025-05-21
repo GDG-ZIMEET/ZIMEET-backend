@@ -23,18 +23,18 @@ public class EventController {
 
     @Operation(summary = "팀 삭제 기회 추가")
     @PatchMapping("/leftDelete")
-    public Response<MeetingResponseDTO.GetMyDeleteDTO> patchMyDelete(@RequestParam(name = "name") String name, @RequestParam(name = "phoneNumber") String phoneNumber) {
+    public Response<MeetingResponseDTO.GetMyDeleteDTO> patchMyDelete(@RequestParam(name = "name") String name, @RequestParam(name = "studentNumber") String studentNumber) {
 
-        MeetingResponseDTO.GetMyDeleteDTO response = eventService.patchMyDelete(name, phoneNumber);
+        MeetingResponseDTO.GetMyDeleteDTO response = eventService.patchMyDelete(name, studentNumber);
 
         return Response.ok(response);
     }
 
     @Operation(summary = "ZI밋+ 등급 등록")
     @PatchMapping("/level")
-    public Response<UserRes.GetLevelDTO> patchLevel(@RequestParam(name = "name") String name, @RequestParam(name = "phoneNumber") String phoneNumber) {
+    public Response<UserRes.GetLevelDTO> patchLevel(@RequestParam(name = "name") String name, @RequestParam(name = "studentNumber") String studentNumber) {
 
-        UserRes.GetLevelDTO response = eventService.patchLevel(name, phoneNumber);
+        UserRes.GetLevelDTO response = eventService.patchLevel(name, studentNumber);
 
         return Response.ok(response);
     }

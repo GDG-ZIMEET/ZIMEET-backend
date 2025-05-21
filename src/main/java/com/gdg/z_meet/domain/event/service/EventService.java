@@ -30,9 +30,9 @@ public class EventService {
     private final Event event = Event.AU_2025;
 
     @Transactional
-    public MeetingResponseDTO.GetMyDeleteDTO patchMyDelete(String name, String phoneNumber) {
+    public MeetingResponseDTO.GetMyDeleteDTO patchMyDelete(String name, String studentNumber) {
 
-        User user = userRepository.findByNameAndPhoneNumberWithProfile(name, phoneNumber)
+        User user = userRepository.findByNameAndStudentNumberWithProfile(name, studentNumber)
                 .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
 
         user.getUserProfile().addDelete();
@@ -41,9 +41,9 @@ public class EventService {
     }
 
     @Transactional
-    public UserRes.GetLevelDTO patchLevel(String name, String phoneNumber) {
+    public UserRes.GetLevelDTO patchLevel(String name, String studentNumber) {
 
-        User user = userRepository.findByNameAndPhoneNumberWithProfile(name, phoneNumber)
+        User user = userRepository.findByNameAndStudentNumberWithProfile(name, studentNumber)
                 .orElseThrow(() -> new BusinessException(Code.USER_NOT_FOUND));
 
         user.getUserProfile().upLevel();
