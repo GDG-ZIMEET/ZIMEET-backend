@@ -176,7 +176,7 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     @Transactional(readOnly = true)
     public MeetingResponseDTO.CheckNameDTO checkName(String name) {
 
-        Boolean exist = teamRepository.existsByName(name);
+        Boolean exist = teamRepository.existsByName(name, event);
 
         return MeetingResponseDTO.CheckNameDTO.builder()
                 .check(exist == Boolean.TRUE ? 0 : 1)
@@ -199,9 +199,9 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<User> users;
 
         if (nickname != null) {
-            users = userRepository.findAllByNicknameWithProfile(gender, nickname, userId, teamType);
+            users = userRepository.findAllByNicknameWithProfile(gender, nickname, userId, teamType, event);
         } else if (phoneNumber.length() >= 7) {
-            users = userRepository.findAllByPhoneNumberWithProfile(gender, phoneNumber, userId, teamType);
+            users = userRepository.findAllByPhoneNumberWithProfile(gender, phoneNumber, userId, teamType, event);
         } else {
             users = Collections.emptyList();
         }
