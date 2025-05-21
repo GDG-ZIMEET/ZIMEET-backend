@@ -2,6 +2,7 @@ package com.gdg.z_meet.domain.chat.entity;
 
 import lombok.*;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 public class Message {
 
     @Id
-    private String id;     // MongoDB 기존 ObjectId
+    private ObjectId id;     // MongoDB 기존 ObjectId
 
     @Field("messageId")
     private String messageId;     // UUID
