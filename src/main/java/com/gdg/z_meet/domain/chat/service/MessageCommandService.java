@@ -40,7 +40,7 @@ public class MessageCommandService {
     private static final String CHAT_ROOM_MESSAGES_KEY = "chatroom:%s:messages";
     private static final String CHAT_ROOM_LATEST_MESSAGE_KEY = "chatroom:%s:latestMessage";
     private static final String CHAT_ROOM_LATEST_MESSAGE_TIME_KEY = "chatroom:%s:latestMessageTime";
-    private static final int MAX_REDIS_MESSAGES = 30; // 최신 30개만 Redis에 유지
+    private static final int MAX_REDIS_MESSAGES = 300; // 최신 300개 Redis에 유지
 
     private final FcmChatMessageService fcmChatMessageService;
 
@@ -87,9 +87,8 @@ public class MessageCommandService {
 
     public void broadcastMessage(ChatMessage chatMessage) {
         // 채팅방 참여자들에게 메시지 전송
-        log.info("브로드캐스팅 messageId={} to roomId={}", chatMessage.getId(), chatMessage.getRoomId());
+        log.info("채팅방 내 메시지 전송 messageId={}, roomId={}", chatMessage.getId(), chatMessage.getRoomId());
         messagingTemplate.convertAndSend("/topic/" + chatMessage.getRoomId(), chatMessage);
-
     }
 
     @Scheduled(fixedRate = 60000) // 1분마다 실행
@@ -138,8 +137,4 @@ public class MessageCommandService {
             }
         }
     }
-
-
-
-
 }
