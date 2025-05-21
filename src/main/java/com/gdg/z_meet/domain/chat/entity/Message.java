@@ -18,6 +18,7 @@ public class Message {
     @Id
     private String id;     // MongoDB 기존 ObjectId
 
+    @Field("messageId")
     private String messageId;     // UUID
 
     private String content;

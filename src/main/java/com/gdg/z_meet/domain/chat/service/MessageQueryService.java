@@ -73,12 +73,12 @@ public class MessageQueryService {
 
         List<ChatMessage> dbChatMessages = dbMessages.stream()
 //                .filter(msg -> msg.getMessageId() != null && !redisMessageIds.contains(msg.getMessageId()))
-                .filter(m -> {
-                    boolean shouldInclude = m.getMessageId() != null && !redisMessageIds.contains(m.getMessageId());
-                    if (!shouldInclude) {
-                        log.debug("❌ 중복으로 제외된 Mongo 메시지 UUID: {}", m.getMessageId());
+                .filter(msg -> {
+                    if (msg.getMessageId() == null) {
+                        log.warn("❗Mongo 메시지에서 messageId가 null입니다. ID: {}", msg.getId());
+                        return true; // 임시로 포함
                     }
-                    return shouldInclude;
+                    return !redisMessageIds.contains(msg.getMessageId());
                 })
                 .map(message -> {
                     // MySQL에서 userId를 기반으로 User 객체를 조회
