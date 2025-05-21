@@ -20,9 +20,9 @@ public class ChatMessage implements Serializable {
     private Long senderId;
     private String senderName;
     private String content;
-    private String emoji;
-
     @Builder.Default
-    private LocalDateTime sentAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+    private LocalDateTime sendAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+
+    private String emoji;
 
 }
