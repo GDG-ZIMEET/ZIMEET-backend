@@ -73,8 +73,10 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
             return null;
         }
 
-        List<Long> pagedIdList = teamIdList.subList(fromIndex, toIndex);
-        List<Team> teamList = teamRepository.findByIdIn(pagedIdList);
+//        List<Long> pagedIdList = teamIdList.subList(fromIndex, toIndex);
+//        List<Team> teamList = teamRepository.findByIdIn(pagedIdList);
+
+        List<Team> teamList = teamRepository.findByIdIn(teamIdList);
 
         self.increaseTeamViewCountsAndSendFcm(teamList);
 
@@ -237,10 +239,12 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
             return MeetingConverter.toGetUserGalleryDTO(Collections.emptyList());
         }
 
-        List<Long> pagedIdList = userIdList.subList(fromIndex, toIndex);
-        List<User> users = userRepository.findByIdInWithProfile(pagedIdList);
+//        List<Long> pagedIdList = userIdList.subList(fromIndex, toIndex);
+//        List<User> users = userRepository.findByIdInWithProfile(pagedIdList);
 
-        increaseViewCountsAndSendFcm(pagedIdList);
+        List<User> users = userRepository.findByIdInWithProfile(userIdList);
+
+        increaseViewCountsAndSendFcm(userIdList);
 
         return MeetingConverter.toGetUserGalleryDTO(users);
     }
