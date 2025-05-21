@@ -254,9 +254,10 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<UserProfile> profiles = userProfileRepository.findByUserIdIn(userIds);
 
         for (UserProfile profile : profiles) {
-            profile.setViewCount(profile.getViewCount() + 1);    // 더티 체킹
+            profile.setViewCount(profile.getViewCount() + 1);
         }
 
+        userProfileRepository.saveAll(profiles);
         fcmProfileMessageService.messagingProfileViewOneOneUsers(profiles);
     }
 

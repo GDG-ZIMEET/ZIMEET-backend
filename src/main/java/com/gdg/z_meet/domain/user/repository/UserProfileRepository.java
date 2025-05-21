@@ -35,6 +35,7 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     @Query("SELECT up FROM UserProfile up JOIN FETCH up.user u WHERE up.profileStatus = 'NONE' AND up.fcmSendOneOne = false AND u.createdAt <= :threshold")
     List<UserProfile> findInactiveUsers(@Param("threshold") LocalDateTime threshold);
 
+    @Query("SELECT up FROM UserProfile up WHERE up.user.id IN :userIds")
     List<UserProfile> findByUserIdIn(List<Long> userIds);
 
     @Query("SELECT up.hi FROM UserProfile up WHERE up.user.id = :userId AND up.user.isDeleted = false")
