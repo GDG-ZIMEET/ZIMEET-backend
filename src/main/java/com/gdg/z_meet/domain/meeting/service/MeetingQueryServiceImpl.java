@@ -73,8 +73,10 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
             return null;
         }
 
-        List<Long> pagedIdList = teamIdList.subList(fromIndex, toIndex);
-        List<Team> teamList = teamRepository.findByIdIn(pagedIdList);
+//        List<Long> pagedIdList = teamIdList.subList(fromIndex, toIndex);
+//        List<Team> teamList = teamRepository.findByIdIn(pagedIdList);
+
+        List<Team> teamList = teamRepository.findByIdIn(teamIdList);
 
         self.increaseTeamViewCountsAndSendFcm(teamList);
 
@@ -237,10 +239,12 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
             return MeetingConverter.toGetUserGalleryDTO(Collections.emptyList());
         }
 
-        List<Long> pagedIdList = userIdList.subList(fromIndex, toIndex);
-        List<User> users = userRepository.findByIdInWithProfile(pagedIdList);
+//        List<Long> pagedIdList = userIdList.subList(fromIndex, toIndex);
+//        List<User> users = userRepository.findByIdInWithProfile(pagedIdList);
 
-        increaseViewCountsAndSendFcm(pagedIdList);
+        List<User> users = userRepository.findByIdInWithProfile(userIdList);
+
+        increaseViewCountsAndSendFcm(userIdList);
 
         return MeetingConverter.toGetUserGalleryDTO(users);
     }
@@ -250,9 +254,10 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
         List<UserProfile> profiles = userProfileRepository.findByUserIdIn(userIds);
 
         for (UserProfile profile : profiles) {
-            profile.setViewCount(profile.getViewCount() + 1);    // 더티 체킹
+            profile.setViewCount(profile.getViewCount() + 1);
         }
 
+        userProfileRepository.saveAll(profiles);
         fcmProfileMessageService.messagingProfileViewOneOneUsers(profiles);
     }
 

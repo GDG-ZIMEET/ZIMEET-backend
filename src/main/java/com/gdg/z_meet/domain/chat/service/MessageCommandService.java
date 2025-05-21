@@ -65,19 +65,29 @@ public class MessageCommandService {
 
         // Redis에 메시지 저장
         String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
-        redisTemplate.opsForList().rightPush(chatRoomMessagesKey, chatMessage);
 
-        // 최신 메시지 및 활동 시간 업데이트
-        String latestMessageKey = String.format(CHAT_ROOM_LATEST_MESSAGE_KEY, chatRoomId);
-        redisTemplate.opsForValue().set(latestMessageKey, chatMessage.getContent());
+        // Redis에 이미 동일 messageId의 메시지가 있는지 확인
+        List<Object> recentMessages = redisTemplate.opsForList().range(chatRoomMessagesKey, -MAX_REDIS_MESSAGES, -1);
+        boolean isDuplicate = recentMessages != null && recentMessages.stream().anyMatch(
+                obj -> ((ChatMessage)obj).getId().equals(chatMessage.getId())
+        );
 
-        String latestMessageTimeKey = String.format(CHAT_ROOM_LATEST_MESSAGE_TIME_KEY, chatRoomId);
-        LocalDateTime latestMessageTime = LocalDateTime.now();
-        redisTemplate.opsForValue().set(latestMessageTimeKey, latestMessageTime.toString()); // 시간도 저장
+        if (!isDuplicate) {
+            redisTemplate.opsForList().rightPush(chatRoomMessagesKey, chatMessage);
+
+            // 최신 메시지 및 활동 시간 업데이트
+            String latestMessageKey = String.format(CHAT_ROOM_LATEST_MESSAGE_KEY, chatRoomId);
+            redisTemplate.opsForValue().set(latestMessageKey, chatMessage.getContent());
+
+            String latestMessageTimeKey = String.format(CHAT_ROOM_LATEST_MESSAGE_TIME_KEY, chatRoomId);
+            LocalDateTime latestMessageTime = LocalDateTime.now();
+            redisTemplate.opsForValue().set(latestMessageTimeKey, latestMessageTime.toString()); // 시간도 저장
+        }
     }
 
     public void broadcastMessage(ChatMessage chatMessage) {
         // 채팅방 참여자들에게 메시지 전송
+        log.info("브로드캐스팅 messageId={} to roomId={}", chatMessage.getId(), chatMessage.getRoomId());
         messagingTemplate.convertAndSend("/topic/" + chatMessage.getRoomId(), chatMessage);
 
     }
@@ -110,6 +120,7 @@ public class MessageCommandService {
                         LocalDateTime now = LocalDateTime.now();
 
                         return Message.builder()
+                                .id(chatMessage.getId().toString())
                                 .chatRoomId(chatRoomId.toString())
                                 .userId(user.getId().toString())
                                 .content(chatMessage.getContent())
@@ -121,7 +132,7 @@ public class MessageCommandService {
 
             mongoMessageRepository.saveAll(messageList);
 
-             //레디스에서 최신 nn개의 메시지를 제외하고 모두 저장
+             //레디스에서 최신 n개의 메시지를 제외하고 모두 저장
             if (totalMessages > MAX_REDIS_MESSAGES) {
                 redisTemplate.opsForList().trim(chatRoomMessagesKey, -MAX_REDIS_MESSAGES, -1);
             }

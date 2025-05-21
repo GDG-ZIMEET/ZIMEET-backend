@@ -127,4 +127,8 @@ public class UserProfile {
 
     public void setViewCount(int viewCount) { this.viewCount = viewCount; }
 
+    public void increaseHi(int amount) {
+        this.hi += amount;
+    }
+
 }

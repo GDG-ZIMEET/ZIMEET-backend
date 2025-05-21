@@ -15,6 +15,10 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.UUID;
+
 @Controller
 @RequiredArgsConstructor
 public class ChatWebSocketController {
@@ -28,13 +32,19 @@ public class ChatWebSocketController {
         Long senderId = jwtUtil.extractUserIdFromToken(token);
         User user = userRepository.findById(senderId)
                 .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
+
+        String messageId = chatMessage.getId() != null ? chatMessage.getId() : UUID.randomUUID().toString();
+        LocalDateTime sendAt = chatMessage.getSendAt() != null ? chatMessage.getSendAt() : LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+
         chatMessage = ChatMessage.builder()
+                .id(messageId)
                 .type(chatMessage.getType())
                 .roomId(roomId)
                 .senderId(senderId)
                 .senderName(user.getUserProfile().getNickname())
                 .content(chatMessage.getContent())
                 .emoji(user.getUserProfile().getEmoji())
+                .sendAt(sendAt)
                 .build();
 
         switch (chatMessage.getType()) {

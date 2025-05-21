@@ -43,10 +43,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByStudentNumber(String studentNumber);
     boolean existsByPhoneNumber(String phoneNumber);
 
-    @Query("SELECT u FROM User u JOIN FETCH u.userProfile WHERE u.name = :name AND u.phoneNumber = :phoneNumber")
-    Optional<User> findByNameAndPhoneNumberWithProfile(String name, String phoneNumber);
-
-    @Query("SELECT u FROM User u JOIN FETCH u.userProfile WHERE u.name = :name AND u.studentNumber = :studentNumber")
+    @Query("SELECT u FROM User u JOIN FETCH u.userProfile WHERE u.name = :name AND u.studentNumber = :studentNumber " +
+            "AND u.isDeleted = FALSE")
     Optional<User> findByNameAndStudentNumberWithProfile(String name, String studentNumber);
 
     Optional<User> findByNameAndStudentNumberAndPhoneNumber(String name, String studentNumber, String phoneNumber);
