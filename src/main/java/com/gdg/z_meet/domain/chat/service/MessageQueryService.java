@@ -10,6 +10,7 @@ import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MessageQueryService {
 
     private final RedisTemplate<String, Object> redisTemplate;
@@ -60,13 +62,24 @@ public class MessageQueryService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
+        log.info("📌 Redis 메시지 개수: {}", chatMessages.size());
+        log.info("📌 Redis 메시지 UUID 개수: {}", redisMessageIds.size());
+
         // Mongo 에서 full size 만큼 가져오기 (정렬된 최신순)
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());  // page를 0으로
         List<Message> dbMessages = mongoMessageRepository.findByChatRoomId(chatRoomId.toString(), pageable);
 
+        log.info("📌 MongoDB 에서 조회된 메시지 수: {}", dbMessages.size());
 
         List<ChatMessage> dbChatMessages = dbMessages.stream()
-                .filter(msg -> msg.getMessageId() != null && !redisMessageIds.contains(msg.getMessageId()))
+//                .filter(msg -> msg.getMessageId() != null && !redisMessageIds.contains(msg.getMessageId()))
+                .filter(m -> {
+                    boolean shouldInclude = m.getMessageId() != null && !redisMessageIds.contains(m.getMessageId());
+                    if (!shouldInclude) {
+                        log.debug("❌ 중복으로 제외된 Mongo 메시지 UUID: {}", m.getMessageId());
+                    }
+                    return shouldInclude;
+                })
                 .map(message -> {
                     // MySQL에서 userId를 기반으로 User 객체를 조회
                     User user = userRepository.findById(Long.parseLong(message.getUserId()))
@@ -83,8 +96,11 @@ public class MessageQueryService {
                             .emoji(user.getUserProfile().getEmoji())
                             .build();
                 })
-                .limit(Math.max(0, size - chatMessages.size()))  // 부족한 만큼만 보충
+//                .limit(Math.max(0, size - chatMessages.size()))  // 부족한 만큼만 보충
                 .collect(Collectors.toList());
+
+        log.info("📌 Mongo에서 Redis에 없는 메시지 수: {}", dbChatMessages.size());
+
 
         chatMessages.addAll(dbChatMessages);
 
