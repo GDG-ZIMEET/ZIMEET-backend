@@ -44,6 +44,10 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     @Query("SELECT t FROM Team t JOIN UserTeam ut ON t.id = ut.team.id WHERE ut.user = :user AND t.event = :event AND t.activeStatus = 'ACTIVE'")
     List<Team> findAllByUser(@Param("user") User user, @Param("event") Event event);
 
+    @Query("SELECT t FROM Team t JOIN UserTeam ut ON t.id = ut.team.id " +
+            "WHERE ut.user = :user AND t.event = :event AND t.activeStatus = 'ACTIVE'")
+    Optional<Team> findByUser(@Param("user") User user, @Param("event") Event event);
+
 
     @Query("""
         SELECT u FROM User u
