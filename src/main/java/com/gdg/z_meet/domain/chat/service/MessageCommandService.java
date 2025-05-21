@@ -65,6 +65,17 @@ public class MessageCommandService {
 
         // Redis에 메시지 저장
         String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
+
+        // Redis에 이미 동일 messageId의 메시지가 있는지 확인
+        List<Object> recentMessages = redisTemplate.opsForList().range(chatRoomMessagesKey, -MAX_REDIS_MESSAGES, -1);
+        boolean isDuplicate = recentMessages != null && recentMessages.stream().anyMatch(
+                obj -> ((ChatMessage)obj).getId().equals(chatMessage.getId())
+        );
+
+        if (!isDuplicate) {
+            redisTemplate.opsForList().rightPush(chatRoomMessagesKey, chatMessage);
+        }
+
         redisTemplate.opsForList().rightPush(chatRoomMessagesKey, chatMessage);
 
         // 최신 메시지 및 활동 시간 업데이트
