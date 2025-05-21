@@ -1,5 +1,7 @@
 package com.gdg.z_meet.domain.event.controller;
 
+import com.gdg.z_meet.domain.event.Product;
+import com.gdg.z_meet.domain.event.dto.EventResponseDTO;
 import com.gdg.z_meet.domain.event.service.EventService;
 import com.gdg.z_meet.domain.meeting.dto.MeetingResponseDTO;
 import com.gdg.z_meet.domain.user.dto.UserRes;
@@ -42,6 +44,17 @@ public class EventController {
     public Response<MeetingResponseDTO.GetVerificationDTO> patchVerification(@RequestParam(name = "name") String name, @RequestParam(name = "studentNumber") String studentNumber) {
 
         MeetingResponseDTO.GetVerificationDTO response = eventService.patchVerification(name, studentNumber);
+
+        return Response.ok(response);
+    }
+
+    @Operation(summary = "결제")
+    @PatchMapping("/pay")
+    public Response<EventResponseDTO.GetPayDTO> patchPay(@RequestParam(name = "name") String name,
+                                                         @RequestParam(name = "studentNumber") String studentNumber,
+                                                         @RequestParam(name = "product") Product product) {
+
+        EventResponseDTO.GetPayDTO response = eventService.patchPay(name, studentNumber, product);
 
         return Response.ok(response);
     }
