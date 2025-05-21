@@ -178,13 +178,19 @@ public class ChatRoomQueryService {
 
         return userProfiles.stream()
                 .map(userProfile -> {
-                    // 사용자 ID가 동일한 경우 이름에 "(나)" 추가
-                    String userName = userProfile.getUser().getId().equals(userId)
-                            ? userProfile.getUser().getUserProfile().getNickname() + "(나)"
-                            : userProfile.getUser().getUserProfile().getNickname();
+                    User chatUser = userProfile.getUser();
+                    UserProfile profile = chatUser.getUserProfile();
+
+                    String nickname = (profile != null && profile.getNickname() != null && !profile.getNickname().isBlank())
+                            ? profile.getNickname()
+                            : "User";
+
+                    String userName = chatUser.getId().equals(userId)
+                            ? nickname + " (나)"
+                            : nickname;
 
                     return new ChatRoomDto.UserProfileDto(
-                            userProfile.getUser().getId(),
+                            chatUser.getId(),
                             userName,
                             userProfile.getEmoji(),
                             userProfile.getGender()

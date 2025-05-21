@@ -66,14 +66,14 @@ public class MessageQueryService {
 
 
         List<ChatMessage> dbChatMessages = dbMessages.stream()
-                .filter(msg -> msg.getId() != null && !redisMessageIds.contains(msg.getId()))
+                .filter(msg -> msg.getMessageId() != null && !redisMessageIds.contains(msg.getMessageId()))
                 .map(message -> {
                     // MySQL에서 userId를 기반으로 User 객체를 조회
                     User user = userRepository.findById(Long.parseLong(message.getUserId()))
                             .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
 
                     return ChatMessage.builder()
-                            .id(message.getId())
+                            .id(message.getMessageId())
                             .type(MessageType.CHAT)
                             .roomId(Long.parseLong(message.getChatRoomId()))  // MongoDB의 chatRoomId는 String이므로 Long으로 변환
                             .senderId(Long.parseLong(message.getUserId()))  // MongoDB의 userId는 String이므로 Long으로 변환

@@ -1,17 +1,12 @@
 package com.gdg.z_meet.domain.chat.entity;
 
-import com.gdg.z_meet.global.common.BaseEntity;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import lombok.*;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Document(collection = "messages")
 @Getter
@@ -21,7 +16,9 @@ import java.util.Date;
 public class Message {
 
     @Id
-    private String id;
+    private String id;     // MongoDB 기존 ObjectId
+
+    private String messageId;     // UUID
 
     private String content;
     private Boolean isRead;

@@ -119,7 +119,7 @@ public class MessageCommandService {
                         LocalDateTime now = LocalDateTime.now();
 
                         return Message.builder()
-                                .id(chatMessage.getId())
+                                .messageId(chatMessage.getId())
                                 .chatRoomId(chatRoomId.toString())
                                 .userId(user.getId().toString())
                                 .content(chatMessage.getContent())
