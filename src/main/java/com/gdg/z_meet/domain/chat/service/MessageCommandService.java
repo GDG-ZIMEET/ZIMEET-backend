@@ -87,6 +87,7 @@ public class MessageCommandService {
 
     public void broadcastMessage(ChatMessage chatMessage) {
         // 채팅방 참여자들에게 메시지 전송
+        log.info("브로드캐스팅 messageId={} to roomId={}", chatMessage.getId(), chatMessage.getRoomId());
         messagingTemplate.convertAndSend("/topic/" + chatMessage.getRoomId(), chatMessage);
 
     }
@@ -131,7 +132,7 @@ public class MessageCommandService {
 
             mongoMessageRepository.saveAll(messageList);
 
-             //레디스에서 최신 nn개의 메시지를 제외하고 모두 저장
+             //레디스에서 최신 n개의 메시지를 제외하고 모두 저장
             if (totalMessages > MAX_REDIS_MESSAGES) {
                 redisTemplate.opsForList().trim(chatRoomMessagesKey, -MAX_REDIS_MESSAGES, -1);
             }
