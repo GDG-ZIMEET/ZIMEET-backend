@@ -61,7 +61,7 @@ public class MessageQueryService {
                 .collect(Collectors.toSet());
 
         // Mongo 에서 full size 만큼 가져오기 (정렬된 최신순)
-        Pageable pageable = PageRequest.of(0, size, Sort.by("createdAt").descending());  // page를 0으로
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());  // page를 0으로
         List<Message> dbMessages = mongoMessageRepository.findByChatRoomId(chatRoomId.toString(), pageable);
 
         // Redis에서 가져온 메시지가 부족하면 DB에서 추가로 가져오기

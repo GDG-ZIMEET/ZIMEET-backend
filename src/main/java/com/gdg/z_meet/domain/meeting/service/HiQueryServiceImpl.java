@@ -113,7 +113,9 @@ public class HiQueryServiceImpl implements HiQueryService{
                 Duration duration = Duration.between(sentTime, now);
 
                 long totalMinutesElapsed = duration.toMinutes(); // 보낸 후 총 경과된 분
-                long totalMinutesRemaining = (5 * 60) - totalMinutesElapsed; // 5시간(300분) 기준으로 남은 분 계산
+
+                final long LIMIT_MINUTES = 12 * 60; // 12시간 제한
+                long totalMinutesRemaining = LIMIT_MINUTES - totalMinutesElapsed;
 
                 if (totalMinutesRemaining <= 0) {
                     hi.setChangeStatus(HiStatus.EXPIRED);
