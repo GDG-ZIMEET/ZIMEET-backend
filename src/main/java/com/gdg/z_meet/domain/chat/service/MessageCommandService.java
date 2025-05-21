@@ -134,6 +134,7 @@ public class MessageCommandService {
 
             try {
                 mongoMessageRepository.saveAll(messageList);
+                log.info("✅ MongoDB 저장 완료 - 저장된 메시지 수: {}", messageList.size());
             } catch (Exception e) {
                 log.error("Mongo 저장 실패", e);
             }
