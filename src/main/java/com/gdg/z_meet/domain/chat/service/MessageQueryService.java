@@ -62,6 +62,7 @@ public class MessageQueryService {
 
             Set<String> redisMessageIds = chatMessages.stream()
                     .map(ChatMessage::getId)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
             List<ChatMessage> dbChatMessages = dbMessages.stream()
@@ -72,7 +73,7 @@ public class MessageQueryService {
 
 
                         return ChatMessage.builder()
-                                .id(String.valueOf(UUID.fromString(message.getId())))
+                                .id(message.getId())
                                 .type(MessageType.CHAT)
                                 .roomId(Long.parseLong(message.getChatRoomId()))  // MongoDB의 chatRoomId는 String이므로 Long으로 변환
                                 .senderId(Long.parseLong(message.getUserId()))  // MongoDB의 userId는 String이므로 Long으로 변환
@@ -83,7 +84,7 @@ public class MessageQueryService {
                                 .build();
                     })
                     // Redis에 이미 존재하는 메시지는 UUID 기준으로 필터링
-                    .filter(msg -> !redisMessageIds.contains(msg.getId()))
+                    .filter(msg -> msg.getId() != null && !redisMessageIds.contains(msg.getId()))
                     .collect(Collectors.toList());
 
             chatMessages.addAll(dbChatMessages);
