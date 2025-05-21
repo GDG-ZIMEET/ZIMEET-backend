@@ -50,6 +50,7 @@ public class UserRes {
         private IdealAge idealAge;
         private IdealType idealType;
         private Level level;
+        private ProfileStatus profileStatus;
     }
 
     @Getter

@@ -142,6 +142,7 @@ public class UserService {
                 .age(userProfile.getAge())
                 .music(userProfile.getMusic())
                 .level(userProfile.getLevel())
+                .profileStatus(userProfile.getProfileStatus())
                 .build();
     }
 
