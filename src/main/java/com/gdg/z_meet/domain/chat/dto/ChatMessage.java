@@ -21,7 +21,7 @@ public class ChatMessage implements Serializable {
     private String senderName;
     private String content;
     @Builder.Default
-    private LocalDateTime sendAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+    private LocalDateTime sentAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
     private String emoji;
 
