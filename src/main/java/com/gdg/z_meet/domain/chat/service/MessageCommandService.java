@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -112,7 +114,14 @@ public class MessageCommandService {
                     .filter(chatMessage -> chatMessage.getSenderId() != null)
                     .toList();
 
+            Set<String> existingIds = mongoMessageRepository.findMessageIdOnlyByChatRoomId(chatRoomId.toString())
+                    .stream()
+                    .map(Message::getMessageId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
             List<Message> messageList = chatMessages.stream()
+                    .filter(msg -> !existingIds.contains(msg.getId()))
                     .map(chatMessage -> {
                         User user = userRepository.findById(chatMessage.getSenderId())
                                 .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
@@ -127,7 +136,7 @@ public class MessageCommandService {
                                 .updatedAt(now)
                                 .build();
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.info("Redis 메시지 수: {}", chatMessages.size());
             log.info("MongoDB 저장할 메시지 수: {}", messageList.size());

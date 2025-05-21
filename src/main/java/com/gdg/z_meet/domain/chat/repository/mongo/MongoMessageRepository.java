@@ -4,6 +4,7 @@ import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.entity.Message;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
 
@@ -12,4 +13,8 @@ public interface MongoMessageRepository extends MongoRepository<Message, String>
     List<Message> findByChatRoomId(String chatRoomId, Pageable pageable);
     List<Message> findByUserId(String userId);
     void deleteByUserId(String userId);
+
+    // MongoMessageRepository.java
+    @Query(value = "{ 'chatRoomId': ?0 }", fields = "{ 'messageId': 1 }")
+    List<Message> findMessageIdOnlyByChatRoomId(String chatRoomId);
 }
