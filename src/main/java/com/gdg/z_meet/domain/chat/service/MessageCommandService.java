@@ -74,17 +74,15 @@ public class MessageCommandService {
 
         if (!isDuplicate) {
             redisTemplate.opsForList().rightPush(chatRoomMessagesKey, chatMessage);
+
+            // 최신 메시지 및 활동 시간 업데이트
+            String latestMessageKey = String.format(CHAT_ROOM_LATEST_MESSAGE_KEY, chatRoomId);
+            redisTemplate.opsForValue().set(latestMessageKey, chatMessage.getContent());
+
+            String latestMessageTimeKey = String.format(CHAT_ROOM_LATEST_MESSAGE_TIME_KEY, chatRoomId);
+            LocalDateTime latestMessageTime = LocalDateTime.now();
+            redisTemplate.opsForValue().set(latestMessageTimeKey, latestMessageTime.toString()); // 시간도 저장
         }
-
-        redisTemplate.opsForList().rightPush(chatRoomMessagesKey, chatMessage);
-
-        // 최신 메시지 및 활동 시간 업데이트
-        String latestMessageKey = String.format(CHAT_ROOM_LATEST_MESSAGE_KEY, chatRoomId);
-        redisTemplate.opsForValue().set(latestMessageKey, chatMessage.getContent());
-
-        String latestMessageTimeKey = String.format(CHAT_ROOM_LATEST_MESSAGE_TIME_KEY, chatRoomId);
-        LocalDateTime latestMessageTime = LocalDateTime.now();
-        redisTemplate.opsForValue().set(latestMessageTimeKey, latestMessageTime.toString()); // 시간도 저장
     }
 
     public void broadcastMessage(ChatMessage chatMessage) {

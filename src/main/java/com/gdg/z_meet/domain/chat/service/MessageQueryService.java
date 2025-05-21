@@ -16,10 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,6 +60,10 @@ public class MessageQueryService {
             Pageable pageable = PageRequest.of(page, size - chatMessages.size(), Sort.by("createdAt").descending());
             List<Message> dbMessages = mongoMessageRepository.findByChatRoomId(String.valueOf(chatRoomId), pageable);
 
+            Set<String> redisMessageIds = chatMessages.stream()
+                    .map(ChatMessage::getId)
+                    .collect(Collectors.toSet());
+
             List<ChatMessage> dbChatMessages = dbMessages.stream()
                     .map(message -> {
                         // MySQL에서 userId를 기반으로 User 객체를 조회
@@ -71,6 +72,7 @@ public class MessageQueryService {
 
 
                         return ChatMessage.builder()
+                                .id(String.valueOf(UUID.fromString(message.getId())))
                                 .type(MessageType.CHAT)
                                 .roomId(Long.parseLong(message.getChatRoomId()))  // MongoDB의 chatRoomId는 String이므로 Long으로 변환
                                 .senderId(Long.parseLong(message.getUserId()))  // MongoDB의 userId는 String이므로 Long으로 변환
@@ -80,6 +82,8 @@ public class MessageQueryService {
                                 .emoji(user.getUserProfile().getEmoji())  // MySQL에서 가져온 user의 emoji 사용
                                 .build();
                     })
+                    // Redis에 이미 존재하는 메시지는 UUID 기준으로 필터링
+                    .filter(msg -> !redisMessageIds.contains(msg.getId()))
                     .collect(Collectors.toList());
 
             chatMessages.addAll(dbChatMessages);
