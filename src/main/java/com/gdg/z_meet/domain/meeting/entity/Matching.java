@@ -15,4 +15,5 @@ public class Matching extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "matching_id", unique = true)
     private Long id;
+
 }
