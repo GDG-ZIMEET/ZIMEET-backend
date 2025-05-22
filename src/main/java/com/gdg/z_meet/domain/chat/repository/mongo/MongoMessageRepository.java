@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface MongoMessageRepository extends MongoRepository<Message, String> {
@@ -17,4 +18,6 @@ public interface MongoMessageRepository extends MongoRepository<Message, String>
     // MongoMessageRepository.java
     @Query(value = "{ 'chatRoomId': ?0 }", fields = "{ 'messageId': 1 }")
     List<Message> findMessageIdOnlyByChatRoomId(String chatRoomId);
+
+    List<Message> findByMessageIdIn(Collection<String> messageIds);
 }
