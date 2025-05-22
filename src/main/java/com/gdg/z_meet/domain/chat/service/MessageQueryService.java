@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,94 +33,63 @@ public class MessageQueryService {
 
     private static final String CHAT_ROOM_MESSAGES_KEY = "chatroom:%s:messages";
 
-    public List<ChatMessage> getMessagesByChatRoom(Long chatRoomId, Long userId, int page, int size) {
+    public List<ChatMessage> getMessagesByChatRoom(Long chatRoomId, Long userId, LocalDateTime lastMessageTime, int size) {
         if (!joinChatRepository.existsByUserIdAndChatRoomIdAndStatusActive(userId, chatRoomId)) {
             throw new BusinessException(Code.JOINCHAT_NOT_FOUND);
         }
 
-        String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
-        Long totalMessages = redisTemplate.opsForList().size(chatRoomMessagesKey);
-        List<ChatMessage> chatMessages = new ArrayList<>();
-
-        // Redis에서 메시지 가져오기 (내림차순)
-//        if (totalMessages != null && totalMessages > 0) {
-//            int start = (int) Math.max(totalMessages - (page * size) - 1, 0);
-//            int end = (int) Math.max(totalMessages - ((page + 1) * size), 0);
-//
-//            if (start >= end) {
-//                List<Object> redisMessages = redisTemplate.opsForList().range(chatRoomMessagesKey, end, start);
-//                if (redisMessages != null) {
-//                    Collections.reverse(redisMessages); // 최신 메시지가 먼저 오도록
-//                    chatMessages = redisMessages.stream()
-//                            .map(obj -> (ChatMessage) obj)
-//                            .collect(Collectors.toList());
-//                }
-//            }
-//        }
-
-        int redisCount = totalMessages != null ? totalMessages.intValue() : 0;
-        int fromIndex = page * size;
-        int toIndex = fromIndex + size;
-
-        // 1. Redis에서 가져올 수 있는 부분
-        if (fromIndex < redisCount) {
-            int redisStart = Math.max(redisCount - toIndex, 0);
-            int redisEnd = redisCount - fromIndex - 1;
-
-            List<Object> redisMessages = redisTemplate.opsForList().range(chatRoomMessagesKey, redisStart, redisEnd);
-            if (redisMessages != null) {
-                Collections.reverse(redisMessages);
-                chatMessages = redisMessages.stream()
-                        .map(obj -> (ChatMessage) obj)
-                        .collect(Collectors.toList());
-            }
+        if (lastMessageTime == null) {
+            lastMessageTime = LocalDateTime.now();
         }
 
-        int redisFetchedCount = chatMessages.size();
-        int remaining = size - redisFetchedCount;
+        String redisKey = String.format("chatroom:%s:messages", chatRoomId);
+        List<Object> redisRaw = redisTemplate.opsForList().range(redisKey, 0, -1);
 
-        if (remaining > 0) {
-            int mongoOffset = fromIndex - redisCount;
-            mongoOffset = Math.max(mongoOffset, 0);
+        LocalDateTime finalLastMessageTime = lastMessageTime;
+        List<ChatMessage> redisMessages = Optional.ofNullable(redisRaw).orElse(List.of()).stream()
+                .map(obj -> (ChatMessage) obj)
+                .filter(m -> m.getSendAt() != null && m.getSendAt().isBefore(finalLastMessageTime))
+                .sorted(Comparator.comparing(ChatMessage::getSendAt).reversed())
+                .limit(size)
+                .collect(Collectors.toList());
 
-            Pageable pageable = PageRequest.of(mongoOffset / size, remaining, Sort.by("createdAt").descending());
-            List<Message> dbMessages = mongoMessageRepository.findByChatRoomId(chatRoomId.toString(), pageable);
+        int fetched = redisMessages.size();
 
-            log.info("📌 MongoDB 에서 조회된 메시지 수: {}", dbMessages.size());
+        // 부족하면 Mongo에서 추가 조회
+        if (fetched < size) {
+            int remaining = size - fetched;
+            Pageable pageable = PageRequest.of(0, remaining, Sort.by("createdAt").descending());
+            List<Message> dbMessages = mongoMessageRepository.findByChatRoomIdAndCreatedAtBefore(
+                    chatRoomId.toString(), lastMessageTime, pageable
+            );
 
-            Set<String> redisMessageIds = chatMessages.stream()
+            // Redis에서 이미 가져온 메시지 UUIDs
+            Set<String> redisIds = redisMessages.stream()
                     .map(ChatMessage::getId)
-                    .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
-            log.info("📌 Redis 메시지 개수: {}", chatMessages.size());
-            log.info("📌 Redis 메시지 UUID 개수: {}", redisMessageIds.size());
-
-
             List<ChatMessage> dbChatMessages = dbMessages.stream()
-                    .filter(msg -> msg.getMessageId() != null && !redisMessageIds.contains(msg.getMessageId()))
-                    .map(message -> {
-                        User user = userRepository.findById(Long.parseLong(message.getUserId()))
+                    .filter(m -> m.getMessageId() != null && !redisIds.contains(m.getMessageId()))
+                    .map(m -> {
+                        User user = userRepository.findById(Long.parseLong(m.getUserId()))
                                 .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
                         return ChatMessage.builder()
-                                .id(message.getMessageId())
+                                .id(m.getMessageId())
                                 .type(MessageType.CHAT)
-                                .roomId(Long.parseLong(message.getChatRoomId()))
-                                .senderId(Long.parseLong(message.getUserId()))
+                                .roomId(Long.parseLong(m.getChatRoomId()))
+                                .senderId(Long.parseLong(m.getUserId()))
                                 .senderName(user.getName())
-                                .content(message.getContent())
-                                .sendAt(message.getCreatedAt())
+                                .content(m.getContent())
+                                .sendAt(m.getCreatedAt())
                                 .emoji(user.getUserProfile().getEmoji())
                                 .build();
                     })
                     .collect(Collectors.toList());
 
-            log.info("📌 MongoDB 에서 Redis에 없는 메시지 수: {}", dbChatMessages.size());
-
-            chatMessages.addAll(dbChatMessages);
+            redisMessages.addAll(dbChatMessages);
         }
 
-        return chatMessages.stream()
+        return redisMessages.stream()
                 .sorted(Comparator.comparing(ChatMessage::getSendAt).reversed())
                 .collect(Collectors.toList());
     }
