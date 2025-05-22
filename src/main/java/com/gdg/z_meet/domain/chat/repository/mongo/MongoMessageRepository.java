@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface MongoMessageRepository extends MongoRepository<Message, String> {
@@ -19,4 +20,7 @@ public interface MongoMessageRepository extends MongoRepository<Message, String>
     List<Message> findMessageIdOnlyByChatRoomId(String chatRoomId);
 
     List<Message> findByChatRoomIdAndCreatedAtBefore(String chatRoomId, LocalDateTime createdAt, Pageable pageable);
+  
+  
+    List<Message> findByMessageIdIn(Collection<String> messageIds);
 }
