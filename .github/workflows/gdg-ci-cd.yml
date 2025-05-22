@@ -75,8 +75,11 @@ jobs:
             sudo chmod -R u+w ./nginx
             
             sudo docker-compose down
+                    
+            git fetch origin
+            git reset --hard origin/main
             
-            git pull --no-rebase origin main
+#            git pull --no-rebase origin main
             
             ./gradlew clean bootjar
             
