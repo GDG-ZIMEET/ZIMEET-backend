@@ -72,6 +72,8 @@ jobs:
           script: |
             cd /home/ubuntu/ZIMEET-backend
             
+            sudo chmod -R u+w ./nginx
+            
             sudo docker-compose down
             
             git pull --no-rebase origin main
