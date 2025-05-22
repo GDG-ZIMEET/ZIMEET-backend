@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class Message {
 
     @Id
-    private ObjectId id;     // MongoDB 기존 ObjectId
+    private String id;     // MongoDB 기존 ObjectId
 
     @Field("messageId")
     @Indexed(unique = true)
