@@ -145,8 +145,8 @@ public class MessageCommandService {
                     })
                     .toList();
 
-            log.info("Redis 메시지 수: {}", chatMessages.size());
-            log.info("MongoDB 저장할 메시지 수: {}", messageList.size());
+//            log.info("Redis 메시지 수: {}", chatMessages.size());
+//            log.info("MongoDB 저장할 메시지 수: {}", messageList.size());
 
             try {
                 mongoMessageRepository.saveAll(messageList);
