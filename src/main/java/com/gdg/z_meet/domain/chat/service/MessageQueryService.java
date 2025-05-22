@@ -17,7 +17,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +44,9 @@ public class MessageQueryService {
             lastMessageTime = LocalDateTime.now();
         }
 
+        Instant instant = lastMessageTime.atZone(ZoneId.systemDefault()).toInstant(); // 시스템 시간대 → UTC
+        Date utcDate = Date.from(instant);
+
         String redisKey = String.format("chatroom:%s:messages", chatRoomId);
         List<Object> redisRaw = redisTemplate.opsForList().range(redisKey, 0, -1);
 
@@ -59,8 +64,9 @@ public class MessageQueryService {
         if (fetched < size) {
             int remaining = size - fetched;
             Pageable pageable = PageRequest.of(0, remaining, Sort.by("createdAt").descending());
+
             List<Message> dbMessages = mongoMessageRepository.findByChatRoomIdAndCreatedAtBefore(
-                    chatRoomId.toString(), lastMessageTime, pageable
+                    chatRoomId.toString(), utcDate, pageable
             );
 
             // Redis에서 이미 가져온 메시지 UUIDs
