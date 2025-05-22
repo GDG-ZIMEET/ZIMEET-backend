@@ -3,12 +3,14 @@ package com.gdg.z_meet.domain.chat.service;
 import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.entity.ChatRoom;
 import com.gdg.z_meet.domain.chat.entity.JoinChat;
+import com.gdg.z_meet.domain.chat.entity.Message;
 import com.gdg.z_meet.domain.chat.entity.TeamChatRoom;
 import com.gdg.z_meet.domain.chat.entity.status.ChatType;
 import com.gdg.z_meet.domain.chat.entity.status.JoinChatStatus;
 import com.gdg.z_meet.domain.chat.repository.ChatRoomRepository;
 import com.gdg.z_meet.domain.chat.repository.JoinChatRepository;
 import com.gdg.z_meet.domain.chat.repository.TeamChatRoomRepository;
+import com.gdg.z_meet.domain.chat.repository.mongo.MongoMessageRepository;
 import com.gdg.z_meet.domain.meeting.entity.UserTeam;
 import com.gdg.z_meet.domain.meeting.repository.UserTeamRepository;
 import com.gdg.z_meet.domain.user.entity.User;
@@ -40,6 +42,7 @@ public class ChatRoomQueryService {
     private final TeamChatRoomRepository teamChatRoomRepository;
     private final UserTeamRepository userTeamRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final MongoMessageRepository mongoMessageRepository;
 
     private static final String CHAT_ROOM_LATEST_MESSAGE_KEY = "chatroom:%s:latestMessage";
 
@@ -108,12 +111,29 @@ public class ChatRoomQueryService {
                     String latestMessageTimeStr = (String) redisTemplate.opsForValue().get(latestMessageTimeKey);
 
                     LocalDateTime latestMessageTime = null;
-                    if (latestMessageTimeStr != null) {
+                    if (latestMessage == null || latestMessageTimeStr == null) {
+                        // MongoDB에서 최신 메시지 1개 조회
+                        Optional<Message> recentMessageOpt = mongoMessageRepository
+                                .findTopByChatRoomIdOrderByCreatedAtDesc(chatRoomId.toString());
+
+                        if (recentMessageOpt.isPresent()) {
+                            Message latest = recentMessageOpt.get();
+                            latestMessage = latest.getContent();
+                            latestMessageTime = latest.getCreatedAt();
+
+                            // Redis에 다시 캐시 저장
+                            redisTemplate.opsForValue().set(latestMessageKey, latestMessage);
+                            redisTemplate.opsForValue().set(latestMessageTimeKey, latestMessageTime.toString());
+                            redisTemplate.opsForZSet().add(CHAT_ROOM_LATEST_MESSAGE_KEY, chatRoomId.toString(),
+                                    latestMessageTime.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli());
+                        } else {
+                            latestMessage = null;
+                            latestMessageTime = chatRoom.getUpdatedAt(); // fallback
+                        }
+                    } else {
                         latestMessageTime = LocalDateTime.parse(latestMessageTimeStr);
                     }
-                    else{
-                        latestMessageTime = chatRoom.getUpdatedAt();
-                    }
+
 
                     List<ChatRoomDto.UserProfileDto> userProfiles = getUserProfilesByChatRoomId(userId, chatRoomId, true);
 

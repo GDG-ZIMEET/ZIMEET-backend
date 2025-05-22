@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MongoMessageRepository extends MongoRepository<Message, String> {
     // MongoDB에서 String 타입의 chatRoomId를 받아 메시지를 조회
@@ -17,4 +18,7 @@ public interface MongoMessageRepository extends MongoRepository<Message, String>
     // MongoMessageRepository.java
     @Query(value = "{ 'chatRoomId': ?0 }", fields = "{ 'messageId': 1 }")
     List<Message> findMessageIdOnlyByChatRoomId(String chatRoomId);
+
+    // 최신 메시지 1개를 가져오는 쿼리
+    Optional<Message> findTopByChatRoomIdOrderByCreatedAtDesc(String chatRoomId);
 }
