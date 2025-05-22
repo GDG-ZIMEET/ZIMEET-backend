@@ -38,89 +38,55 @@ public class MessageQueryService {
         }
 
         String chatRoomMessagesKey = String.format(CHAT_ROOM_MESSAGES_KEY, chatRoomId);
-        Long totalMessages = redisTemplate.opsForList().size(chatRoomMessagesKey);
-        List<ChatMessage> chatMessages = new ArrayList<>();
-
-        // Redis에서 메시지 가져오기 (내림차순)
-//        if (totalMessages != null && totalMessages > 0) {
-//            int start = (int) Math.max(totalMessages - (page * size) - 1, 0);
-//            int end = (int) Math.max(totalMessages - ((page + 1) * size), 0);
-//
-//            if (start >= end) {
-//                List<Object> redisMessages = redisTemplate.opsForList().range(chatRoomMessagesKey, end, start);
-//                if (redisMessages != null) {
-//                    Collections.reverse(redisMessages); // 최신 메시지가 먼저 오도록
-//                    chatMessages = redisMessages.stream()
-//                            .map(obj -> (ChatMessage) obj)
-//                            .collect(Collectors.toList());
-//                }
-//            }
-//        }
-
-        int redisCount = totalMessages != null ? totalMessages.intValue() : 0;
-        int fromIndex = page * size;
-        int toIndex = fromIndex + size;
-
-        // 1. Redis에서 가져올 수 있는 부분
-        if (fromIndex < redisCount) {
-            int redisStart = Math.max(redisCount - toIndex, 0);
-            int redisEnd = redisCount - fromIndex - 1;
-
-            List<Object> redisMessages = redisTemplate.opsForList().range(chatRoomMessagesKey, redisStart, redisEnd);
-            if (redisMessages != null) {
-                Collections.reverse(redisMessages);
-                chatMessages = redisMessages.stream()
-                        .map(obj -> (ChatMessage) obj)
-                        .collect(Collectors.toList());
-            }
-        }
-
-        int redisFetchedCount = chatMessages.size();
-        int remaining = size - redisFetchedCount;
-
-        if (remaining > 0) {
-            int mongoOffset = fromIndex - redisCount;
-            mongoOffset = Math.max(mongoOffset, 0);
-
-            Pageable pageable = PageRequest.of(mongoOffset / size, remaining, Sort.by("createdAt").descending());
-            List<Message> dbMessages = mongoMessageRepository.findByChatRoomId(chatRoomId.toString(), pageable);
-
-            log.info("📌 MongoDB 에서 조회된 메시지 수: {}", dbMessages.size());
-
-            Set<String> redisMessageIds = chatMessages.stream()
-                    .map(ChatMessage::getId)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-
-            log.info("📌 Redis 메시지 개수: {}", chatMessages.size());
-            log.info("📌 Redis 메시지 UUID 개수: {}", redisMessageIds.size());
-
-
-            List<ChatMessage> dbChatMessages = dbMessages.stream()
-                    .filter(msg -> msg.getMessageId() != null && !redisMessageIds.contains(msg.getMessageId()))
-                    .map(message -> {
-                        User user = userRepository.findById(Long.parseLong(message.getUserId()))
-                                .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
-                        return ChatMessage.builder()
-                                .id(message.getMessageId())
-                                .type(MessageType.CHAT)
-                                .roomId(Long.parseLong(message.getChatRoomId()))
-                                .senderId(Long.parseLong(message.getUserId()))
-                                .senderName(user.getName())
-                                .content(message.getContent())
-                                .sendAt(message.getCreatedAt())
-                                .emoji(user.getUserProfile().getEmoji())
-                                .build();
-                    })
-                    .collect(Collectors.toList());
-
-            log.info("📌 MongoDB 에서 Redis에 없는 메시지 수: {}", dbChatMessages.size());
-
-            chatMessages.addAll(dbChatMessages);
-        }
-
-        return chatMessages.stream()
-                .sorted(Comparator.comparing(ChatMessage::getSendAt).reversed())
+        List<Object> redisObjects = redisTemplate.opsForList().range(chatRoomMessagesKey, 0, -1);
+        List<ChatMessage> redisMessages = Optional.ofNullable(redisObjects).orElse(Collections.emptyList()).stream()
+                .map(obj -> (ChatMessage) obj)
                 .collect(Collectors.toList());
+
+        Pageable pageable = Pageable.unpaged(); // 전체 다 가져오기
+        List<Message> dbMessages = mongoMessageRepository.findByChatRoomId(chatRoomId.toString(), pageable);
+
+        List<ChatMessage> mongoMessages = dbMessages.stream()
+                .map(message -> {
+                    User user = userRepository.findById(Long.parseLong(message.getUserId()))
+                            .orElseThrow(() -> new BusinessException(Code.MEMBER_NOT_FOUND));
+                    return ChatMessage.builder()
+                            .id(message.getMessageId())
+                            .type(MessageType.CHAT)
+                            .roomId(Long.parseLong(message.getChatRoomId()))
+                            .senderId(Long.parseLong(message.getUserId()))
+                            .senderName(user.getName())
+                            .content(message.getContent())
+                            .sendAt(message.getCreatedAt())
+                            .emoji(user.getUserProfile().getEmoji())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // 중복 제거
+        Set<String> redisIds = redisMessages.stream()
+                .map(ChatMessage::getId)
+                .collect(Collectors.toSet());
+
+        List<ChatMessage> combined = new ArrayList<>();
+        combined.addAll(redisMessages);
+        combined.addAll(mongoMessages.stream()
+                .filter(msg -> !redisIds.contains(msg.getId()))
+                .collect(Collectors.toList()));
+
+        // 최신순 정렬
+        combined.sort(Comparator.comparing(ChatMessage::getSendAt).reversed());
+
+        // 정확한 페이지 잘라서 리턴
+        int fromIndex = page * size;
+        int toIndex = Math.min(fromIndex + size, combined.size());
+
+        if (fromIndex >= combined.size()) {
+            return Collections.emptyList();
+        }
+
+        return combined.subList(fromIndex, toIndex);
     }
+
+
 }
