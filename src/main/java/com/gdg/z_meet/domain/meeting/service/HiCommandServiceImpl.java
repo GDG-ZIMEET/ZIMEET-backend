@@ -81,13 +81,14 @@ public class HiCommandServiceImpl implements HiCommandService {
         Team from = teams.get("from");
         Team to = teams.get("to");
 
+        if (from.getHi() == 0) {
+            throw new BusinessException(Code.HI_LIMIT_EXCEEDED);
+        }
+
         // 유효성 검사
         if (from.getTeamType() != to.getTeamType()) throw new BusinessException(Code.TEAM_TYPE_MISMATCH);
         if (from.getGender() == to.getGender()) throw new BusinessException(Code.SAME_GENDER);
         validateHiDuplication(from.getId(), to.getId(), HiType.TEAM);
-
-        // 늘품제용 하이 무제한 설정
-        //from.decreaseHi(); // 하이 갯수 차감
 
         Hi hi = Hi.builder()
                 .hiStatus(HiStatus.NONE)
@@ -96,6 +97,8 @@ public class HiCommandServiceImpl implements HiCommandService {
                 .hiType(HiType.TEAM)
                 .build();
         hiRepository.save(hi);
+
+        from.decreaseHi();
         sendFcmGetHiTeam(hiDto);
     }
 
@@ -111,7 +114,7 @@ public class HiCommandServiceImpl implements HiCommandService {
 
         // 공통 메서드 호출하여 from, to 팀 할당
         Map<String, User> users = assignEntities(
-                userRepository.findByIdIn(userIds),
+                userRepository.findByIdInWithProfile(userIds),
                 hiDto.getFromId(),
                 User::getId
         );
@@ -119,12 +122,15 @@ public class HiCommandServiceImpl implements HiCommandService {
         User from = users.get("from");
         User to = users.get("to");
 
-        // 유효성 검사
-        if (from.getUserProfile().getGender() == to.getUserProfile().getGender()) throw new BusinessException(Code.SAME_GENDER);
-        validateHiDuplication(from.getId(), to.getId(), HiType.USER);
+        if (from.getUserProfile().getHi() == 0) {
+            throw new BusinessException(Code.HI_LIMIT_EXCEEDED);
+        }
 
-        // 늘품제용 하이 무제한 설정
-        //from.decreaseHi(); // 하이 갯수 차감
+        // 유효성 검사
+        if (from.getUserProfile().getGender() == to.getUserProfile().getGender()) {
+            throw new BusinessException(Code.SAME_GENDER);
+        }
+        validateHiDuplication(from.getId(), to.getId(), HiType.USER);
 
         Hi hi = Hi.builder()
                 .hiStatus(HiStatus.NONE)
@@ -133,6 +139,8 @@ public class HiCommandServiceImpl implements HiCommandService {
                 .hiType(HiType.USER)
                 .build();
         hiRepository.save(hi);
+
+        from.getUserProfile().decreaseHi(1);
         sendFcmGetHiUser(hiDto);
     }
 
