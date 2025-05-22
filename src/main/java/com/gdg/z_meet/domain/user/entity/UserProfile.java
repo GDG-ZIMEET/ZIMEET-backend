@@ -131,4 +131,7 @@ public class UserProfile {
         this.hi += amount;
     }
 
+    public void decreaseHi(int amount) {
+        this.hi -= amount;
+    }
 }
