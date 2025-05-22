@@ -44,8 +44,9 @@ public class MessageQueryService {
             lastMessageTime = LocalDateTime.now();
         }
 
+        // ✅ LocalDateTime → UTC Date 변환
         Instant instant = lastMessageTime.atZone(ZoneId.systemDefault()).toInstant(); // 시스템 시간대 → UTC
-        Date utcDate = Date.from(instant);
+        Date utcDate = Date.from(instant); // MongoDB 비교용
 
         String redisKey = String.format("chatroom:%s:messages", chatRoomId);
         List<Object> redisRaw = redisTemplate.opsForList().range(redisKey, 0, -1);
@@ -60,7 +61,6 @@ public class MessageQueryService {
 
         int fetched = redisMessages.size();
 
-        // 부족하면 Mongo에서 추가 조회
         if (fetched < size) {
             int remaining = size - fetched;
             Pageable pageable = PageRequest.of(0, remaining, Sort.by("createdAt").descending());
@@ -69,7 +69,6 @@ public class MessageQueryService {
                     chatRoomId.toString(), utcDate, pageable
             );
 
-            // Redis에서 이미 가져온 메시지 UUIDs
             Set<String> redisIds = redisMessages.stream()
                     .map(ChatMessage::getId)
                     .collect(Collectors.toSet());
@@ -99,4 +98,5 @@ public class MessageQueryService {
                 .sorted(Comparator.comparing(ChatMessage::getSendAt).reversed())
                 .collect(Collectors.toList());
     }
+
 }
