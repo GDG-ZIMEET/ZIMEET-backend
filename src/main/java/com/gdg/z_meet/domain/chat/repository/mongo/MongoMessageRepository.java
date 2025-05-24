@@ -29,5 +29,5 @@ public interface MongoMessageRepository extends MongoRepository<Message, String>
   
   
     List<Message> findByMessageIdIn(Collection<String> messageIds);
->
+
 }
