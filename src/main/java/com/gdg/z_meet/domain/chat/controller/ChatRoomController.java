@@ -3,17 +3,19 @@ package com.gdg.z_meet.domain.chat.controller;
 import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.dto.ChatRoomDto;
 import com.gdg.z_meet.domain.chat.service.*;
-import com.gdg.z_meet.domain.meeting.dto.MeetingRequestDTO;
+import org.springframework.format.annotation.DateTimeFormat;
 import com.gdg.z_meet.global.common.AuthenticatedUserUtils;
-import com.gdg.z_meet.global.jwt.JwtUtil;
+import java.time.LocalDateTime;
 import com.gdg.z_meet.global.response.Response;
 import com.gdg.z_meet.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -85,17 +87,15 @@ public class ChatRoomController {
         return Response.ok(chatRoomQueryService.getUserByRoomId(userId, roomId)); // 성공 응답 반환
     }
 
-    @Operation(summary = "메시지 조회", description = "지정된 채팅방의 메시지를 페이지네이션을 사용하여 조회합니다.")
+    @Operation(summary = "메시지 조회", description = "지정된 채팅방의 메시지를 조회합니다.")
     @GetMapping("/{roomId}/messages")
     public ResponseEntity<List<ChatMessage>> getMessages(
             @AuthUser Long userId,
             @PathVariable Long roomId,
-            @RequestParam(defaultValue = "0") int page, // 페이지 번호 (기본값: 0)
-            @RequestParam(defaultValue = "15") int size // 페이지 크기 (기본값: 20)
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastMessageTime,
+            @RequestParam(defaultValue = "20") int size // 페이지 크기 (기본값: 20)
     ) {
-
-        List<ChatMessage> messages = messageQueryService.getMessagesByChatRoom(roomId,userId, page, size);
+        List<ChatMessage> messages = messageQueryService.getMessagesByChatRoom(roomId,userId, lastMessageTime, size);
         return ResponseEntity.ok(messages);
     }
-
 }

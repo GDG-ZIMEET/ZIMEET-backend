@@ -71,17 +71,20 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/ZIMEET-backend
-            
+
+            sudo chmod -R u+w ./nginx
+
             sudo docker-compose down
-            
-            git pull --no-rebase origin main
-            
+
+            git fetch origin
+            git reset --hard origin/main
+
             ./gradlew clean bootjar
-            
+
             if [ "$(sudo docker ps -qa)" ]; then
               sudo docker ps -qa | xargs -r sudo docker rm -f
             fi
             sudo docker rmi $(sudo docker images -q) || true
-            
+
             sudo docker-compose up --build -d
             sudo docker image prune -f

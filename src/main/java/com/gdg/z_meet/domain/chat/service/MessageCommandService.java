@@ -12,6 +12,7 @@ import com.gdg.z_meet.domain.user.entity.User;
 import com.gdg.z_meet.domain.user.repository.UserRepository;
 import com.gdg.z_meet.global.exception.BusinessException;
 import com.gdg.z_meet.global.response.Code;
+import com.mongodb.DuplicateKeyException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -114,11 +115,17 @@ public class MessageCommandService {
                     .filter(chatMessage -> chatMessage.getSenderId() != null)
                     .toList();
 
-            Set<String> existingIds = mongoMessageRepository.findMessageIdOnlyByChatRoomId(chatRoomId.toString())
+            // Redis에서 가져온 UUID 모두 수집
+            Set<String> incomingMessageIds = chatMessages.stream()
+                    .map(ChatMessage::getId)
+                    .collect(Collectors.toSet());
+
+            // MongoDB에 이미 저장된 UUID 조회
+            Set<String> existingIds = mongoMessageRepository.findByMessageIdIn(incomingMessageIds)
                     .stream()
                     .map(Message::getMessageId)
-                    .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
+
 
             List<Message> messageList = chatMessages.stream()
                     .filter(msg -> !existingIds.contains(msg.getId()))
@@ -138,13 +145,15 @@ public class MessageCommandService {
                     })
                     .toList();
 
-            log.info("Redis 메시지 수: {}", chatMessages.size());
-            log.info("MongoDB 저장할 메시지 수: {}", messageList.size());
+//            log.info("Redis 메시지 수: {}", chatMessages.size());
+//            log.info("MongoDB 저장할 메시지 수: {}", messageList.size());
 
             try {
                 mongoMessageRepository.saveAll(messageList);
                 log.info("✅ MongoDB 저장 완료 - 저장된 메시지 수: {}", messageList.size());
-            } catch (Exception e) {
+            }  catch (DuplicateKeyException e) {
+                log.warn("MongoDB 중복 UUID 충돌 발생: {}", e.getMessage());
+            }  catch (Exception e) {
                 log.error("Mongo 저장 실패", e);
             }
              //레디스에서 최신 n개의 메시지를 제외하고 모두 저장

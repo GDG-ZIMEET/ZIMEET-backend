@@ -1,11 +1,13 @@
 package com.gdg.z_meet.domain.chat.repository.mongo;
 
-import com.gdg.z_meet.domain.chat.dto.ChatMessage;
 import com.gdg.z_meet.domain.chat.entity.Message;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +21,13 @@ public interface MongoMessageRepository extends MongoRepository<Message, String>
     @Query(value = "{ 'chatRoomId': ?0 }", fields = "{ 'messageId': 1 }")
     List<Message> findMessageIdOnlyByChatRoomId(String chatRoomId);
 
+
     // 최신 메시지 1개를 가져오는 쿼리
     Optional<Message> findTopByChatRoomIdOrderByCreatedAtDesc(String chatRoomId);
+
+    List<Message> findByChatRoomIdAndCreatedAtBefore(String chatRoomId, Date createdAt, Pageable pageable);
+  
+  
+    List<Message> findByMessageIdIn(Collection<String> messageIds);
+>
 }
