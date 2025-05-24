@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public interface MongoMessageRepository extends MongoRepository<Message, String> {
     // MongoDB에서 String 타입의 chatRoomId를 받아 메시지를 조회
@@ -20,8 +21,13 @@ public interface MongoMessageRepository extends MongoRepository<Message, String>
     @Query(value = "{ 'chatRoomId': ?0 }", fields = "{ 'messageId': 1 }")
     List<Message> findMessageIdOnlyByChatRoomId(String chatRoomId);
 
+
+    // 최신 메시지 1개를 가져오는 쿼리
+    Optional<Message> findTopByChatRoomIdOrderByCreatedAtDesc(String chatRoomId);
+
     List<Message> findByChatRoomIdAndCreatedAtBefore(String chatRoomId, Date createdAt, Pageable pageable);
   
   
     List<Message> findByMessageIdIn(Collection<String> messageIds);
+
 }
